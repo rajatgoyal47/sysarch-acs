@@ -199,7 +199,7 @@ pal_gic_create_info_table(GIC_INFO_TABLE *GicTable)
   @return Status of the operation
 **/
 UINT32
-pal_gic_install_isr(UINT32 int_id,  VOID (*isr)())
+pal_gic_install_isr(UINT32 int_id,  VOID (*isr)(void))
 {
 
   EFI_STATUS  Status;
@@ -214,10 +214,12 @@ pal_gic_install_isr(UINT32 int_id,  VOID (*isr)())
   gInterrupt->DisableInterruptSource(gInterrupt, int_id);
 
   //Register our handler
-  Status = gInterrupt->RegisterInterruptSource (gInterrupt, int_id, isr);
+  Status = gInterrupt->RegisterInterruptSource (gInterrupt, int_id,
+                                            (HARDWARE_INTERRUPT_HANDLER)(VOID *)(isr));
   if (EFI_ERROR(Status)) {
     Status =  gInterrupt->RegisterInterruptSource (gInterrupt, int_id, NULL);  //Deregister existing handler
-    Status = gInterrupt->RegisterInterruptSource (gInterrupt, int_id, isr);  //register our Handler.
+    Status = gInterrupt->RegisterInterruptSource (gInterrupt, int_id,
+                        (HARDWARE_INTERRUPT_HANDLER)(VOID *)(isr));  //register our Handler.
     //Even if this fails. there is nothing we can do in UEFI mode
   }
 
