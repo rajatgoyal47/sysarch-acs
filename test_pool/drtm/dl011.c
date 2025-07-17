@@ -47,7 +47,7 @@ payload(uint32_t num_pe)
   /* If complete DMA protection is supported skip as memory
    * regions not allowed through DRTM_PARAMETERS */
   dma_protection_support = VAL_EXTRACT_BITS(g_drtm_features.dma_prot_features.value, 0, 7);
-  if (dma_protection_support != DRTM_PROTECTION_REGION_BASED_DMA) {
+  if (dma_protection_support != DRTM_DMA_FEATURES_DMA_PROTECTION_REGION) {
     val_print(ACS_PRINT_ERR, "\n       Not valid for complete DMA protection. Skipping", 0);
     val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
     return;

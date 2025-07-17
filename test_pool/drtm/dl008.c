@@ -63,10 +63,10 @@ payload(uint32_t num_pe)
 
   if (drtm_feature == DRTM_DMA_FEATURES_DMA_PROTECTION_ALL) {
     drtm_params->launch_features = drtm_params->launch_features |
-            (DRTM_LAUNCH_FEAT_MEM_PROT_REGION_SUPP << DRTM_LAUNCH_FEATURES_MASK_MEM_PROTECTION);
+            (DRTM_LAUNCH_FEAT_MEM_PROT_REGION_SUPP << DRTM_LAUNCH_FEATURES_SHIFT_MEM_PROTECTION);
   } else {
     drtm_params->launch_features = drtm_params->launch_features |
-            (DRTM_LAUNCH_FEAT_MEM_PROT_ALL_SUPP << DRTM_LAUNCH_FEATURES_MASK_MEM_PROTECTION);
+            (DRTM_LAUNCH_FEAT_MEM_PROT_ALL_SUPP << DRTM_LAUNCH_FEATURES_SHIFT_MEM_PROTECTION);
   }
 
   status = val_drtm_dynamic_launch(drtm_params);
