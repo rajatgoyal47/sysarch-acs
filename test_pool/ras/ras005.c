@@ -105,6 +105,7 @@ payload()
     if (test_skip == 0) {
 
       int_id = (fhi_id) ? fhi_id : eri_id;
+      intr_pending = 1;
 
       /* Get Error Record number for this Node */
       status = val_ras_get_info(RAS_INFO_START_INDEX, node_index, &rec_index);
