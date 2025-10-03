@@ -40,7 +40,7 @@ fi
 echo "Building DRTM ACS for UEFI"
 if [ ! -d edk2 ]
 then
-    git clone --recursive --branch edk2-stable202402 https://github.com/tianocore/edk2.git
+    git clone --recursive --branch edk2-stable202505 https://github.com/tianocore/edk2.git
     git clone https://github.com/tianocore/edk2-libc edk2/edk2-libc
 fi
 cd ${WORK_DIR}/edk2

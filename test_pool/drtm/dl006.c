@@ -163,6 +163,7 @@ payload(uint32_t num_pe)
   uint32_t digest_index, i;
   uint8_t  *digest_buffer;
   uint8_t  *data;
+  uint8_t  arm_separator = 0;
   EVENT_DATA           *event_data;
   DRTM_DLME_DATA_HDR   *dlme_data_head;
   TCG_PCR_EVENT        *event_log_head;
@@ -251,6 +252,10 @@ payload(uint32_t num_pe)
     val_print(ACS_PRINT_DEBUG, "\n         Event Type      : 0x%x",  event->event_type);
     val_print(ACS_PRINT_DEBUG, "\n         Digest Count    : 0x%x",  event->digests.count);
 
+    if (event->event_type == DRTM_EVTYPE_ARM_SEPARATOR) {
+      arm_separator++;
+    }
+
     /* Print Digest values for all hash algorithms */
     digest = (TPMT_HA *)&event->digests.digests[0];
     for (digest_index = 0; digest_index < event->digests.count; digest_index++) {
@@ -286,8 +291,13 @@ payload(uint32_t num_pe)
     event_log_size = event_log_size - event2_size;
     event = event2;
   }
-
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  /* R45300 : EVTYPE_ARM_SEPARATOR is must in in event log */
+  if (!arm_separator) {
+    val_print(ACS_PRINT_ERR, "\n         Event type EVTYPE_ARM_SEPARATOR Not found",  0);
+    val_set_status(index, RESULT_FAIL(TEST_NUM, 7));
+  } else {
+    val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  }
 
 free_dlme_region:
   val_memory_free_aligned((void *)drtm_params->dlme_region_address);
