@@ -536,3 +536,15 @@ uint64_t val_drtm_get_feature(uint64_t feature_type)
 
     return feature;
 }
+
+/**
+  @brief   This API provides a 'C' interface to call DAIF register reads
+           1. Caller       -  Test Suite
+           2. Prerequisite -  None
+  @return  the value read from the DAIF register.
+**/
+uint64_t
+val_drtm_read_daif(void)
+{
+    return DrtmReadDaif();
+}

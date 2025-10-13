@@ -102,6 +102,10 @@
 #define DRTM_GET_FEATURES_SHIFT_TPM_BASED_HASHING 32
 #define DRTM_LAUNCH_FEAT_SHIFT_DLME_IMG_AUTH      6
 
+#define DRTM_NS_EXECPTION_SHIFT_AIF               6
+#define DRTM_NS_EXECPTION_MASK_AIF                0x7
+#define DRTM_NON_SECURE_EXCP_MASKED               0x7
+
 #define DRTM_PROTECTION_REGION_BASED_DMA          0x10UL
 #define DRTM_CACHEABILITY_WRITE_BACK              0xFFUL
 #define DRTM_REGION_TYPE_NORMAL_CACHEABLE         0x1UL
@@ -299,5 +303,57 @@ typedef struct {
 #define ARM_GICR_CTLR           0x0000  /* Redistributor Control Register      */
 #define ARM_GICR_PENDBASER      0x0078  /* Redistributor LPI Pending Table Base Addr Register */
 #define ARM_GITS_CTLR           0x0000  /* ITS Control Register */
+
+int64_t val_drtm_features(uint64_t fid, uint64_t *feat1, uint64_t *feat2);
+uint32_t val_drtm_get_version(void);
+int64_t val_drtm_simulate_dl(DRTM_PARAMETERS *drtm_params);
+int64_t val_drtm_dynamic_launch(DRTM_PARAMETERS *drtm_params);
+int64_t val_drtm_close_locality(uint32_t locality);
+int64_t val_drtm_unprotect_memory(void);
+int64_t val_drtm_get_error(uint64_t *feat1);
+int64_t val_drtm_set_tcb_hash(uint64_t tcb_hash_table_addr);
+int64_t val_drtm_lock_tcb_hashes(void);
+uint32_t val_drtm_reserved_bits_check_is_zero(uint32_t reserved_bits);
+uint32_t val_drtm_get_psci_ver(void);
+uint32_t val_drtm_get_smccc_ver(void);
+uint64_t val_drtm_read_daif(void);
+
+uint64_t DrtmReadDaif(void);
+
+uint32_t val_drtm_create_info_table(void);
+int64_t val_drtm_check_dl_result(uint64_t dlme_base_addr, uint64_t dlme_data_offset);
+int64_t val_drtm_init_drtm_params(DRTM_PARAMETERS *drtm_params);
+uint64_t val_drtm_get_feature(uint64_t feature_type);
+
+uint32_t interface001_entry(uint32_t num_pe);
+uint32_t interface002_entry(uint32_t num_pe);
+uint32_t interface003_entry(uint32_t num_pe);
+uint32_t interface004_entry(uint32_t num_pe);
+uint32_t interface005_entry(uint32_t num_pe);
+uint32_t interface006_entry(uint32_t num_pe);
+uint32_t interface007_entry(uint32_t num_pe);
+uint32_t interface008_entry(uint32_t num_pe);
+uint32_t interface009_entry(uint32_t num_pe);
+uint32_t interface010_entry(uint32_t num_pe);
+uint32_t interface011_entry(uint32_t num_pe);
+uint32_t interface012_entry(uint32_t num_pe);
+uint32_t interface013_entry(uint32_t num_pe);
+uint32_t interface014_entry(uint32_t num_pe);
+uint32_t interface015_entry(uint32_t num_pe);
+
+uint32_t dl001_entry(uint32_t num_pe);
+uint32_t dl002_entry(uint32_t num_pe);
+uint32_t dl003_entry(uint32_t num_pe);
+uint32_t dl004_entry(uint32_t num_pe);
+uint32_t dl005_entry(uint32_t num_pe);
+uint32_t dl006_entry(uint32_t num_pe);
+uint32_t dl007_entry(uint32_t num_pe);
+uint32_t dl008_entry(uint32_t num_pe);
+uint32_t dl009_entry(uint32_t num_pe);
+uint32_t dl010_entry(uint32_t num_pe);
+uint32_t dl011_entry(uint32_t num_pe);
+uint32_t dl012_entry(uint32_t num_pe);
+uint32_t dl014_entry(uint32_t num_pe);
+
 
 #endif /* __VAL_SPECIFICATION_H */
