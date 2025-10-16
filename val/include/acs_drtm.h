@@ -36,7 +36,6 @@
 
 #define DRTM_1_0_FN_BASE            0xC4000110
 #define DRTM_1_0_FN(n)              (DRTM_1_0_FN_BASE + (n))
-#define DRTM_1_0_FN_MAX_NUM         0x08
 
 #define DRTM_1_0_FN_DRTM_VERSION            DRTM_1_0_FN(0x00)
 #define DRTM_1_0_FN_DRTM_FEATURES           DRTM_1_0_FN(0x01)
@@ -395,6 +394,7 @@ uint32_t val_drtm_create_info_table(void);
 int64_t val_drtm_check_dl_result(uint64_t dlme_base_addr, uint64_t dlme_data_offset);
 int64_t val_drtm_init_drtm_params(DRTM_PARAMETERS *drtm_params);
 uint64_t val_drtm_get_feature(uint64_t feature_type);
+int val_drtm_is_range_valid(uint8_t *start, uint8_t *end, uint8_t *ptr, uint64_t len);
 uint32_t val_drtm_get_digest_size(uint16_t hash_alg);
 uint32_t val_drtm_are_dce_and_drtm_images_distinct(void);
 int32_t val_drtm_event_log_init(DRTM_PARAMETERS *drtm_params, DRTM_EVENT_LOG_STATE *event_log);
@@ -435,6 +435,7 @@ uint32_t dl013_entry(uint32_t num_pe);
 uint32_t dl014_entry(uint32_t num_pe);
 uint32_t dl015_entry(uint32_t num_pe);
 uint32_t dl016_entry(uint32_t num_pe);
+uint32_t dl017_entry(uint32_t num_pe);
 
 
 #endif /* __VAL_SPECIFICATION_H */

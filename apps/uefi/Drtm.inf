@@ -67,6 +67,7 @@
   ../../test_pool/drtm/dl014.c
   ../../test_pool/drtm/dl015.c
   ../../test_pool/drtm/dl016.c
+  ../../test_pool/drtm/dl017.c
 
 [Packages]
   StdLib/StdLib.dec

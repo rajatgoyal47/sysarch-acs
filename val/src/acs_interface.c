@@ -117,7 +117,6 @@ uint32_t                g_drtm_acs_dlme_mmu_off[] = {
 
 uint64_t g_drtm_acs_dlme_mmu_off_size = sizeof(g_drtm_acs_dlme_mmu_off);
 
-static
 int
 val_drtm_is_range_valid(uint8_t *start, uint8_t *end, uint8_t *ptr, uint64_t len)
 {
