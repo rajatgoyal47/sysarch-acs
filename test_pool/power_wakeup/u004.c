@@ -64,7 +64,7 @@ void
 wakeup_set_failsafe()
 {
   uint32_t intid;
-  uint64_t timer_expire_val = (val_get_counter_frequency() * 3 * g_wakeup_timeout) / 2;
+  uint64_t timer_expire_val = (val_get_counter_frequency() * 4 * g_wakeup_timeout) / 2;
 
   intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
   val_gic_install_isr(intid, isr_failsafe);
@@ -118,8 +118,9 @@ payload4()
 
           g_wd_int_received = 0;
           g_failsafe_int_received = 0;
-	  wakeup_set_failsafe();
-	  status = val_wd_set_ws0(wd_num, timer_expire_val);
+
+	      wakeup_set_failsafe();
+	      status = val_wd_set_ws0(wd_num, timer_expire_val);
           if (status) {
               wakeup_clear_failsafe();
     	      val_print(ACS_PRINT_ERR, "\n       Setting watchdog timeout failed", 0);
@@ -132,7 +133,7 @@ payload4()
            * exit in case test or failsafe int is received
           */
           delay_loop = val_get_counter_frequency() * g_wakeup_timeout;
-	  while (delay_loop && (g_wd_int_received == 0) && (g_failsafe_int_received == 0)) {
+	      while (delay_loop && (g_wd_int_received == 0) && (g_failsafe_int_received == 0)) {
               delay_loop--;
           }
 
@@ -143,20 +144,28 @@ payload4()
            * 4. PE didn't enter WFI mode, treating as (SKIP), as finding 3rd,4th case not feasible
            * 5. Hang, if PE didn't exit WFI (FAIL)
           */
-	  wakeup_clear_failsafe();
+	      wakeup_clear_failsafe();
           if (!(g_wd_int_received || g_failsafe_int_received)) {
               intid = val_wd_get_info(wd_num, WD_INFO_GSIV);
 	      val_gic_clear_interrupt(intid);
               val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
     	      val_print(ACS_PRINT_DEBUG,
                         "\n       PE wakeup by some other events/int or didn't enter WFI", 0);
-	  }
-	  val_print(ACS_PRINT_DEBUG, "\n       delay loop remainig value %d", delay_loop);
+	      }
+	      val_print(ACS_PRINT_DEBUG, "\n       delay loop remainig value %d", delay_loop);
       } else {
           val_print(ACS_PRINT_WARN, "\n       GIC Install Handler Failed...", 0);
           val_set_status(index, RESULT_FAIL(TEST_NUM, 3));
       }
 
+      /* If WD interrupt is not recevied, add delay to check when WD Interrupt is received */
+      if (!g_wd_int_received) {
+          delay_loop = val_get_counter_frequency() * g_wakeup_timeout * 2;
+	      while (delay_loop && (g_wd_int_received == 0)) {
+              delay_loop--;
+          }
+          val_print(ACS_PRINT_DEBUG, "\n       Before Disable delay loop remainig value %d", delay_loop);
+      }
       /* Disable watchdog so it doesn't trigger after this test. */
       val_wd_set_ws0(wd_num, 0);
   }
