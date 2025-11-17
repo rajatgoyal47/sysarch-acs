@@ -89,6 +89,7 @@ payload4()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint64_t timer_expire_val = 1 * g_wakeup_timeout;
 
+  val_print(ACS_PRINT_ERR, "\nDebug Binary : Debug Prints ", 0);
   wd_num = val_wd_get_info(0, WD_INFO_COUNT);
 
   // Assume a test passes until something causes a failure.
@@ -132,8 +133,9 @@ payload4()
           /* Add a delay loop after WFI called in case PE needs some time to enter WFI state
            * exit in case test or failsafe int is received
           */
-          delay_loop = val_get_counter_frequency() * g_wakeup_timeout;
+          delay_loop = val_get_counter_frequency() * g_wakeup_timeout * 2;
 	      while (delay_loop && (g_wd_int_received == 0) && (g_failsafe_int_received == 0)) {
+	      //while (delay_loop && (g_wd_int_received == 0)) {
               delay_loop--;
           }
 
@@ -146,6 +148,7 @@ payload4()
           */
 	      wakeup_clear_failsafe();
           if (!(g_wd_int_received || g_failsafe_int_received)) {
+          //if (!(g_wd_int_received)) {
               intid = val_wd_get_info(wd_num, WD_INFO_GSIV);
 	      val_gic_clear_interrupt(intid);
               val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
@@ -167,6 +170,7 @@ payload4()
           val_print(ACS_PRINT_DEBUG, "\n       Before Disable delay loop remainig value %d", delay_loop);
       }
       /* Disable watchdog so it doesn't trigger after this test. */
+      val_print(ACS_PRINT_ERR, "\n       Disable at end...", 0);
       val_wd_set_ws0(wd_num, 0);
   }
 

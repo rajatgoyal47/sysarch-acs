@@ -145,17 +145,20 @@ val_wd_set_ws0(uint32_t index, uint32_t timeout)
   uint64_t ctrl_base;
   uint32_t data;
 
+  val_print(ACS_PRINT_ERR, "\nIn val_wd_set_ws0, timeout = 0x%lx", timeout);
   if (timeout == 0) {
       val_wd_disable(index);
       return 0;
   }
 
   ctrl_base    = val_wd_get_info(index, WD_INFO_CTRL_BASE);
+  val_print(ACS_PRINT_ERR, "\nctrl_base = 0x%llx", ctrl_base);
 
   /* W_IIDR.Architecture Revision [19:16] = 0x1 for Watchdog Rev 1 */
   data = VAL_EXTRACT_BITS(val_mmio_read(ctrl_base + WD_IIDR_OFFSET), 16, 19);
 
   counter_freq = val_get_counter_frequency();
+  val_print(ACS_PRINT_ERR, "\ncounter_freq = 0x%llx", counter_freq);
 
   /* Check if the timeout value exceeds */
   if (data == 0)
@@ -170,12 +173,14 @@ val_wd_set_ws0(uint32_t index, uint32_t timeout)
   wor_l = (uint32_t)(counter_freq * timeout);
   wor_h = (uint32_t)((counter_freq * timeout) >> 32);
 
+  val_print(ACS_PRINT_ERR, "\nWriting to wd_ctrl_base + 8 = 0x%llx", (g_wd_info_table->wd_info[index].wd_ctrl_base + 8));
   val_mmio_write((g_wd_info_table->wd_info[index].wd_ctrl_base + 8), wor_l);
 
   /* Upper bits are applicable only for WDog Version 1 */
   if (data == 1)
       val_mmio_write((g_wd_info_table->wd_info[index].wd_ctrl_base + 12), wor_h);
 
+  val_print(ACS_PRINT_ERR, "\nEnabling wd", 0);
   val_wd_enable(index);
 
   return 0;
