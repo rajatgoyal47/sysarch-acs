@@ -109,10 +109,10 @@ payload(uint32_t num_pe)
 
   mem_region1 = mem_desc_table->regions;
   mem_region1->start_addr = (uint64_t)region_address + 0x4;
-  mem_region1->size_type  =
-                (DRTM_CACHEABILITY_WRITE_BACK << DRTM_MEM_PROT_SHIFT_CACHEABILITY_ATTR) |
-                (DRTM_REGION_TYPE_NORMAL_CACHEABLE << DRTM_MEM_PROT_SHIFT_REGION_TYPE) |
-                (TWO_4KB_REGIONS << DRTM_MEM_PROT_SHIFT_NUMBER_4KB_PAGES);
+  mem_region1->size_type  = DRTM_MEM_PROT_ENCODE(
+                               DRTM_CACHEABILITY_WRITE_BACK,
+                               DRTM_REGION_TYPE_NORMAL_CACHEABLE,
+                               TWO_4KB_REGIONS);
 
   /* Invoke DRTM Dynamic Launch, This will return only in case of error */
   status = val_drtm_dynamic_launch(drtm_params);
@@ -144,17 +144,17 @@ payload(uint32_t num_pe)
 
   mem_region1 = mem_desc_table->regions;
   mem_region1->start_addr = (uint64_t)region_address;
-  mem_region1->size_type  =
-                (DRTM_CACHEABILITY_WRITE_BACK << DRTM_MEM_PROT_SHIFT_CACHEABILITY_ATTR) |
-                (DRTM_REGION_TYPE_NORMAL_CACHEABLE << DRTM_MEM_PROT_SHIFT_REGION_TYPE) |
-                (TWO_4KB_REGIONS << DRTM_MEM_PROT_SHIFT_NUMBER_4KB_PAGES);
+  mem_region1->size_type  = DRTM_MEM_PROT_ENCODE(
+                               DRTM_CACHEABILITY_WRITE_BACK,
+                               DRTM_REGION_TYPE_NORMAL_CACHEABLE,
+                               TWO_4KB_REGIONS);
 
   mem_region2 = mem_desc_table->regions + sizeof (DRTM_MEMORY_REGION);
   mem_region2->start_addr = (uint64_t)region_address + DRTM_SIZE_4K;
-  mem_region2->size_type  =
-                (DRTM_CACHEABILITY_WRITE_BACK << DRTM_MEM_PROT_SHIFT_CACHEABILITY_ATTR) |
-                (DRTM_REGION_TYPE_NORMAL_CACHEABLE << DRTM_MEM_PROT_SHIFT_REGION_TYPE) |
-                (ONE_4KB_REGIONS << DRTM_MEM_PROT_SHIFT_NUMBER_4KB_PAGES);
+  mem_region2->size_type  = DRTM_MEM_PROT_ENCODE(
+                               DRTM_CACHEABILITY_WRITE_BACK,
+                               DRTM_REGION_TYPE_NORMAL_CACHEABLE,
+                               ONE_4KB_REGIONS);
 
   status = val_drtm_dynamic_launch(drtm_params);
   /* This will return invalid parameter */
@@ -202,4 +202,3 @@ uint32_t dl011_entry(uint32_t num_pe)
 
   return status;
 }
-
