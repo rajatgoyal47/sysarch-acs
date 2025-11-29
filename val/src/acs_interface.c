@@ -328,7 +328,7 @@ uint32_t create_mem_prot_table(uint64_t *mem_prot_table_address, uint64_t *mem_p
 
     mem_region = mem_desc_table->regions;
     mem_region->start_addr = 0x0;
-    mem_region->size_type  = 0x3FFFFFFFFFFFFF;
+    mem_region->size_type  = DRTM_MEM_PROT_FULL_RANGE_SIZE_TYPE;
 
     *mem_prot_table_address = (uint64_t)mem_desc_table;
     *mem_prot_table_size = mem_desc_table_size;
@@ -356,6 +356,13 @@ int64_t val_drtm_init_drtm_params(DRTM_PARAMETERS *drtm_params)
     uint32_t launch_feat_mem_prot = 0;
     uint64_t mem_prot_table_address = 0;
     uint64_t mem_prot_table_size = 0;
+
+    if (!drtm_params) {
+        val_print(ACS_PRINT_ERR, "\n    Invalid DRTM Params pointer", 0);
+        return ACS_STATUS_FAIL;
+    }
+
+    val_memory_set((void *)drtm_params, sizeof(DRTM_PARAMETERS), 0);
 
     /*Status grater than zero indicates availability of feature bits in return value*/
     dlme_data_region_size =
