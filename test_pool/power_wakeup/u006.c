@@ -124,7 +124,7 @@ payload()
   uint64_t timeout = TIMEOUT_SMALL;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint32_t target_pe, status;
-  uint64_t timer_expire_ticks = TIMEOUT_SMALL;
+  uint64_t timer_expire_ticks = TIMEOUT_SMALL * 1024;
 
   // Step1: Choose the index of the target PE
   if ((index + 1) >= val_pe_get_num())

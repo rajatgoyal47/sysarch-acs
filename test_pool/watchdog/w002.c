@@ -146,7 +146,7 @@ payload()
         }
         wakeup_set_failsafe();
 
-        timeout = val_get_counter_frequency() * 2 * g_wakeup_timeout;
+        timeout = val_get_counter_frequency() * g_wakeup_timeout / 2;
         while (timeout && (g_wd_int_received == 0) && (g_failsafe_int_received == 0)) {
           val_data_cache_ops_by_va((addr_t)&g_wd_int_received, INVALIDATE);
           val_data_cache_ops_by_va((addr_t)&g_failsafe_int_received, INVALIDATE);

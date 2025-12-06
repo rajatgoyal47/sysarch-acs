@@ -184,7 +184,7 @@ val_get_phy_el2_timer_count(void)
   @return  None
 **/
 void
-val_timer_set_phy_el1(uint64_t timeout)
+val_timer_set_phy_el1(uint32_t timeout)
 {
 
   if (timeout != 0) {
@@ -205,7 +205,7 @@ val_timer_set_phy_el1(uint64_t timeout)
   @return  None
 **/
 void
-val_timer_set_vir_el1(uint64_t timeout)
+val_timer_set_vir_el1(uint32_t timeout)
 {
 
   if (timeout != 0) {
@@ -330,7 +330,7 @@ val_get_phy_el1_timer_count(void)
   @return  None
 **/
 void
-val_timer_set_phy_el2(uint64_t timeout)
+val_timer_set_phy_el2(uint32_t timeout)
 {
 
   if (timeout != 0) {
@@ -351,7 +351,7 @@ val_timer_set_phy_el2(uint64_t timeout)
   @return  None
 **/
 void
-val_timer_set_vir_el2(uint64_t timeout)
+val_timer_set_vir_el2(uint32_t timeout)
 {
 
   if (timeout != 0) {

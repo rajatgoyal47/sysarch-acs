@@ -53,7 +53,7 @@ payload()
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint64_t sys_timer_ticks = val_get_counter_frequency() * 1;
-  uint64_t pe_timer_ticks = val_get_counter_frequency() * 2;
+  uint32_t pe_timer_ticks = val_get_counter_frequency() * 2;
   uint32_t ns_timer = 0;
   uint64_t timer_num, timer_cnt;
   int32_t status;
