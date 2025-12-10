@@ -581,17 +581,6 @@ The checklist provides information about:
     </tr>
     <tr>
       <td>L6</td>
-      <td>S_L6SM_03</td>
-      <td>S_L6SM_03</td>
-      <td>314</td>
-      <td>Check SMMU MSI Support</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>L6</td>
       <td>S_L6SM_04</td>
       <td>S_L6SM_04</td>
       <td>Not covered</td>
@@ -693,7 +682,7 @@ The checklist provides information about:
     <tr>
       <td>RE_BAR_1</td>
       <td>883</td>
-      <td>Read and write to BAR reg: RCiEP</td>
+      <td>Read and write to BAR reg</td>
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
