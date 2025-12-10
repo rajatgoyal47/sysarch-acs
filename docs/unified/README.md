@@ -169,5 +169,5 @@ Unified ACS reuses the BSA and SBSA Linux applications to exercise OS-reliant te
 ## Support
 
 - Email: [support-systemready-acs@arm.com](mailto:support-systemready-acs@arm.com)  
-- GitHub Issues: [sysarch-acs issue tracker](../../issues)  
-- Contributions: [GitHub Pull Requests](../../pulls)
+- GitHub Issues: [sysarch-acs issue tracker](https://github.com/ARM-software/sysarch-acs/issues)  
+- Contributions: [GitHub Pull Requests](https://github.com/ARM-software/sysarch-acs/pulls)

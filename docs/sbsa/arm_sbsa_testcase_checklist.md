@@ -151,9 +151,9 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L3</td>
-      <td>S_L3WD_01</td>
-      <td>S_L3WD_01</td>
+      <td rowspan="2">L3</td>
+      <td rowspan="2">S_L3WD_01</td>
+      <td rowspan="2">S_L3WD_01</td>
       <td>701</td>
       <td>Non Secure Watchdog Access</td>
       <td>Yes</td>
@@ -162,9 +162,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>702</td>
       <td>Check Watchdog WS0 interrupt</td>
       <td>Yes</td>
@@ -448,8 +445,8 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L6</td>
-      <td>S_L6PE_01</td>
+      <td rowspan="5">L6</td>
+      <td rowspan="5">S_L6PE_01</td>
       <td>B_SEC_01</td>
       <td>43</td>
       <td>Check Speculation Restriction</td>
@@ -459,8 +456,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>B_SEC_02</td>
       <td>44</td>
       <td>Check Speculative Str Bypass Safe</td>
@@ -470,8 +465,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>B_SEC_03</td>
       <td>45</td>
       <td>Check PEs Impl CSDB,SSBB,PSSBB</td>
@@ -481,8 +474,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>B_SEC_04</td>
       <td>46</td>
       <td>Check PEs Implement SB Barrier</td>
@@ -492,8 +483,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>B_SEC_05</td>
       <td>47</td>
       <td>Check PE Impl CFP,DVP,CPP RCTX</td>
@@ -646,8 +635,8 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L6</td>
-      <td>S_L6PCI_1 - B_REP_1</td>
+      <td rowspan="34">L6</td>
+      <td rowspan="34">S_L6PCI_1 - B_REP_1</td>
       <td>RE_PCI_1</td>
       <td>885</td>
       <td>Check RCiEP Hdr type &amp; link Cap</td>
@@ -657,8 +646,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_PCI_2</td>
       <td>884</td>
       <td>Check RCEC Class code and Ext Cap</td>
@@ -668,8 +655,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_CFG_1</td>
       <td>Not covered</td>
       <td></td>
@@ -679,8 +664,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_CFG_2</td>
       <td>Not covered</td>
       <td></td>
@@ -690,8 +673,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_CFG_3</td>
       <td>Not covered</td>
       <td></td>
@@ -701,8 +682,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_CRS_1</td>
       <td>Not covered</td>
       <td></td>
@@ -712,8 +691,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_BAR_1</td>
       <td>883</td>
       <td>Read and write to BAR reg: RCiEP</td>
@@ -723,8 +700,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_BAR_2</td>
       <td>Not covered</td>
       <td></td>
@@ -734,8 +709,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_BAR_3</td>
       <td>862</td>
       <td>Check BAR memory space &amp; type: RCiEP</td>
@@ -745,8 +718,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_INT_1</td>
       <td>869</td>
       <td>Check MSI and MSI-X support: RCiEP</td>
@@ -756,8 +727,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_ORD_1</td>
       <td>1521</td>
       <td>Arrival order &amp; Gathering Check: RCiEP</td>
@@ -767,8 +736,6 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_ORD_2</td>
       <td>Not covered</td>
       <td></td>
@@ -778,8 +745,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_ORD_3</td>
       <td>Not covered</td>
       <td></td>
@@ -789,8 +754,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_ORD_4</td>
       <td>1508</td>
       <td>Tx pending bit clear correctness RCiEP</td>
@@ -800,8 +763,6 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_SMU_1</td>
       <td>919</td>
       <td>PCIe Address translation check</td>
@@ -811,9 +772,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td>RE_SMU_2</td>
+      <td rowspan="3">RE_SMU_2</td>
       <td>828</td>
       <td>Check ATS Support Rule: RCiEP</td>
       <td>Yes</td>
@@ -822,9 +781,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>1519</td>
       <td>PCIe Address translation check</td>
       <td>Yes</td>
@@ -833,9 +789,6 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>1520</td>
       <td>ATS Functionality Check</td>
       <td>Yes</td>
@@ -844,8 +797,6 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_SMU_3</td>
       <td>Not covered</td>
       <td></td>
@@ -855,8 +806,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_SMU_4</td>
       <td>1536</td>
       <td>Generate PASID transactions: RCiEP</td>
@@ -866,8 +815,6 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_SMU_5</td>
       <td>Not covered</td>
       <td></td>
@@ -877,8 +824,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_RST_1</td>
       <td>863</td>
       <td>Check Function level reset: RCiEP</td>
@@ -888,8 +833,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_PWR_1</td>
       <td>870</td>
       <td>Check Power Management rules: RCiEP</td>
@@ -899,8 +842,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_PWR_2</td>
       <td>Not covered</td>
       <td></td>
@@ -910,8 +851,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_PWR_3</td>
       <td>Not covered</td>
       <td></td>
@@ -921,8 +860,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_ACS_1</td>
       <td>815</td>
       <td>Check ACS Cap on p2p support: RCiEP</td>
@@ -932,8 +869,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_ACS_2</td>
       <td>816</td>
       <td>Check AER Cap on ACS Cap support</td>
@@ -943,8 +878,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_ACS_3</td>
       <td>Not covered</td>
       <td></td>
@@ -954,8 +887,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_REG_1</td>
       <td>848</td>
       <td>Check config header rule: RCEC/RCiEP</td>
@@ -965,8 +896,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_REG_2</td>
       <td>856</td>
       <td>Check Power Mgmt Cap/Ctrl/Status - RC</td>
@@ -976,8 +905,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_REG_3</td>
       <td>852</td>
       <td>Check Dev Cap &amp; Ctrl Reg rule - RCiEP</td>
@@ -987,9 +914,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td>RE_REC_1</td>
+      <td rowspan="2">RE_REC_1</td>
       <td>861</td>
       <td>Check Max payload size support: RCEC</td>
       <td>Yes</td>
@@ -998,9 +923,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>853</td>
       <td>Check Dev Cap &amp; Ctrl Reg rule - RCEC</td>
       <td>Yes</td>
@@ -1009,8 +931,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RE_REC_2</td>
       <td>Not covered</td>
       <td></td>
@@ -1020,8 +940,8 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L6</td>
-      <td>S_L6PCI_1 - B_IEP_1</td>
+      <td rowspan="40">L6</td>
+      <td rowspan="40">S_L6PCI_1 - B_IEP_1</td>
       <td>IE_CFG_1</td>
       <td>Not covered</td>
       <td></td>
@@ -1031,8 +951,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_CFG_2</td>
       <td>Not covered</td>
       <td></td>
@@ -1042,8 +960,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_CFG_3</td>
       <td>Not covered</td>
       <td></td>
@@ -1053,8 +969,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_CFG_4</td>
       <td>Not covered</td>
       <td></td>
@@ -1064,8 +978,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_CRS_1</td>
       <td>Not covered</td>
       <td></td>
@@ -1075,8 +987,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_BAR_1</td>
       <td>829</td>
       <td>Read and write to BAR reg: iEP pair</td>
@@ -1086,8 +996,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_BAR_2</td>
       <td>Not covered</td>
       <td></td>
@@ -1097,8 +1005,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_BAR_3</td>
       <td>841</td>
       <td>Check BAR memory space &amp; type: iEP/RP</td>
@@ -1108,8 +1014,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_INT_1</td>
       <td>855</td>
       <td>Check MSI and MSI-X support: iEP/RP</td>
@@ -1119,8 +1023,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_ORD_1</td>
       <td>1531</td>
       <td>Arrival order &amp; Gathering Check: iEP</td>
@@ -1130,8 +1032,6 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_ORD_2</td>
       <td>Not covered</td>
       <td></td>
@@ -1141,8 +1041,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_ORD_3</td>
       <td>Not covered</td>
       <td></td>
@@ -1152,8 +1050,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_ORD_4</td>
       <td>1538</td>
       <td>Tx pending bit clear correctness iEP</td>
@@ -1163,8 +1059,6 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_SMU_1</td>
       <td>880</td>
       <td>Check ATS Support Rule: iEP/RP</td>
@@ -1174,8 +1068,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_SMU_2</td>
       <td>Not covered</td>
       <td></td>
@@ -1185,8 +1077,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_SMU_3</td>
       <td>1537</td>
       <td>Generate PASID transactions: iEP EP</td>
@@ -1196,8 +1086,6 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_SMU_4</td>
       <td>Not covered</td>
       <td></td>
@@ -1207,8 +1095,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_RST_1</td>
       <td>840</td>
       <td>Check Function level reset: iEP_EP</td>
@@ -1218,8 +1104,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_RST_2</td>
       <td>879</td>
       <td>Check Sec Bus Reset For iEP_RP</td>
@@ -1229,8 +1113,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_RST_3</td>
       <td>Not covered</td>
       <td></td>
@@ -1240,8 +1122,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_PWR_1</td>
       <td>834</td>
       <td>Check Power Management rules: iEP/RP</td>
@@ -1251,8 +1131,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_PWR_2</td>
       <td>Not covered</td>
       <td></td>
@@ -1262,8 +1140,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_PWR_3</td>
       <td>Not covered</td>
       <td></td>
@@ -1273,8 +1149,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_ACS_1</td>
       <td>882</td>
       <td>Check ACS Cap on p2p support: iEP EP</td>
@@ -1284,8 +1158,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_ACS_2</td>
       <td>881</td>
       <td>Check iEP-RootPort P2P Support</td>
@@ -1295,8 +1167,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_REG_1</td>
       <td>849</td>
       <td>Check config header rule: iEP_EP</td>
@@ -1306,9 +1176,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td>IE_REG_2</td>
+      <td rowspan="3">IE_REG_2</td>
       <td>854</td>
       <td>Check Dev Cap &amp; Ctrl Reg rule - iEP_EP</td>
       <td>Yes</td>
@@ -1317,9 +1185,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>867</td>
       <td>Check i-EP AtomicOp rule</td>
       <td>Yes</td>
@@ -1328,9 +1193,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>865</td>
       <td>Check OBFF supported rule</td>
       <td>Yes</td>
@@ -1339,8 +1201,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_REG_3</td>
       <td>850</td>
       <td>Check config header rule: iEP_RP</td>
@@ -1350,9 +1210,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td>IE_REG_4</td>
+      <td rowspan="5">IE_REG_4</td>
       <td>888</td>
       <td>Slot Cap, Control and Status reg rules</td>
       <td>Yes</td>
@@ -1361,9 +1219,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>866</td>
       <td>Check CTRS and CTDS rule</td>
       <td>Yes</td>
@@ -1372,9 +1227,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>864</td>
       <td>Check ARI forwarding support rule</td>
       <td>Yes</td>
@@ -1383,9 +1235,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>851</td>
       <td>Check PCIe capability rules: iEP_RP</td>
       <td>Yes</td>
@@ -1394,9 +1243,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>857</td>
       <td>Check Power Mgmt Cap/Ctrl/Status - iEP</td>
       <td>Yes</td>
@@ -1405,8 +1251,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_REG_5</td>
       <td>857</td>
       <td>Check Power Mgmt Cap/Ctrl/Status - iEP</td>
@@ -1416,8 +1260,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_REG_6</td>
       <td>892</td>
       <td>Secondary PCIe ECap Check: iEP Pair</td>
@@ -1427,8 +1269,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_REG_7</td>
       <td>812</td>
       <td>Datalink feature ECap Check: iEP Pair</td>
@@ -1438,8 +1278,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_REG_8</td>
       <td>813</td>
       <td>Phy Layer 16GT/s ECap Check: iEP Pair</td>
@@ -1449,8 +1287,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>IE_REG_9</td>
       <td>814</td>
       <td>Lane Margining at Rec ECap Check: iEP</td>
@@ -1647,9 +1483,9 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L7</td>
-      <td>S_L7MP_03</td>
-      <td>S_L7MP_03</td>
+      <td rowspan="3">L7</td>
+      <td rowspan="3">S_L7MP_03</td>
+      <td rowspan="3">S_L7MP_03</td>
       <td>1002</td>
       <td>Check for MPAM LLC CSU Support</td>
       <td>Yes</td>
@@ -1658,9 +1494,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>1006</td>
       <td>Check PMG storage by CPOR nodes</td>
       <td>Yes</td>
@@ -1669,9 +1502,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>1007</td>
       <td>Check MPAM LLC Requirements</td>
       <td>Yes</td>
@@ -1779,8 +1609,8 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L7</td>
-      <td>S_L7PMU</td>
+      <td rowspan="26">L7</td>
+      <td rowspan="26">S_L7PMU</td>
       <td>PMU_PE_01</td>
       <td>Not covered</td>
       <td></td>
@@ -1790,8 +1620,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_PE_02</td>
       <td>1101</td>
       <td>Check PMU Overflow signal</td>
@@ -1801,8 +1629,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_PE_03</td>
       <td>1102</td>
       <td>Check number of PMU counters</td>
@@ -1812,8 +1638,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_EV_11</td>
       <td>1103</td>
       <td>Check for multi-threaded PMU ext</td>
@@ -1823,8 +1647,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_SPE</td>
       <td>1106</td>
       <td>Check for PMU SPE Requirements</td>
@@ -1834,8 +1656,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_EV_01</td>
       <td>Linux PMU app</td>
       <td>IPC events</td>
@@ -1845,8 +1665,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_EV_02</td>
       <td>Linux PMU app</td>
       <td>Cache effectiveness</td>
@@ -1856,8 +1674,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_EV_03</td>
       <td>Linux PMU app</td>
       <td>TLB effectiveness</td>
@@ -1867,8 +1683,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_EV_04</td>
       <td>Not covered</td>
       <td></td>
@@ -1878,8 +1692,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_EV_05</td>
       <td>Linux PMU app</td>
       <td>Cycle accounting</td>
@@ -1889,8 +1701,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_EV_06</td>
       <td>Linux PMU app</td>
       <td>top down accounting</td>
@@ -1900,8 +1710,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_EV_07</td>
       <td>Linux PMU app</td>
       <td>Workload events</td>
@@ -1911,8 +1719,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_EV_08</td>
       <td>Linux PMU app</td>
       <td>Branch predictor effectiveness events</td>
@@ -1922,8 +1728,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_EV_09</td>
       <td>Linux PMU app</td>
       <td>BR_RETIRED</td>
@@ -1933,8 +1737,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_EV_10</td>
       <td>Not covered</td>
       <td></td>
@@ -1944,8 +1746,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_BM_1</td>
       <td>1107</td>
       <td>Check for memory bandwidth monitors</td>
@@ -1955,8 +1755,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_BM_2</td>
       <td>1111</td>
       <td>Check for PCIe bandwidth monitors</td>
@@ -1966,8 +1764,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_BM_3</td>
       <td>Not covered</td>
       <td></td>
@@ -1977,8 +1773,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_BM_4</td>
       <td>Not covered</td>
       <td></td>
@@ -1988,8 +1782,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_MEM_1</td>
       <td>1110</td>
       <td>Check for memory latency monitors</td>
@@ -1999,8 +1791,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_SYS_1</td>
       <td>1104</td>
       <td>Test Simultaneous 6 traffic measures</td>
@@ -2010,8 +1800,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_SYS_2</td>
       <td>1105</td>
       <td>Test Simultaneous 6 traffic measures</td>
@@ -2021,8 +1809,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_SYS_5</td>
       <td>1108</td>
       <td>Check System PMU for NUMA systems</td>
@@ -2032,8 +1818,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_SYS_6</td>
       <td>1109</td>
       <td>Check multiple type traffic measurement</td>
@@ -2043,8 +1827,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_SYS_7</td>
       <td>Not covered</td>
       <td></td>
@@ -2054,8 +1836,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PMU_SEC_1</td>
       <td>Not covered</td>
       <td></td>
@@ -2065,8 +1845,8 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L7</td>
-      <td>SYS_RAS</td>
+      <td rowspan="11">L7</td>
+      <td rowspan="11">SYS_RAS</td>
       <td>RAS_01</td>
       <td>1201</td>
       <td>Check Error Counter</td>
@@ -2076,8 +1856,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RAS_02</td>
       <td>1202</td>
       <td>Check CFI, DUI, UI Controls</td>
@@ -2087,8 +1865,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RAS_03</td>
       <td>1203</td>
       <td>Check FHI in Error Record Group</td>
@@ -2098,8 +1874,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RAS_04</td>
       <td>1204</td>
       <td>Check ERI in Error Record Group</td>
@@ -2109,8 +1883,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RAS_05</td>
       <td>Not covered</td>
       <td></td>
@@ -2120,8 +1892,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RAS_06</td>
       <td>1205</td>
       <td>Check ERI/FHI Connected to GIC</td>
@@ -2131,8 +1901,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RAS_07</td>
       <td>1206</td>
       <td>RAS ERR&lt;n&gt;ADDR.AI bit status check</td>
@@ -2142,8 +1910,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RAS_08</td>
       <td>1207</td>
       <td>Check Error Group Status</td>
@@ -2153,8 +1919,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RAS_10</td>
       <td>Not covered</td>
       <td></td>
@@ -2164,8 +1928,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RAS_11</td>
       <td>1208</td>
       <td>Software Fault Error Check</td>
@@ -2175,8 +1937,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>RAS_12</td>
       <td>Not covered</td>
       <td></td>
@@ -2197,9 +1957,9 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L7</td>
-      <td>SYS_RAS_2</td>
-      <td>SYS_RAS_2</td>
+      <td rowspan="2">L7</td>
+      <td rowspan="2">SYS_RAS_2</td>
+      <td rowspan="2">SYS_RAS_2</td>
       <td>1211</td>
       <td>Check Poison Storage &amp; Forwarding</td>
       <td>Yes</td>
@@ -2208,9 +1968,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>1212</td>
       <td>Check Pseudo Fault Injection</td>
       <td>Yes</td>
@@ -2593,9 +2350,9 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>FR</td>
-      <td>GPU_04</td>
-      <td>GPU_04</td>
+      <td rowspan="2">FR</td>
+      <td rowspan="2">GPU_04</td>
+      <td rowspan="2">GPU_04</td>
       <td>889</td>
       <td>Check ATS support for RC</td>
       <td>Yes</td>
@@ -2604,9 +2361,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>324</td>
       <td>Check ATS Support for SMMU</td>
       <td>Yes</td>
@@ -2637,8 +2391,8 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>FR</td>
-      <td>S_L8SHD_1</td>
+      <td rowspan="10">FR</td>
+      <td rowspan="10">S_L8SHD_1</td>
       <td>ETE_01</td>
       <td>Not covered</td>
       <td></td>
@@ -2648,8 +2402,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ETE_02</td>
       <td>1401</td>
       <td>Check for FEAT_ETE</td>
@@ -2659,8 +2411,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ETE_03</td>
       <td>1402</td>
       <td>Check trace unit ETE supports</td>
@@ -2670,8 +2420,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ETE_04</td>
       <td>1403</td>
       <td>Check ETE Same Trace Timestamp Source</td>
@@ -2681,8 +2429,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ETE_05</td>
       <td>1404</td>
       <td>Check Trace Same Timestamp Source</td>
@@ -2692,8 +2438,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ETE_06</td>
       <td>1409</td>
       <td>Check Concurrent Trace Generation</td>
@@ -2703,8 +2447,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ETE_07</td>
       <td>1405</td>
       <td>Check for FEAT_TRBE</td>
@@ -2714,8 +2456,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ETE_08</td>
       <td>1406</td>
       <td>Check trace buffers flag updates</td>
@@ -2725,8 +2465,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ETE_09</td>
       <td>1407</td>
       <td>Check TRBE trace buffers alignment</td>
@@ -2736,8 +2474,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ETE_10</td>
       <td>1408</td>
       <td>Check GICC TRBE Interrupt field</td>
@@ -2750,3 +2486,4 @@ The checklist provides information about:
 </table>
 
 ## Latest Checklist Changes
+

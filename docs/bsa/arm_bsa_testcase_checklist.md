@@ -184,17 +184,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td>B_PE_15</td>
-      <td>B_PE_15</td>
-      <td>14</td>
-      <td>Check PAuth if implementation</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td>The rule is no longer present in BSA 1.1 checklist</td>
-    </tr>
-    <tr>
       <td>L1</td>
       <td>B_PE_18</td>
       <td>B_PE_18</td>
@@ -299,17 +288,6 @@ The checklist provides information about:
       <td>B_MEM_03</td>
       <td>104</td>
       <td>Check Addressability</td>
-      <td>No</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>L1</td>
-      <td>B_MEM_04</td>
-      <td>B_MEM_04</td>
-      <td>106</td>
-      <td>Check Addressability when SMMU's off</td>
       <td>No</td>
       <td>Yes</td>
       <td>Yes</td>
@@ -426,9 +404,9 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L1</td>
-      <td>B_PPI_00</td>
-      <td>B_PPI_01</td>
+      <td rowspan="6">L1</td>
+      <td rowspan="6">B_PPI_00</td>
+      <td rowspan="2">B_PPI_01</td>
       <td>206</td>
       <td>Check EL1-Phy timer PPI assignment</td>
       <td>Yes</td>
@@ -437,9 +415,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>207</td>
       <td>Check EL1-Virt timer PPI assignment</td>
       <td>Yes</td>
@@ -448,9 +423,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td>B_PPI_02</td>
+      <td rowspan="3">B_PPI_02</td>
       <td>209</td>
       <td>Check NS EL2-Virt timer PPI Assignment</td>
       <td>Yes</td>
@@ -459,9 +432,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>210</td>
       <td>Check NS EL2-Phy timer PPI Assignment</td>
       <td>Yes</td>
@@ -470,9 +440,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>211</td>
       <td>Check GIC Maintenance PPI Assignment</td>
       <td>Yes</td>
@@ -481,8 +448,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>B_PPI_03</td>
       <td>Not Covered</td>
       <td></td>
@@ -492,8 +457,8 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L1</td>
-      <td>B_GIC_02</td>
+      <td rowspan="4">L1</td>
+      <td rowspan="4">B_GIC_02</td>
       <td>Appendix I.5</td>
       <td>229</td>
       <td>Check GICv2m SPI allocated to MSI Ctrl</td>
@@ -503,8 +468,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>Appendix I.6</td>
       <td>226</td>
       <td>Check MSI SPI are Edge Triggered</td>
@@ -514,8 +477,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>Appendix I.6</td>
       <td>228</td>
       <td>Check GICv2m MSI to SPI Generation</td>
@@ -525,8 +486,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>Appendix I.9</td>
       <td>227</td>
       <td>Check GICv2m MSI Frame Register</td>
@@ -536,8 +495,8 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L1</td>
-      <td></td>
+      <td rowspan="17">L1</td>
+      <td rowspan="17"></td>
       <td>ITS_01</td>
       <td>251</td>
       <td>Check number of ITS blocks in a group</td>
@@ -547,8 +506,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ITS_02</td>
       <td>252</td>
       <td>Check ITS block association with group</td>
@@ -558,8 +515,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ITS_03</td>
       <td>1511</td>
       <td>MSI-capable device linked to ITS group</td>
@@ -569,8 +524,6 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ITS_04</td>
       <td>1535</td>
       <td>MSI-cap device can target any ITS blk</td>
@@ -580,8 +533,6 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ITS_05</td>
       <td>1512</td>
       <td>MSI to ITS Blk outside assigned group</td>
@@ -591,8 +542,6 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ITS_06</td>
       <td>Not covered</td>
       <td></td>
@@ -602,8 +551,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ITS_07</td>
       <td>Not covered</td>
       <td></td>
@@ -613,8 +560,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ITS_08</td>
       <td>Not covered</td>
       <td></td>
@@ -624,8 +569,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ITS_DEV_1</td>
       <td>Not covered</td>
       <td></td>
@@ -635,8 +578,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ITS_DEV_2</td>
       <td>253</td>
       <td>Check uniqueness of StreamID</td>
@@ -646,8 +587,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ITS_DEV_3</td>
       <td>Not covered</td>
       <td></td>
@@ -657,8 +596,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ITS_DEV_4</td>
       <td>1513</td>
       <td>MSI originating from different master</td>
@@ -668,8 +605,6 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ITS_DEV_5</td>
       <td>Not covered</td>
       <td></td>
@@ -679,8 +614,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ITS_DEV_6</td>
       <td>1504</td>
       <td>MSI-X triggers intr with unique ID</td>
@@ -690,8 +623,6 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ITS_DEV_7</td>
       <td>254</td>
       <td>Check Device's SID/RID/DID behind SMMU</td>
@@ -701,8 +632,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ITS_DEV_8</td>
       <td>255</td>
       <td>Check Device IDs not behind SMMU</td>
@@ -712,8 +641,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>ITS_DEV_9</td>
       <td>Not covered</td>
       <td></td>
@@ -954,9 +881,9 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L1</td>
-      <td>B_WAK_01</td>
-      <td>B_WAK_01</td>
+      <td rowspan="5">L1</td>
+      <td rowspan="5">B_WAK_01</td>
+      <td rowspan="5">B_WAK_01</td>
       <td>501</td>
       <td>Wake from EL1 PHY Timer Int</td>
       <td>Yes</td>
@@ -965,9 +892,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>502</td>
       <td>Wake from EL1 VIR Timer Int</td>
       <td>Yes</td>
@@ -976,9 +900,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>503</td>
       <td>Wake from EL2 PHY Timer Int</td>
       <td>Yes</td>
@@ -987,9 +908,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>504</td>
       <td>Wake from Watchdog WS0 Int</td>
       <td>Yes</td>
@@ -998,9 +916,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>505</td>
       <td>Wake from System Timer Int</td>
       <td>Yes</td>
@@ -1009,9 +924,9 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L1</td>
-      <td>B_WAK_02</td>
-      <td>B_WAK_02</td>
+      <td rowspan="5">L1</td>
+      <td rowspan="5">B_WAK_02</td>
+      <td rowspan="5">B_WAK_02</td>
       <td>501</td>
       <td>Wake from EL1 PHY Timer Int</td>
       <td>Yes</td>
@@ -1020,9 +935,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>502</td>
       <td>Wake from EL1 VIR Timer Int</td>
       <td>Yes</td>
@@ -1031,9 +943,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>503</td>
       <td>Wake from EL2 PHY Timer Int</td>
       <td>Yes</td>
@@ -1042,9 +951,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>504</td>
       <td>Wake from Watchdog WS0 Int</td>
       <td>Yes</td>
@@ -1053,9 +959,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>505</td>
       <td>Wake from System Timer Int</td>
       <td>Yes</td>
@@ -1064,9 +967,9 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L1</td>
-      <td>B_WAK_03</td>
-      <td>B_WAK_03</td>
+      <td rowspan="5">L1</td>
+      <td rowspan="5">B_WAK_03</td>
+      <td rowspan="5">B_WAK_03</td>
       <td>501</td>
       <td>Wake from EL1 PHY Timer Int</td>
       <td>Yes</td>
@@ -1075,9 +978,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>502</td>
       <td>Wake from EL1 VIR Timer Int</td>
       <td>Yes</td>
@@ -1086,9 +986,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>503</td>
       <td>Wake from EL2 PHY Timer Int</td>
       <td>Yes</td>
@@ -1097,9 +994,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>504</td>
       <td>Wake from Watchdog WS0 Int</td>
       <td>Yes</td>
@@ -1108,9 +1002,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>505</td>
       <td>Wake from System Timer Int</td>
       <td>Yes</td>
@@ -1119,9 +1010,9 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L1</td>
-      <td>B_WAK_04</td>
-      <td>B_WAK_04</td>
+      <td rowspan="5">L1</td>
+      <td rowspan="5">B_WAK_04</td>
+      <td rowspan="5">B_WAK_04</td>
       <td>501</td>
       <td>Wake from EL1 PHY Timer Int</td>
       <td>Yes</td>
@@ -1130,9 +1021,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>502</td>
       <td>Wake from EL1 VIR Timer Int</td>
       <td>Yes</td>
@@ -1141,9 +1029,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>503</td>
       <td>Wake from EL2 PHY Timer Int</td>
       <td>Yes</td>
@@ -1152,9 +1037,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>504</td>
       <td>Wake from Watchdog WS0 Int</td>
       <td>Yes</td>
@@ -1163,9 +1045,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>505</td>
       <td>Wake from System Timer Int</td>
       <td>Yes</td>
@@ -1174,9 +1053,9 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L1</td>
-      <td>B_WAK_05</td>
-      <td>B_WAK_05</td>
+      <td rowspan="5">L1</td>
+      <td rowspan="5">B_WAK_05</td>
+      <td rowspan="5">B_WAK_05</td>
       <td>501</td>
       <td>Wake from EL1 PHY Timer Int</td>
       <td>Yes</td>
@@ -1185,9 +1064,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>502</td>
       <td>Wake from EL1 VIR Timer Int</td>
       <td>Yes</td>
@@ -1196,9 +1072,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>503</td>
       <td>Wake from EL2 PHY Timer Int</td>
       <td>Yes</td>
@@ -1207,9 +1080,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>504</td>
       <td>Wake from Watchdog WS0 Int</td>
       <td>Yes</td>
@@ -1218,9 +1088,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>505</td>
       <td>Wake from System Timer Int</td>
       <td>Yes</td>
@@ -1229,9 +1096,9 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L1</td>
-      <td>B_WAK_06</td>
-      <td>B_WAK_06</td>
+      <td rowspan="5">L1</td>
+      <td rowspan="5">B_WAK_06</td>
+      <td rowspan="5">B_WAK_06</td>
       <td>501</td>
       <td>Wake from EL1 PHY Timer Int</td>
       <td>Yes</td>
@@ -1240,9 +1107,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>502</td>
       <td>Wake from EL1 VIR Timer Int</td>
       <td>Yes</td>
@@ -1251,9 +1115,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>503</td>
       <td>Wake from EL2 PHY Timer Int</td>
       <td>Yes</td>
@@ -1262,9 +1123,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>504</td>
       <td>Wake from Watchdog WS0 Int</td>
       <td>Yes</td>
@@ -1273,9 +1131,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>505</td>
       <td>Wake from System Timer Int</td>
       <td>Yes</td>
@@ -1284,9 +1139,9 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L1</td>
-      <td>B_WAK_07</td>
-      <td>B_WAK_07</td>
+      <td rowspan="5">L1</td>
+      <td rowspan="5">B_WAK_07</td>
+      <td rowspan="5">B_WAK_07</td>
       <td>501</td>
       <td>Wake from EL1 PHY Timer Int</td>
       <td>Yes</td>
@@ -1295,9 +1150,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>502</td>
       <td>Wake from EL1 VIR Timer Int</td>
       <td>Yes</td>
@@ -1306,9 +1158,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>503</td>
       <td>Wake from EL2 PHY Timer Int</td>
       <td>Yes</td>
@@ -1317,9 +1166,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>504</td>
       <td>Wake from Watchdog WS0 Int</td>
       <td>Yes</td>
@@ -1328,9 +1174,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>505</td>
       <td>Wake from System Timer Int</td>
       <td>Yes</td>
@@ -1350,9 +1193,9 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L1</td>
-      <td>B_WAK_10</td>
-      <td>B_WAK_10</td>
+      <td rowspan="5">L1</td>
+      <td rowspan="5">B_WAK_10</td>
+      <td rowspan="5">B_WAK_10</td>
       <td>501</td>
       <td>Wake from EL1 PHY Timer Int</td>
       <td>Yes</td>
@@ -1361,9 +1204,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>502</td>
       <td>Wake from EL1 VIR Timer Int</td>
       <td>Yes</td>
@@ -1372,9 +1212,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>503</td>
       <td>Wake from EL2 PHY Timer Int</td>
       <td>Yes</td>
@@ -1383,9 +1220,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>504</td>
       <td>Wake from Watchdog WS0 Int</td>
       <td>Yes</td>
@@ -1394,9 +1228,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>505</td>
       <td>Wake from System Timer Int</td>
       <td>Yes</td>
@@ -1405,9 +1236,9 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L1</td>
-      <td>B_WAK_11</td>
-      <td>B_WAK_11</td>
+      <td rowspan="5">L1</td>
+      <td rowspan="5">B_WAK_11</td>
+      <td rowspan="5">B_WAK_11</td>
       <td>501</td>
       <td>Wake from EL1 PHY Timer Int</td>
       <td>Yes</td>
@@ -1416,9 +1247,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>502</td>
       <td>Wake from EL1 VIR Timer Int</td>
       <td>Yes</td>
@@ -1427,9 +1255,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>503</td>
       <td>Wake from EL2 PHY Timer Int</td>
       <td>Yes</td>
@@ -1438,9 +1263,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>504</td>
       <td>Wake from Watchdog WS0 Int</td>
       <td>Yes</td>
@@ -1449,9 +1271,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>505</td>
       <td>Wake from System Timer Int</td>
       <td>Yes</td>
@@ -1460,19 +1279,8 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L1</td>
-      <td>B_WAK_09</td>
-      <td>B_WAK_09</td>
-      <td>Not covered</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>L1</td>
-      <td>B_WD_00</td>
+      <td rowspan="5">L1</td>
+      <td rowspan="5">B_WD_00</td>
       <td>B_WD_01</td>
       <td>701</td>
       <td>Non Secure Watchdog Access</td>
@@ -1482,8 +1290,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>B_WD_02</td>
       <td>Not Covered</td>
       <td></td>
@@ -1493,8 +1299,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>B_WD_03</td>
       <td>702</td>
       <td>Check Watchdog WS0 interrupt</td>
@@ -1504,8 +1308,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>B_WD_04</td>
       <td>Not Covered</td>
       <td></td>
@@ -1515,8 +1317,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>B_WD_05</td>
       <td>Not Covered</td>
       <td></td>
@@ -1603,8 +1403,8 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L1</td>
-      <td>B_PER_08</td>
+      <td rowspan="68">L1</td>
+      <td rowspan="68">B_PER_08</td>
       <td>PCI_IN_01</td>
       <td>801</td>
       <td>Check ECAM Presence</td>
@@ -1614,8 +1414,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IN_02</td>
       <td>802</td>
       <td>PE - ECAM Region accessibility check</td>
@@ -1625,8 +1423,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IN_03</td>
       <td>838</td>
       <td>Check all RP in HB is in same ECAM</td>
@@ -1636,8 +1432,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IN_04</td>
       <td>803</td>
       <td>All EP/Sw under RP in same ECAM Region</td>
@@ -1647,9 +1441,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td>PCI_IN_05</td>
+      <td rowspan="7">PCI_IN_05</td>
       <td>820</td>
       <td>Type 0/1 common config rule</td>
       <td>Yes</td>
@@ -1658,9 +1450,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>822</td>
       <td>Check Type 1 config header rules</td>
       <td>Yes</td>
@@ -1669,9 +1458,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>824</td>
       <td>Device capabilities reg rule</td>
       <td>Yes</td>
@@ -1680,9 +1466,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>825</td>
       <td>Device Control register rule</td>
       <td>Yes</td>
@@ -1691,9 +1474,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>826</td>
       <td>Device cap 2 register rules</td>
       <td>Yes</td>
@@ -1702,9 +1482,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>1517</td>
       <td>Check BME functionality of RP</td>
       <td>Yes</td>
@@ -1713,9 +1490,6 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>833</td>
       <td>Check Max payload size supported</td>
       <td>Yes</td>
@@ -1724,8 +1498,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IN_06</td>
       <td>Not covered</td>
       <td></td>
@@ -1735,8 +1507,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IN_07</td>
       <td>Not covered</td>
       <td></td>
@@ -1746,8 +1516,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IN_08</td>
       <td>Not Covered</td>
       <td></td>
@@ -1757,8 +1525,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IN_09</td>
       <td>Not Covered</td>
       <td></td>
@@ -1768,8 +1534,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IN_10</td>
       <td>Not covered</td>
       <td></td>
@@ -1779,8 +1543,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IN_11</td>
       <td>1510</td>
       <td>Check RP Sec Bus transaction are TYPE0</td>
@@ -1790,8 +1552,6 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IN_12</td>
       <td>837</td>
       <td>Check Config Txn for RP in HB</td>
@@ -1801,9 +1561,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td>PCI_IN_13</td>
+      <td rowspan="2">PCI_IN_13</td>
       <td>804</td>
       <td>Check RootPort NP Memory Access</td>
       <td>No</td>
@@ -1812,9 +1570,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>805</td>
       <td>Check RootPort P Memory Access</td>
       <td>No</td>
@@ -1823,8 +1578,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IN_14</td>
       <td>Not Covered</td>
       <td></td>
@@ -1834,8 +1587,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IN_15</td>
       <td>Not Covered</td>
       <td></td>
@@ -1845,8 +1596,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IN_16</td>
       <td>808</td>
       <td>Check all 1's for out of range</td>
@@ -1856,9 +1605,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td>PCI_IN_17</td>
+      <td rowspan="2">PCI_IN_17</td>
       <td>1515</td>
       <td>Check ARI forwarding enable rule</td>
       <td>Yes</td>
@@ -1867,9 +1614,6 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>836</td>
       <td>Check ARI forwarding enable rule</td>
       <td>Yes</td>
@@ -1878,8 +1622,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IN_18</td>
       <td>811</td>
       <td>Check RP Byte Enable Rules</td>
@@ -1889,9 +1631,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td>PCI_IN_19</td>
+      <td rowspan="3">PCI_IN_19</td>
       <td>830</td>
       <td>Check Cmd Reg memory space enable</td>
       <td>Yes</td>
@@ -1900,9 +1640,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>831</td>
       <td>Check Type0/1 BIST Register rule</td>
       <td>Yes</td>
@@ -1911,9 +1648,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>832</td>
       <td>Check HDR CapPtr Register rule</td>
       <td>Yes</td>
@@ -1922,8 +1656,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IN_20</td>
       <td>809</td>
       <td>Vendor specific data is PCIe compliant</td>
@@ -1933,9 +1665,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td>PCI_MM_01</td>
+      <td rowspan="2">PCI_MM_01</td>
       <td>845</td>
       <td>PCIe Device Memory mapping support</td>
       <td>No</td>
@@ -1944,9 +1674,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>1516</td>
       <td>PCIe Device Memory access check</td>
       <td>Yes</td>
@@ -1955,8 +1682,6 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_MM_02</td>
       <td>Not covered</td>
       <td></td>
@@ -1966,9 +1691,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td>PCI_MM_03</td>
+      <td rowspan="2">PCI_MM_03</td>
       <td>894</td>
       <td>PCIe Normal Memory mapping support</td>
       <td>No</td>
@@ -1977,9 +1700,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>1539</td>
       <td>PCIe Normal Memory access check</td>
       <td>Yes</td>
@@ -1988,8 +1708,6 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_MM_04</td>
       <td>Not covered</td>
       <td></td>
@@ -1999,8 +1717,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_MM_05</td>
       <td>895</td>
       <td>PCIe &amp; PE common physical memory view</td>
@@ -2010,8 +1726,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_MM_06</td>
       <td>Not covered</td>
       <td></td>
@@ -2021,8 +1735,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_MM_07</td>
       <td>905</td>
       <td>No extra address translation</td>
@@ -2032,8 +1744,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_MSI_1</td>
       <td>839</td>
       <td>Check MSI support for PCIe dev</td>
@@ -2043,9 +1753,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td>PCI_MSI_2</td>
+      <td rowspan="2">PCI_MSI_2</td>
       <td>897</td>
       <td>Check MSI=X vectors uniqueness</td>
       <td>No</td>
@@ -2054,9 +1762,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>1533</td>
       <td>MSI(-X) triggers intr with unique ID</td>
       <td>Yes</td>
@@ -2065,8 +1770,6 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_LI_01</td>
       <td>806</td>
       <td>Check Legacy Intrrupt is SPI</td>
@@ -2076,9 +1779,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td>PCI_LI_02</td>
+      <td rowspan="2">PCI_LI_02</td>
       <td>896</td>
       <td>PCI legacy intr SPI ID unique</td>
       <td>No</td>
@@ -2087,9 +1788,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>1506</td>
       <td>Generate PCIe legacy interrupt</td>
       <td>Yes</td>
@@ -2098,8 +1796,6 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_LI_03</td>
       <td>823</td>
       <td>Check Legacy Intr SPI level sensitive</td>
@@ -2109,8 +1805,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_LI_04</td>
       <td>Not covered</td>
       <td></td>
@@ -2120,8 +1814,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_SM_01</td>
       <td>Not covered</td>
       <td></td>
@@ -2131,8 +1823,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_SM_02</td>
       <td>835</td>
       <td>Check Function level reset</td>
@@ -2142,8 +1832,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IC_11</td>
       <td>Not covered</td>
       <td></td>
@@ -2153,8 +1841,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IC_12</td>
       <td>Not covered</td>
       <td></td>
@@ -2164,8 +1850,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IC_13</td>
       <td>Not covered</td>
       <td></td>
@@ -2175,8 +1859,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IC_14</td>
       <td>Not covered</td>
       <td></td>
@@ -2186,8 +1868,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IC_15</td>
       <td>Not covered</td>
       <td></td>
@@ -2197,8 +1877,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IC_16</td>
       <td>Not covered</td>
       <td></td>
@@ -2208,8 +1886,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IC_17</td>
       <td>Not covered</td>
       <td></td>
@@ -2219,8 +1895,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IC_18</td>
       <td>Not covered</td>
       <td></td>
@@ -2230,8 +1904,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IO_01</td>
       <td>Not Covered</td>
       <td></td>
@@ -2241,8 +1913,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_IEP_1</td>
       <td></td>
       <td></td>
@@ -2252,8 +1922,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_PP_01</td>
       <td>Not Covered</td>
       <td></td>
@@ -2263,8 +1931,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_PP_02</td>
       <td>1514</td>
       <td>P2P transactions must not deadlock</td>
@@ -2274,8 +1940,6 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_PP_03</td>
       <td>819</td>
       <td>RP must suprt ACS if P2P Txn are allow</td>
@@ -2285,9 +1949,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td>PCI_PP_04</td>
+      <td rowspan="3">PCI_PP_04</td>
       <td>818</td>
       <td>Check RP Adv Error Report</td>
       <td>Yes</td>
@@ -2296,9 +1958,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>1501</td>
       <td>Check P2P ACS Functionality</td>
       <td>Yes</td>
@@ -2307,9 +1966,6 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>1502</td>
       <td>Check ACS Redirect Req Valid</td>
       <td>Yes</td>
@@ -2318,8 +1974,6 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_PP_05</td>
       <td>817</td>
       <td>Check Direct Transl P2P Support</td>
@@ -2329,8 +1983,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_PAS_1</td>
       <td>842</td>
       <td>PASID support atleast 16 bits</td>
@@ -2340,8 +1992,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td></td>
-      <td></td>
       <td>PCI_PTM_1</td>
       <td>Not Covered</td>
       <td></td>
@@ -2422,6 +2072,72 @@ The checklist provides information about:
       <td>B_PE_25</td>
       <td>15</td>
       <td>Check for FEAT_LSE support</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>FR</td>
+      <td>XRPZG</td>
+      <td>XRPZG</td>
+      <td>66</td>
+      <td>Check num of Breakpoints and type</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>FR</td>
+      <td>B_SEC_01</td>
+      <td>B_SEC_01</td>
+      <td>43</td>
+      <td>Check Speculation Restriction</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>FR</td>
+      <td>B_SEC_02</td>
+      <td>B_SEC_02</td>
+      <td>44</td>
+      <td>Check Speculative Str Bypass Safe</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>FR</td>
+      <td>B_SEC_03</td>
+      <td>B_SEC_03</td>
+      <td>45</td>
+      <td>Check PEs Impl CSDB,SSBB,PSSBB</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>FR</td>
+      <td>B_SEC_04</td>
+      <td>B_SEC_04</td>
+      <td>46</td>
+      <td>Check PEs Implement SB Barrier</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>FR</td>
+      <td>B_SEC_05</td>
+      <td>B_SEC_05</td>
+      <td>47</td>
+      <td>Check PE Impl CFP,DVP,CPP RCTX</td>
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
@@ -2552,3 +2268,4 @@ The checklist provides information about:
 </table>
 
 ## Latest Checklist Changes
+
