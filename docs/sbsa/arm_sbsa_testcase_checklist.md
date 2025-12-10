@@ -415,8 +415,8 @@ The checklist provides information about:
       <td>L5</td>
       <td>S_L5SM_04</td>
       <td>S_L5SM_04</td>
-      <td>Rejected</td>
-      <td>https://jira.arm.com/browse/PJ03164-979</td>
+      <td>Not Covered</td>
+      <td></td>
       <td></td>
       <td></td>
       <td></td>
@@ -2437,126 +2437,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td rowspan="3">IE_REG_2</td>
-      <td>854</td>
-      <td>Check Dev Cap &amp; Ctrl Reg rule - iEP_EP</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>867</td>
-      <td>Check i-EP AtomicOp rule</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>865</td>
-      <td>Check OBFF supported rule</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>IE_REG_3</td>
-      <td>850</td>
-      <td>Check config header rule: iEP_RP</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td rowspan="5">IE_REG_4</td>
-      <td>888</td>
-      <td>Slot Cap, Control and Status reg rules</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>866</td>
-      <td>Check CTRS and CTDS rule</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>864</td>
-      <td>Check ARI forwarding support rule</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>851</td>
-      <td>Check PCIe capability rules: iEP_RP</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>857</td>
-      <td>Check Power Mgmt Cap/Ctrl/Status - iEP</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>IE_REG_5</td>
-      <td>857</td>
-      <td>Check Power Mgmt Cap/Ctrl/Status - iEP</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>IE_REG_6</td>
-      <td>892</td>
-      <td>Secondary PCIe ECap Check: iEP Pair</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>IE_REG_7</td>
-      <td>812</td>
-      <td>Datalink feature ECap Check: iEP Pair</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>IE_REG_8</td>
-      <td>813</td>
-      <td>Phy Layer 16GT/s ECap Check: iEP Pair</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>IE_REG_9</td>
-      <td>814</td>
-      <td>Lane Margining at Rec ECap Check: iEP</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
       <td>L7</td>
       <td>S_L7PE_01</td>
       <td>S_L7PE_01</td>
@@ -2617,28 +2497,6 @@ The checklist provides information about:
       <td>S_L7PE_07</td>
       <td>54</td>
       <td>Check for SVE Int8 matrix multiplc</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>L7</td>
-      <td>S_L7PE_08</td>
-      <td>S_L7PE_08</td>
-      <td>35</td>
-      <td>Check for data gathering hint</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>L7</td>
-      <td>S_L7PE_09</td>
-      <td>S_L7PE_09</td>
-      <td>36</td>
-      <td>Check WFE Fine tune delay feature</td>
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
@@ -2787,17 +2645,6 @@ The checklist provides information about:
       <td>S_L7MP_05</td>
       <td>1003</td>
       <td>Check for MPAM MBWUs Monitor func</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>L7</td>
-      <td>S_L7MP_07</td>
-      <td>S_L7MP_07</td>
-      <td>1004</td>
-      <td>Check for MBWU counter size</td>
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
@@ -3347,7 +3194,7 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td>FR</td>
+      <td>Version 8.0</td>
       <td>S_L8PE_01</td>
       <td>S_L8PE_01</td>
       <td>58</td>
@@ -3358,7 +3205,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>FR</td>
+      <td>Version 8.0</td>
       <td>S_L8PE_02</td>
       <td>S_L8PE_02</td>
       <td>59</td>
@@ -3369,7 +3216,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>FR</td>
+      <td>Version 8.0</td>
       <td>S_L8PE_03</td>
       <td>S_L8PE_03</td>
       <td>60</td>
@@ -3380,7 +3227,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>FR</td>
+      <td>Version 8.0</td>
       <td>S_L8PE_04</td>
       <td>S_L8PE_04</td>
       <td>57</td>
@@ -3391,7 +3238,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>FR</td>
+      <td>Version 8.0</td>
       <td>S_L8PE_05</td>
       <td>S_L8PE_05</td>
       <td>64</td>
@@ -3402,7 +3249,18 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>FR</td>
+      <td>Version 8.0</td>
+      <td>S_L8PE_06</td>
+      <td>S_L8PE_06</td>
+      <td>61</td>
+      <td>Check for FEAT_BRBE support</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Version 8.0</td>
       <td>S_L8PE_07</td>
       <td>S_L8PE_07</td>
       <td>62</td>
@@ -3413,7 +3271,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>FR</td>
+      <td>Version 8.0</td>
       <td>S_L8PE_08</td>
       <td>S_L8PE_08</td>
       <td>Not covered</td>
@@ -3424,7 +3282,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>FR</td>
+      <td>Version 8.0</td>
       <td>S_L8RME_1</td>
       <td>S_L8RME_1</td>
       <td>Not covered</td>
@@ -3435,7 +3293,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>FR</td>
+      <td>Version 8.0</td>
       <td>S_L8SM_01</td>
       <td>S_L8SM_01</td>
       <td>328</td>
@@ -3446,7 +3304,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>FR</td>
+      <td>Version 8.0</td>
       <td>SYS_RAS_4</td>
       <td>SYS_RAS_4</td>
       <td>1213</td>
@@ -3457,7 +3315,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>FR</td>
+      <td>Version 8.0</td>
       <td>S_L8TI_01</td>
       <td>S_L8TI_01</td>
       <td>406</td>
@@ -3468,7 +3326,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>FR</td>
+      <td>Version 8.0</td>
       <td>S_L8GI_01</td>
       <td>S_L8GI_01</td>
       <td>215</td>
@@ -3479,7 +3337,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>FR</td>
+      <td>Version 8.0</td>
       <td>S_PCIe_06</td>
       <td>S_PCIe_06</td>
       <td>Not covered</td>
@@ -3490,7 +3348,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>FR</td>
+      <td>Version 8.0</td>
       <td>S_PCIe_07</td>
       <td>S_PCIe_07</td>
       <td>1526</td>
@@ -3501,7 +3359,7 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td>FR</td>
+      <td>Version 8.0</td>
       <td>S_PCIe_08</td>
       <td>S_PCIe_08</td>
       <td>1532</td>
@@ -3512,7 +3370,7 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td>FR</td>
+      <td>Version 8.0</td>
       <td>S_PCIe_10</td>
       <td>S_PCIe_10</td>
       <td>1530</td>
@@ -3523,63 +3381,8 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td>FR</td>
-      <td>S_PCIe_11</td>
-      <td>S_PCIe_11</td>
-      <td>891</td>
-      <td>Steering Tag value properties</td>
-      <td>No</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>FR</td>
-      <td>PCI_ER_07</td>
-      <td>PCI_ER_07</td>
-      <td>1529</td>
-      <td>RAS ERR record for external abort</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td>Exerciser VIP required</td>
-    </tr>
-    <tr>
-      <td>FR</td>
-      <td>PCI_ER_08</td>
-      <td>PCI_ER_08</td>
-      <td>1528</td>
-      <td>RAS ERR record for poisoned data</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td>Exerciser VIP required</td>
-    </tr>
-    <tr>
-      <td>FR</td>
-      <td>PCI_ER_09</td>
-      <td>PCI_ER_09</td>
-      <td>890</td>
-      <td>Check RP Extensions for DPC</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>FR</td>
-      <td>PCI_ER_10</td>
-      <td>PCI_ER_10</td>
-      <td>1527</td>
-      <td>DPC trig when RP-PIO unimplemented</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td>Exerciser VIP required</td>
-    </tr>
-    <tr>
-      <td>FR</td>
-      <td>GPU_01</td>
+      <td rowspan="5">Version 8.0</td>
+      <td rowspan="5">XDGKZ</td>
       <td>GPU_01</td>
       <td>Not covered</td>
       <td></td>
@@ -3589,8 +3392,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>FR</td>
-      <td>GPU_02</td>
       <td>GPU_02</td>
       <td>Not covered</td>
       <td></td>
@@ -3600,8 +3401,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>FR</td>
-      <td>GPU_03</td>
       <td>GPU_03</td>
       <td>893</td>
       <td>Switches must support ACS if P2P</td>
@@ -3611,8 +3410,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td rowspan="2">FR</td>
-      <td rowspan="2">GPU_04</td>
       <td rowspan="2">GPU_04</td>
       <td>889</td>
       <td>Check ATS support for RC</td>
@@ -3630,7 +3427,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>FR</td>
+      <td>Version 8.0</td>
       <td>S_L8CXL_1</td>
       <td>S_L8CXL_1</td>
       <td>Not covered</td>
@@ -3641,18 +3438,7 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>FR</td>
-      <td>S_L8PE_06</td>
-      <td>S_L8PE_06</td>
-      <td>61</td>
-      <td>Check for FEAT_BRBE support</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td rowspan="10">FR</td>
+      <td rowspan="10">Version 8.0</td>
       <td rowspan="10">S_L8SHD_1</td>
       <td>ETE_01</td>
       <td>Not covered</td>
@@ -3742,6 +3528,83 @@ The checklist provides information about:
       <td>Yes</td>
       <td>No</td>
       <td></td>
+    </tr>
+    <tr>
+      <td>FR</td>
+      <td>WNPXD</td>
+      <td>WNPXD</td>
+      <td>65</td>
+      <td>Check for FEAT_PFAR support</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>FR</td>
+      <td>KBRZG</td>
+      <td>KBRZG</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>FR</td>
+      <td>LVQBC</td>
+      <td>LVQBC</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>FR</td>
+      <td>PCI_ER_07</td>
+      <td>PCI_ER_07</td>
+      <td>1529</td>
+      <td>RAS ERR record for external abort</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Exerciser VIP required</td>
+    </tr>
+    <tr>
+      <td>FR</td>
+      <td>PCI_ER_08</td>
+      <td>PCI_ER_08</td>
+      <td>1528</td>
+      <td>RAS ERR record for poisoned data</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Exerciser VIP required</td>
+    </tr>
+    <tr>
+      <td>FR</td>
+      <td>PCI_ER_09</td>
+      <td>PCI_ER_09</td>
+      <td>890</td>
+      <td>Check RP Extensions for DPC</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>FR</td>
+      <td>PCI_ER_10</td>
+      <td>PCI_ER_10</td>
+      <td>1527</td>
+      <td>DPC trig when RP-PIO unimplemented</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Exerciser VIP required</td>
     </tr>
   </tbody>
 </table>
