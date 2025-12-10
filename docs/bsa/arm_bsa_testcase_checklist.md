@@ -2269,7 +2269,7 @@ The checklist provides information about:
       <td rowspan="99">B_REP_1</td>
       <td>RI_CRS_1</td>
       <td>Not Covered</td>
-      <td>Check RCiEP Devices</td>
+      <td></td>
       <td></td>
       <td></td>
       <td></td>
@@ -2278,7 +2278,7 @@ The checklist provides information about:
     <tr>
       <td>RI_BAR_1</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Read and write to BAR reg</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2296,7 +2296,7 @@ The checklist provides information about:
     <tr>
       <td>RI_BAR_3</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check BAR memory space &amp; type</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2305,7 +2305,7 @@ The checklist provides information about:
     <tr>
       <td>RI_INT_1</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check MSI and MSI-X support</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2314,7 +2314,7 @@ The checklist provides information about:
     <tr>
       <td>RI_ORD_1</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Arrival order &amp; Gathering Check</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2341,7 +2341,7 @@ The checklist provides information about:
     <tr>
       <td>RI_SMU_1</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check ATS Support Rule</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2359,7 +2359,7 @@ The checklist provides information about:
     <tr>
       <td>RI_SMU_3</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Generate PASID transactions</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2368,7 +2368,7 @@ The checklist provides information about:
     <tr>
       <td>ITS_01</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check number of ITS blocks in a group</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2377,7 +2377,7 @@ The checklist provides information about:
     <tr>
       <td>ITS_02</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check ITS block association with group</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2386,7 +2386,7 @@ The checklist provides information about:
     <tr>
       <td>ITS_03</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>MSI-capable device linked to ITS group</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2395,7 +2395,7 @@ The checklist provides information about:
     <tr>
       <td>ITS_04</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>MSI-cap device can target any ITS blk</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2404,7 +2404,7 @@ The checklist provides information about:
     <tr>
       <td>ITS_05</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>MSI to ITS Blk outside assigned group</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2449,7 +2449,7 @@ The checklist provides information about:
     <tr>
       <td>ITS_DEV_2</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check uniqueness of StreamID</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2467,7 +2467,7 @@ The checklist provides information about:
     <tr>
       <td>ITS_DEV_4</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>MSI originating from different master</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2485,7 +2485,7 @@ The checklist provides information about:
     <tr>
       <td>ITS_DEV_6</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Write to ITS GITS_TRANSLATER</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2494,7 +2494,7 @@ The checklist provides information about:
     <tr>
       <td>ITS_DEV_7</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Device's SID/RID/DID behind SMMU</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2503,7 +2503,7 @@ The checklist provides information about:
     <tr>
       <td>ITS_DEV_8</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Device IDs not behind SMMU</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2521,7 +2521,7 @@ The checklist provides information about:
     <tr>
       <td>RI_RST_1</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Function level reset</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2539,7 +2539,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_01</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check ECAM Presence</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2548,7 +2548,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_02</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check ECAM Memory accessibility</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2557,7 +2557,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_03</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check all RP in HB is in same ECAM</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2566,7 +2566,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_04</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>All EP/Sw under RP in same ECAM Region</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2575,7 +2575,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_05</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Type 0/1 common config rule</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2629,7 +2629,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_11</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check RP Sec Bus transaction are TYPE0</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2638,7 +2638,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_12</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Config Txn for RP in HB</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2647,7 +2647,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_13</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check RootPort NP Memory Access</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2674,7 +2674,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_16</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check all 1's for out of range</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2683,7 +2683,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_17</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check ARI forwarding enable rule</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2692,7 +2692,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_18</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check RP Byte Enable Rules</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2701,7 +2701,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_19</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Cmd Reg memory space enable</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2710,7 +2710,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_20</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Vendor specific data is PCIe compliant</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2719,7 +2719,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_MM_01</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>PCIe Device Memory mapping support</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2737,7 +2737,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_MM_03</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>PCIe Normal Memory mapping support</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2746,7 +2746,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_MM_04</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>NP type-1 pcie only support 32-bit</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2755,7 +2755,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_MM_05</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>PCIe &amp; PE common physical memory view</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2773,7 +2773,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_MM_07</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>No extra address translation</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2782,7 +2782,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_MSI_1</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check MSI support for PCIe dev</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2791,7 +2791,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_MSI_2</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check MSI(X) vectors uniqueness</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2800,7 +2800,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_LI_01</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Legacy Interrupt is SPI</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2809,7 +2809,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_LI_02</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>PCI legacy intr SPI ID unique</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2818,7 +2818,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_LI_03</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Legacy Intr SPI level sensitive</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2845,7 +2845,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_SM_02</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Function level reset</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2854,7 +2854,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IC_11</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>PCIe RC,PE - Same Inr Shareable Domain</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2890,7 +2890,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IC_15</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Arrival order Check</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2953,7 +2953,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_PP_02</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>P2P transactions must not deadlock</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2962,7 +2962,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_PP_03</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>RP must suprt ACS if P2P Txn are allow</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2971,7 +2971,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_PP_04</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check P2P ACS Functionality</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2980,7 +2980,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_PP_05</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Direct Transl P2P Support</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2998,7 +2998,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_PAS_1</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>PASID support atleast 16 bits</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3016,7 +3016,7 @@ The checklist provides information about:
     <tr>
       <td>RE_PCI_1</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check RCiEP Hdr type &amp; link Cap</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3025,7 +3025,7 @@ The checklist provides information about:
     <tr>
       <td>RE_PCI_2</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check RCEC Class code and Ext Cap</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3061,7 +3061,7 @@ The checklist provides information about:
     <tr>
       <td>RE_ORD_4</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Tx pending bit clear correctness RCiEP</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3088,7 +3088,7 @@ The checklist provides information about:
     <tr>
       <td>RE_ACS_1</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check ACS Cap on p2p support: RCiEP</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3097,7 +3097,7 @@ The checklist provides information about:
     <tr>
       <td>RE_ACS_2</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check AER Cap on ACS Cap support</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3115,7 +3115,7 @@ The checklist provides information about:
     <tr>
       <td>RE_REG_1</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check config header rule: RCEC/RCiEP</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3124,7 +3124,7 @@ The checklist provides information about:
     <tr>
       <td>RE_REG_2</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Power Mgmt Cap/Ctrl/Status - RC</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3133,7 +3133,7 @@ The checklist provides information about:
     <tr>
       <td>RE_REG_3</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Dev Cap &amp; Ctrl Reg rule - RCiEP</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3142,7 +3142,7 @@ The checklist provides information about:
     <tr>
       <td>RE_REC_1</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Dev Cap &amp; Ctrl Reg rule - RCEC</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3162,7 +3162,7 @@ The checklist provides information about:
       <td rowspan="102">B_IEP_1</td>
       <td>RI_CRS_1</td>
       <td>Not Covered</td>
-      <td>Check i-EP Devices</td>
+      <td></td>
       <td></td>
       <td></td>
       <td></td>
@@ -3171,7 +3171,7 @@ The checklist provides information about:
     <tr>
       <td>RI_BAR_1</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Read and write to BAR reg</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3189,7 +3189,7 @@ The checklist provides information about:
     <tr>
       <td>RI_BAR_3</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check BAR memory space &amp; type</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3198,7 +3198,7 @@ The checklist provides information about:
     <tr>
       <td>RI_INT_1</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check MSI and MSI-X support</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3207,7 +3207,7 @@ The checklist provides information about:
     <tr>
       <td>RI_ORD_1</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Arrival order &amp; Gathering Check</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3234,7 +3234,7 @@ The checklist provides information about:
     <tr>
       <td>RI_SMU_1</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check ATS Support Rule</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3252,7 +3252,7 @@ The checklist provides information about:
     <tr>
       <td>RI_SMU_3</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Generate PASID transactions</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3261,7 +3261,7 @@ The checklist provides information about:
     <tr>
       <td>ITS_01</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check number of ITS blocks in a group</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3270,7 +3270,7 @@ The checklist provides information about:
     <tr>
       <td>ITS_02</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check ITS block association with group</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3279,7 +3279,7 @@ The checklist provides information about:
     <tr>
       <td>ITS_03</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>MSI-capable device linked to ITS group</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3288,7 +3288,7 @@ The checklist provides information about:
     <tr>
       <td>ITS_04</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>MSI-cap device can target any ITS blk</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3297,7 +3297,7 @@ The checklist provides information about:
     <tr>
       <td>ITS_05</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>MSI to ITS Blk outside assigned group</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3342,7 +3342,7 @@ The checklist provides information about:
     <tr>
       <td>ITS_DEV_2</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check uniqueness of StreamID</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3360,7 +3360,7 @@ The checklist provides information about:
     <tr>
       <td>ITS_DEV_4</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>MSI originating from different master</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3378,7 +3378,7 @@ The checklist provides information about:
     <tr>
       <td>ITS_DEV_6</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Write to ITS GITS_TRANSLATER</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3387,7 +3387,7 @@ The checklist provides information about:
     <tr>
       <td>ITS_DEV_7</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Device's SID/RID/DID behind SMMU</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3396,7 +3396,7 @@ The checklist provides information about:
     <tr>
       <td>ITS_DEV_8</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Device IDs not behind SMMU</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3414,7 +3414,7 @@ The checklist provides information about:
     <tr>
       <td>RI_RST_1</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Function level reset</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3432,7 +3432,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_01</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check ECAM Presence</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3441,7 +3441,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_02</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check ECAM Memory accessibility</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3450,7 +3450,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_03</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check all RP in HB is in same ECAM</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3459,7 +3459,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_04</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>All EP/Sw under RP in same ECAM Region</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3468,7 +3468,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_05</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Type 0/1 common config rule</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3522,7 +3522,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_11</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check RP Sec Bus transaction are TYPE0</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3531,7 +3531,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_12</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Config Txn for RP in HB</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3540,7 +3540,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_13</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check RootPort NP Memory Access</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3567,7 +3567,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_16</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check all 1's for out of range</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3576,7 +3576,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_17</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check ARI forwarding enable rule</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3585,7 +3585,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_18</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check RP Byte Enable Rules</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3594,7 +3594,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_19</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Cmd Reg memory space enable</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3603,7 +3603,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_20</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Vendor specific data is PCIe compliant</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3612,7 +3612,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_MM_01</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>PCIe Device Memory mapping support</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3630,7 +3630,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_MM_03</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>PCIe Normal Memory mapping support</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3639,7 +3639,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_MM_04</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>NP type-1 pcie only support 32-bit</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3648,7 +3648,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_MM_05</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>PCIe &amp; PE common physical memory view</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3666,7 +3666,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_MM_07</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>No extra address translation</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3675,7 +3675,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_MSI_1</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check MSI support for PCIe dev</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3684,7 +3684,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_MSI_2</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check MSI(X) vectors uniqueness</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3693,7 +3693,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_LI_01</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Legacy Interrupt is SPI</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3702,7 +3702,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_LI_02</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>PCI legacy intr SPI ID unique</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3711,7 +3711,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_LI_03</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Legacy Intr SPI level sensitive</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3738,7 +3738,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_SM_02</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Function level reset</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3747,7 +3747,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IC_11</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>PCIe RC,PE - Same Inr Shareable Domain</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3783,7 +3783,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IC_15</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Arrival order Check</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3846,7 +3846,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_PP_02</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>P2P transactions must not deadlock</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3855,7 +3855,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_PP_03</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>RP must suprt ACS if P2P Txn are allow</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3864,7 +3864,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_PP_04</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check P2P ACS Functionality</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3873,7 +3873,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_PP_05</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Direct Transl P2P Support</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3891,7 +3891,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_PAS_1</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>PASID support atleast 16 bits</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3936,7 +3936,7 @@ The checklist provides information about:
     <tr>
       <td>IE_ORD_4</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Tx pending bit clear correctness: iEP</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3945,7 +3945,7 @@ The checklist provides information about:
     <tr>
       <td>IE_RST_2</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Sec Bus Reset For iEP_RP</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3981,7 +3981,7 @@ The checklist provides information about:
     <tr>
       <td>IE_ACS_1</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check ACS Cap on p2p support: iEP EP</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3990,7 +3990,7 @@ The checklist provides information about:
     <tr>
       <td>IE_ACS_2</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check iEP-RootPort P2P Support</td>
       <td></td>
       <td></td>
       <td></td>
@@ -3999,7 +3999,7 @@ The checklist provides information about:
     <tr>
       <td>IE_REG_1</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check config header rule: iEP_EP</td>
       <td></td>
       <td></td>
       <td></td>
@@ -4008,7 +4008,7 @@ The checklist provides information about:
     <tr>
       <td>IE_REG_2</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Dev Cap &amp; Ctrl Reg rule - iEP_EP</td>
       <td></td>
       <td></td>
       <td></td>
@@ -4017,7 +4017,7 @@ The checklist provides information about:
     <tr>
       <td>IE_REG_3</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check config header rule: iEP_RP</td>
       <td></td>
       <td></td>
       <td></td>
@@ -4026,7 +4026,7 @@ The checklist provides information about:
     <tr>
       <td>IE_REG_4</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check PCIe capability rules: iEP_RP</td>
       <td></td>
       <td></td>
       <td></td>
@@ -4035,7 +4035,7 @@ The checklist provides information about:
     <tr>
       <td>IE_REG_5</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Check Power Mgmt Cap/Ctrl/Status - iEP</td>
       <td></td>
       <td></td>
       <td></td>
@@ -4044,7 +4044,7 @@ The checklist provides information about:
     <tr>
       <td>IE_REG_6</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Secondary PCIe ECap Check: iEP Pair</td>
       <td></td>
       <td></td>
       <td></td>
@@ -4053,7 +4053,7 @@ The checklist provides information about:
     <tr>
       <td>IE_REG_7</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Datalink feature ECap Check: iEP Pair</td>
       <td></td>
       <td></td>
       <td></td>
@@ -4062,7 +4062,7 @@ The checklist provides information about:
     <tr>
       <td>IE_REG_8</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Phy Layer 16GT/s ECap Check: iEP Pair</td>
       <td></td>
       <td></td>
       <td></td>
@@ -4071,7 +4071,7 @@ The checklist provides information about:
     <tr>
       <td>IE_REG_9</td>
       <td>Not Covered</td>
-      <td></td>
+      <td>Lane Margining at Rec ECap Check: iEP</td>
       <td></td>
       <td></td>
       <td></td>
@@ -4081,33 +4081,33 @@ The checklist provides information about:
       <td>FR</td>
       <td>BJLPB</td>
       <td>BJLPB</td>
-      <td>Not Covered</td>
+      <td>900</td>
       <td>Check MSI/MSI-X if FRS is supported</td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
       <td></td>
     </tr>
     <tr>
       <td>FR</td>
       <td>B_PCIe_10</td>
       <td>B_PCIe_10</td>
-      <td>Not Covered</td>
+      <td>1530</td>
       <td>Enable and disable STE.DCP bit</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Exerciser VIP required</td>
     </tr>
     <tr>
       <td>FR</td>
       <td>B_PCIe_11</td>
       <td>B_PCIe_11</td>
-      <td>Not Covered</td>
+      <td>891</td>
       <td>Steering Tag value properties</td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>No</td>
+      <td>Yes</td>
+      <td>Yes</td>
       <td></td>
     </tr>
   </tbody>
