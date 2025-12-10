@@ -495,161 +495,6 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td rowspan="17">L1</td>
-      <td rowspan="17"></td>
-      <td>ITS_01</td>
-      <td>251</td>
-      <td>Check number of ITS blocks in a group</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>ITS_02</td>
-      <td>252</td>
-      <td>Check ITS block association with group</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>ITS_03</td>
-      <td>1511</td>
-      <td>MSI-capable device linked to ITS group</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td>Exerciser VIP required</td>
-    </tr>
-    <tr>
-      <td>ITS_04</td>
-      <td>1535</td>
-      <td>MSI-cap device can target any ITS blk</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td>Exerciser VIP required</td>
-    </tr>
-    <tr>
-      <td>ITS_05</td>
-      <td>1512</td>
-      <td>MSI to ITS Blk outside assigned group</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td>Exerciser VIP required</td>
-    </tr>
-    <tr>
-      <td>ITS_06</td>
-      <td>Not Covered</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>ITS_07</td>
-      <td>Not Covered</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>ITS_08</td>
-      <td>Not Covered</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>ITS_DEV_1</td>
-      <td>Not Covered</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>ITS_DEV_2</td>
-      <td>253</td>
-      <td>Check uniqueness of StreamID</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>ITS_DEV_3</td>
-      <td>Not Covered</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>ITS_DEV_4</td>
-      <td>1513</td>
-      <td>MSI originating from different master</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td>Exerciser VIP required</td>
-    </tr>
-    <tr>
-      <td>ITS_DEV_5</td>
-      <td>Not Covered</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>ITS_DEV_6</td>
-      <td>1504</td>
-      <td>MSI-X triggers intr with unique ID</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td>Exerciser VIP required</td>
-    </tr>
-    <tr>
-      <td>ITS_DEV_7</td>
-      <td>254</td>
-      <td>Check Device's SID/RID/DID behind SMMU</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>ITS_DEV_8</td>
-      <td>255</td>
-      <td>Check Device IDs not behind SMMU</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>ITS_DEV_9</td>
-      <td>Not Covered</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
       <td>L1</td>
       <td>B_SMMU_01</td>
       <td>B_SMMU_01</td>
@@ -881,89 +726,25 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td rowspan="5">L1</td>
-      <td rowspan="5">B_WAK_01</td>
-      <td rowspan="5">B_WAK_01</td>
-      <td>501</td>
-      <td>Wake from EL1 PHY Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
+      <td>L1</td>
+      <td>B_WAK_01</td>
+      <td>B_WAK_01</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
       <td></td>
     </tr>
     <tr>
-      <td>502</td>
-      <td>Wake from EL1 VIR Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
+      <td>L1</td>
+      <td>B_WAK_02</td>
+      <td>B_WAK_02</td>
+      <td>Not Covered</td>
       <td></td>
-    </tr>
-    <tr>
-      <td>503</td>
-      <td>Wake from EL2 PHY Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
       <td></td>
-    </tr>
-    <tr>
-      <td>504</td>
-      <td>Wake from Watchdog WS0 Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
       <td></td>
-    </tr>
-    <tr>
-      <td>505</td>
-      <td>Wake from System Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
       <td></td>
-    </tr>
-    <tr>
-      <td rowspan="5">L1</td>
-      <td rowspan="5">B_WAK_02</td>
-      <td rowspan="5">B_WAK_02</td>
-      <td>501</td>
-      <td>Wake from EL1 PHY Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>502</td>
-      <td>Wake from EL1 VIR Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>503</td>
-      <td>Wake from EL2 PHY Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>504</td>
-      <td>Wake from Watchdog WS0 Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>505</td>
-      <td>Wake from System Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
       <td></td>
     </tr>
     <tr>
@@ -1010,132 +791,36 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td rowspan="5">L1</td>
-      <td rowspan="5">B_WAK_04</td>
-      <td rowspan="5">B_WAK_04</td>
-      <td>501</td>
-      <td>Wake from EL1 PHY Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
+      <td>L1</td>
+      <td>B_WAK_04</td>
+      <td>B_WAK_04</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
       <td></td>
     </tr>
     <tr>
-      <td>502</td>
-      <td>Wake from EL1 VIR Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
+      <td>L1</td>
+      <td>B_WAK_05</td>
+      <td>B_WAK_05</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
       <td></td>
     </tr>
     <tr>
-      <td>503</td>
-      <td>Wake from EL2 PHY Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
+      <td>L1</td>
+      <td>B_WAK_06</td>
+      <td>B_WAK_06</td>
+      <td>Not Covered</td>
       <td></td>
-    </tr>
-    <tr>
-      <td>504</td>
-      <td>Wake from Watchdog WS0 Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
       <td></td>
-    </tr>
-    <tr>
-      <td>505</td>
-      <td>Wake from System Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
       <td></td>
-    </tr>
-    <tr>
-      <td rowspan="5">L1</td>
-      <td rowspan="5">B_WAK_05</td>
-      <td rowspan="5">B_WAK_05</td>
-      <td>501</td>
-      <td>Wake from EL1 PHY Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
       <td></td>
-    </tr>
-    <tr>
-      <td>502</td>
-      <td>Wake from EL1 VIR Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>503</td>
-      <td>Wake from EL2 PHY Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>504</td>
-      <td>Wake from Watchdog WS0 Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>505</td>
-      <td>Wake from System Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td rowspan="5">L1</td>
-      <td rowspan="5">B_WAK_06</td>
-      <td rowspan="5">B_WAK_06</td>
-      <td>501</td>
-      <td>Wake from EL1 PHY Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>502</td>
-      <td>Wake from EL1 VIR Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>503</td>
-      <td>Wake from EL2 PHY Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>504</td>
-      <td>Wake from Watchdog WS0 Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>505</td>
-      <td>Wake from System Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
       <td></td>
     </tr>
     <tr>
@@ -1193,89 +878,25 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td rowspan="5">L1</td>
-      <td rowspan="5">B_WAK_10</td>
-      <td rowspan="5">B_WAK_10</td>
-      <td>501</td>
-      <td>Wake from EL1 PHY Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
+      <td>L1</td>
+      <td>B_WAK_10</td>
+      <td>B_WAK_10</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
       <td></td>
     </tr>
     <tr>
-      <td>502</td>
-      <td>Wake from EL1 VIR Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
+      <td>L1</td>
+      <td>B_WAK_11</td>
+      <td>B_WAK_11</td>
+      <td>Not Covered</td>
       <td></td>
-    </tr>
-    <tr>
-      <td>503</td>
-      <td>Wake from EL2 PHY Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
       <td></td>
-    </tr>
-    <tr>
-      <td>504</td>
-      <td>Wake from Watchdog WS0 Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
       <td></td>
-    </tr>
-    <tr>
-      <td>505</td>
-      <td>Wake from System Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
       <td></td>
-    </tr>
-    <tr>
-      <td rowspan="5">L1</td>
-      <td rowspan="5">B_WAK_11</td>
-      <td rowspan="5">B_WAK_11</td>
-      <td>501</td>
-      <td>Wake from EL1 PHY Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>502</td>
-      <td>Wake from EL1 VIR Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>503</td>
-      <td>Wake from EL2 PHY Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>504</td>
-      <td>Wake from Watchdog WS0 Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>505</td>
-      <td>Wake from System Timer Int</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
       <td></td>
     </tr>
     <tr>
@@ -1416,7 +1037,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_02</td>
       <td>802</td>
-      <td>PE - ECAM Region accessibility check</td>
+      <td>Check ECAM Memory accessibility</td>
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
@@ -1869,7 +1490,7 @@ The checklist provides information about:
     </tr>
     <tr>
       <td>PCI_IC_15</td>
-      <td>803</td>
+      <td>1503</td>
       <td>Arrival order Check</td>
       <td>Yes</td>
       <td>Yes</td>
@@ -2548,7 +2169,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_02</td>
       <td>802</td>
-      <td>PE - ECAM Region accessibility check</td>
+      <td>Check ECAM Memory accessibility</td>
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
@@ -2889,7 +2510,7 @@ The checklist provides information about:
     </tr>
     <tr>
       <td>PCI_IC_15</td>
-      <td>803</td>
+      <td>1503</td>
       <td>Arrival order Check</td>
       <td>Yes</td>
       <td>Yes</td>
@@ -3441,7 +3062,7 @@ The checklist provides information about:
     <tr>
       <td>PCI_IN_02</td>
       <td>802</td>
-      <td>PE - ECAM Region accessibility check</td>
+      <td>Check ECAM Memory accessibility</td>
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
@@ -3782,7 +3403,7 @@ The checklist provides information about:
     </tr>
     <tr>
       <td>PCI_IC_15</td>
-      <td>803</td>
+      <td>1503</td>
       <td>Arrival order Check</td>
       <td>Yes</td>
       <td>Yes</td>
