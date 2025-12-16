@@ -56,8 +56,9 @@ payload(uint32_t num_pe)
 
   /* R312090 : Request DLME Authorities Schema without requesting
    * DLME image authentication */
+  drtm_params->launch_features &= ~DRTM_LAUNCH_FEATURES_MASK_PCR_SCHEMA;
   drtm_params->launch_features = drtm_params->launch_features |
-            (DRTM_LAUNCH_FEAT_DLME_AUTH_SUPP << DRTM_LAUNCH_FEATURES_MASK_PCR_SCHEMA);
+            (DRTM_LAUNCH_FEAT_DLME_AUTH_SUPP << DRTM_LAUNCH_FEATURES_SHIFT_PCR_SCHEMA);
 
   status = val_drtm_dynamic_launch(drtm_params);
   /* This will return invalid parameter */
