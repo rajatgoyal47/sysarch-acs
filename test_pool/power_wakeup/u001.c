@@ -21,8 +21,7 @@
 #include "val/include/acs_wakeup.h"
 
 #define TEST_NUM  (ACS_WAKEUP_TEST_NUM_BASE + 1)
-#define TEST_RULE "B_WAK_01, B_WAK_02, B_WAK_03, B_WAK_04, B_WAK_05 \
-                    \n       B_WAK_06, B_WAK_07, B_WAK_10, B_WAK_11"
+#define TEST_RULE "B_WAK_03, B_WAK_07"
 #define TEST_DESC "Wake from EL1 PHY Timer Int           "
 
 extern uint32_t g_wakeup_timeout;
@@ -94,6 +93,7 @@ u001_entry(uint32_t num_pe)
   num_pe = 1;  //This Timer test is run on single processor
 
   if (!g_el1physkip) {
+      val_log_context((char8_t *)__FILE__, (char8_t *)__func__, __LINE__);
       status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
 
       if (status != ACS_STATUS_SKIP)

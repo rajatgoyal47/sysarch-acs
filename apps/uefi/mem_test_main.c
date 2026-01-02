@@ -112,7 +112,7 @@ HelpMsg (
 );
 }
 
-STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
+CONST SHELL_PARAM_ITEM ParamList[] = {
   {L"-v", TypeValue},    // -v    # Verbosity of the Prints. 1 shows all prints, 5 shows Errors
   {L"-l", TypeValue},    // -l    # Level of compliance to be tested for.
   {L"-only", TypeValue},    // -only # To only run tests for a Specific level of compliance.
@@ -190,7 +190,7 @@ command_init ()
       if (EFI_ERROR(Status))
       {
         Print(L"Allocate memory for -skip failed\n", 0);
-        return 0;
+        return ACS_PARSE_SKIP_RUN;
       }
 
       g_skip_test_num[0] = StrDecimalToUintn((CONST CHAR16 *)(CmdLineArg+0));
@@ -356,7 +356,7 @@ command_init ()
   // Options with Flags
   if ((ShellCommandLineGetFlag (ParamPackage, L"-help")) || (ShellCommandLineGetFlag (ParamPackage, L"-h"))){
      HelpMsg();
-     return 0;
+     return ACS_PARSE_SKIP_RUN;
   }
 
   // Options with Flags
@@ -380,7 +380,7 @@ command_init ()
           if (EFI_ERROR(Status))
           {
               Print(L"Allocate memory for -t failed\n", 0);
-              return 0;
+              return ACS_PARSE_SKIP_RUN;
           }
 
           /* Check if the first value to -t is a decimal character. */
@@ -419,7 +419,7 @@ command_init ()
           if (EFI_ERROR(Status))
           {
               Print(L"Allocate memory for -m failed\n", 0);
-              return 0;
+              return ACS_PARSE_SKIP_RUN;
           }
 
           /* Check if the first value to -m is a decimal character. */
@@ -476,7 +476,7 @@ command_init ()
     ((only) != 0 ? "\n Starting tests for only level FR " : "\n Starting tests for level FR ") : \
     ((only) != 0 ? "\n Starting tests for only level %2d " : "\n Starting tests for level %2d "))
 
-STATIC VOID FlushImage (VOID)
+VOID FlushImage (VOID)
 {
   EFI_LOADED_IMAGE_PROTOCOL   *ImageInfo;
   EFI_STATUS Status;

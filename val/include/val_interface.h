@@ -20,6 +20,7 @@
 
 #include "pal_interface.h"
 #include "acs_drtm.h"
+#include "acs_pfdi.h"
 
 /* set G_PRINT_LEVEL to one of the below values in your application entry
   to control the verbosity of the prints */
@@ -29,17 +30,38 @@
 #define ACS_PRINT_DEBUG 2      /* For Debug statements. contains register dumps etc */
 #define ACS_PRINT_INFO  1      /* Print all statements. Do not use unless really needed */
 
-
 #define ACS_STATUS_FAIL      0x90000000
 #define ACS_STATUS_ERR       0xEDCB1234  //some impropable value?
 #define ACS_STATUS_SKIP      0x10000000
 #define ACS_STATUS_PASS      0x0
 #define ACS_STATUS_NIST_PASS 0x1
 #define ACS_INVALID_INDEX    0xFFFFFFFF
+#define ACS_STATUS_UNKNOWN   0xFFFFFFFF
 
 #define NOT_IMPLEMENTED         0x4B1D  /* Feature or API not implemented */
 
 #define VAL_EXTRACT_BITS(data, start, end) ((data >> start) & ((1ul << (end-start+1))-1))
+
+/* Test status counters visible across ACS */
+typedef struct {
+    uint32_t total_rules_run;     /* Total rules/tests that reported a status */
+    uint32_t passed;              /* Count of TEST_PASS */
+    uint32_t partial_coverage;    /* Count of TEST_PART_COV */
+    uint32_t warnings;            /* Count of TEST_WARN */
+    uint32_t skipped;             /* Count of TEST_SKIP */
+    uint32_t failed;              /* Count of TEST_FAIL */
+    uint32_t not_implemented;     /* Count of TEST_NO_IMP */
+    uint32_t pal_not_supported;   /* Count of TEST_PAL_NS */
+} acs_test_status_counters_t;
+
+extern acs_test_status_counters_t g_rule_test_stats;
+
+/* Module init operation type enum */
+typedef enum {
+    INIT_OP_INIT,
+    INIT_OP_TEARDOWN,
+    INIT_OP_SENTINEL /* Keep last */
+} INIT_OP_e;
 
 /* the following macros are defined by edk2 headers in case of UEFI env. Required only for BM */
 #ifdef TARGET_BAREMETAL
@@ -70,6 +92,10 @@ void val_get_test_data(uint32_t index, uint64_t *data0, uint64_t *data1);
 void *val_memcpy(void *dest_buffer, void *src_buffer, uint32_t len);
 void val_dump_dtb(void);
 void view_print_info(uint32_t view);
+void val_log_context(char8_t *file, char8_t *func, uint32_t line);
+
+/* Print consolidated ACS test status summary from global counters */
+void val_print_acs_test_status_summary(void);
 
 uint32_t execute_tests(void);
 uint32_t val_strncmp(char8_t *str1, char8_t *str2, uint32_t len);
@@ -452,7 +478,7 @@ uint64_t val_memory_get_unpopulated_addr(addr_t *addr, uint32_t instance);
 uint64_t val_get_max_memory(void);
 
 /* PCIe Exerciser tests */
-uint32_t val_bsa_exerciser_execute_tests(uint32_t *g_sw_view);
+uint32_t val_bsa_exerciser_execute_tests(uint32_t num_pe, uint32_t *g_sw_view);
 
 /* NIST VAL APIs */
 uint32_t val_nist_generate_rng(uint32_t *rng_buffer);
@@ -576,7 +602,7 @@ uint32_t val_sbsa_wd_execute_tests(uint32_t level, uint32_t num_pe);
 uint32_t val_sbsa_timer_execute_tests(uint32_t level, uint32_t num_pe);
 uint32_t val_sbsa_memory_execute_tests(uint32_t level, uint32_t num_pe);
 uint32_t val_sbsa_smmu_execute_tests(uint32_t level, uint32_t num_pe);
-uint32_t val_sbsa_exerciser_execute_tests(uint32_t level);
+uint32_t val_sbsa_exerciser_execute_tests(uint32_t level, uint32_t num_pe);
 uint32_t val_sbsa_pmu_execute_tests(uint32_t level, uint32_t num_pe);
 uint32_t val_sbsa_mpam_execute_tests(uint32_t level, uint32_t num_pe);
 uint32_t val_sbsa_ras_execute_tests(uint32_t level, uint32_t num_pe);
@@ -736,4 +762,61 @@ uint32_t monitor004_entry(void);
 // Accessing system registers from .S -> can be moved to respective .h
 uint64_t arm64_write_sp(uint64_t write_data);
 uint64_t arm64_read_sp(void);
+
+
+typedef enum {
+    PFDI_MODULE,
+} PFDI_MODULE_ID_e;
+
+typedef struct{
+  int64_t x0;
+  int64_t x1;
+  int64_t x2;
+  int64_t x3;
+  int64_t x4;
+} PFDI_RET_PARAMS;
+
+
+uint32_t val_pfdi_reserved_bits_check_is_zero(uint32_t reserved_bits);
+int64_t val_pfdi_version(int64_t *x1, int64_t *x2, int64_t *x3, int64_t *x4);
+int64_t val_pfdi_features(uint32_t function_id, int64_t *x1, int64_t *x2, int64_t *x3, int64_t *x4);
+int64_t val_pfdi_pe_test_id(int64_t *x1, int64_t *x2, int64_t *x3, int64_t *x4);
+int64_t val_pfdi_pe_test_part_count(int64_t *x1, int64_t *x2, int64_t *x3, int64_t *x4);
+int64_t val_pfdi_pe_test_run(int64_t start, int64_t end,
+                             int64_t *x1, int64_t *x2, int64_t *x3, int64_t *x4);
+int64_t val_pfdi_pe_test_result(int64_t *x1, int64_t *x2, int64_t *x3, int64_t *x4);
+int64_t val_pfdi_fw_check(int64_t *x1, int64_t *x2, int64_t *x3, int64_t *x4);
+int64_t val_pfdi_force_error(uint32_t function_id, int64_t error_value,
+                             int64_t *x1, int64_t *x2, int64_t *x3, int64_t *x4);
+int64_t val_invoke_pfdi_fn(unsigned long function_id, unsigned long arg1,
+              unsigned long arg2, unsigned long arg3,
+              unsigned long arg4, unsigned long arg5,
+              unsigned long *ret1, unsigned long *ret2,
+              unsigned long *ret3, unsigned long *ret4);
+void
+val_pfdi_verify_regs(ARM_SMC_ARGS *args, int32_t conduit,
+              uint64_t pre_smc_regs[REG_COUNT_X5_X17],
+              uint64_t post_smc_regs[REG_COUNT_X5_X17]);
+void val_pfdi_invalidate_ret_params(PFDI_RET_PARAMS *args);
+
+uint32_t val_pfdi_execute_pfdi_tests(uint32_t num_pe);
+
+uint32_t pfdi001_entry(uint32_t num_pe);
+uint32_t pfdi002_entry(uint32_t num_pe);
+uint32_t pfdi003_entry(uint32_t num_pe);
+uint32_t pfdi004_entry(uint32_t num_pe);
+uint32_t pfdi005_entry(uint32_t num_pe);
+uint32_t pfdi006_entry(uint32_t num_pe);
+uint32_t pfdi007_entry(uint32_t num_pe);
+uint32_t pfdi008_entry(uint32_t num_pe);
+uint32_t pfdi009_entry(uint32_t num_pe);
+uint32_t pfdi010_entry(uint32_t num_pe);
+uint32_t pfdi011_entry(uint32_t num_pe);
+uint32_t pfdi012_entry(uint32_t num_pe);
+uint32_t pfdi013_entry(uint32_t num_pe);
+uint32_t pfdi014_entry(uint32_t num_pe);
+uint32_t pfdi015_entry(uint32_t num_pe);
+uint32_t pfdi016_entry(uint32_t num_pe);
+uint32_t pfdi017_entry(uint32_t num_pe);
+
 #endif

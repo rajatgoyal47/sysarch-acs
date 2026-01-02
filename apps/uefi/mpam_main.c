@@ -51,7 +51,6 @@ UINT32  g_num_modules = 0;
 
 SHELL_FILE_HANDLE g_acs_log_file_handle;
 
-STATIC
 VOID
 FlushImage (
     VOID
@@ -183,7 +182,7 @@ HelpMsg (
              );
 }
 
-STATIC CONST SHELL_PARAM_ITEM ParamList[] = {
+CONST SHELL_PARAM_ITEM ParamList[] = {
     {L"-v"    , TypeValue},    // -v    # Verbosity of the Prints. 1 shows all prints, 5 shows Errors
     {L"-f"    , TypeValue},    // -f    # Name of the log file to record the test results in.
     {L"-skip" , TypeValue},    // -skip # test(s) to skip execution
@@ -239,7 +238,7 @@ command_init ()
         if (EFI_ERROR(Status))
         {
           Print(L"Allocate memory for -skip failed\n", 0);
-          return 0;
+          return ACS_PARSE_SKIP_RUN;
         }
 
         g_skip_test_num[0] = StrDecimalToUintn((CONST CHAR16 *)(CmdLineArg+0));
@@ -294,7 +293,7 @@ command_init ()
           if (EFI_ERROR(Status))
           {
               Print(L"Allocate memory for -t failed\n", 0);
-              return 0;
+              return ACS_PARSE_SKIP_RUN;
           }
 
           /* Check if the first value to -t is a decimal character. */
@@ -332,7 +331,7 @@ command_init ()
             if (EFI_ERROR(Status))
             {
                 Print(L"Allocate memory for -m failed\n", 0);
-                return 0;
+                return ACS_PARSE_SKIP_RUN;
             }
 
             /* Check if the first value to -m is a decimal character. */
@@ -357,7 +356,7 @@ command_init ()
     /* Options with Values */
     if ((ShellCommandLineGetFlag (ParamPackage, L"-help")) || (ShellCommandLineGetFlag (ParamPackage, L"-h"))) {
         HelpMsg();
-        return 0;
+        return ACS_PARSE_SKIP_RUN;
     }
 
     /* Initialize global counters */

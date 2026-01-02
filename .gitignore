@@ -4,7 +4,13 @@ cscope.*
 *.o*
 .vscode/
 pre_commit_data/
+AGENTS.md
+.project
+*.launch
+venv
 #Ignore build directory
 build/
 #Ignore kvm framework
 mem_test/kvm-unit-tests
+#Ignore pre commit data
+pre_commit_data/

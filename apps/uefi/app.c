@@ -37,7 +37,14 @@ ShellAppMain (
   IN CHAR16 **Argv
   )
 {
-  command_init();
+  UINT32 init_status;
+
+  init_status = command_init();
+  if (init_status != 0) {
+    /* Invalid CLI/HelpMsg/Errors, do not run tests */
+    return SHELL_INVALID_PARAMETER;
+  }
+
   execute_tests();
   return 0;
 }

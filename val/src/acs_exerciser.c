@@ -61,6 +61,9 @@ uint32_t val_exerciser_create_info_table(void)
   char8_t *vendor_name;
   uint32_t vendor_id;
 
+  /* Init number of exerciser count */
+  g_exerciser_info_table.num_exerciser = 0;
+
   num_ecam = (uint32_t)val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0);
   if (num_ecam == 0)
   {
@@ -93,6 +96,8 @@ uint32_t val_exerciser_create_info_table(void)
       if (pal_is_bdf_exerciser(Bdf))
       {
           g_exerciser_info_table.e_info[num_exerciser_info].bdf = Bdf;
+          g_exerciser_info_table.e_info[num_exerciser_info].rc_index =
+                                               val_iovirt_get_rc_index(PCIE_EXTRACT_BDF_SEG(Bdf));
           g_exerciser_info_table.e_info[num_exerciser_info++].initialized = 0;
           vendor_id = (reg_value >> TYPE01_VIDR_SHIFT) & TYPE01_VIDR_MASK;
           vendor_name = lookup_vendor_name(vendor_id);
@@ -104,7 +109,7 @@ uint32_t val_exerciser_create_info_table(void)
       }
   }
   g_exerciser_info_table.num_exerciser = num_exerciser_info;
-  val_print(ACS_PRINT_TEST, " PCIE_INFO: Number of exerciser cards : %4d \n",
+  val_print(ACS_PRINT_TEST, "\n     PCIE_INFO: Number of exerciser cards : %4d \n",
                                                              g_exerciser_info_table.num_exerciser);
   return 0;
 }
@@ -152,6 +157,25 @@ uint32_t val_exerciser_get_bdf(uint32_t instance)
 {
     return g_exerciser_info_table.e_info[instance].bdf;
 }
+
+/**
+  @brief   This API returns the instance of the PCIe bdf
+  @param  rc_index  - RC index of the BDF Number
+  @return instance  - Stimulus hardware instance number
+**/
+uint32_t val_exerciser_get_exerciser_instance(uint32_t rc_index)
+{
+    uint32_t instance;
+    uint32_t num_exercisers;
+
+    num_exercisers = val_exerciser_get_info(EXERCISER_NUM_CARDS);
+    for (instance = 0; instance < num_exercisers; ++instance) {
+      if (g_exerciser_info_table.e_info[instance].rc_index == rc_index)
+          return instance;
+    }
+    return ACS_INVALID_INDEX;
+}
+
 /**
   @brief   This API reads the configuration parameters of the PCIe stimulus generation hardware
   @param   type         - Parameter type that needs to be read from the stimulus hadrware
@@ -341,4 +365,88 @@ uint32_t
 val_exerciser_set_bar_response(uint32_t bdf)
 {
   return pal_exerciser_set_bar_response(bdf);
+}
+
+/**
+  @brief Initialize Exerciser test prerequisites and cache the result
+
+  Builds the PCIe BDF table, validates platform hierarchy, discovers Exerciser
+  instances, initializes and disables SMMU contexts, and configures ITS once.
+  Subsequent calls return the cached status from the first invocation.
+
+  @return ACS_STATUS_PASS on success
+  @return ACS_STATUS_SKIP if prerequisites are not met (no ECAM/BDF/Exerciser,
+          invalid hierarchy, SMMU/ITS init failure)
+**/
+uint32_t val_exerciser_test_init(void)
+{
+/* For non-rule based build the init is done by val_*bsa_exerciser_execute_tests */
+#ifndef COMPILE_RB_EXE
+    return ACS_STATUS_PASS;
+#endif
+    static uint32_t status = ACS_STATUS_UNKNOWN;
+    uint32_t num_instances = 0;
+    uint32_t num_smmu = 0;
+    uint32_t instance = 0;
+    extern uint32_t g_its_init;
+
+    /* If init already performed return stored status */
+    if (status != ACS_STATUS_UNKNOWN) {
+        return status;
+    }
+
+    /* Build BDF table for all PCIe devices */
+    if (val_pcie_create_device_bdf_table()) {
+        val_print(ACS_PRINT_WARN,
+                  "\n     Create BDF Table Failed, Skipping Exerciser tests...\n", 0);
+        status = ACS_STATUS_SKIP;
+        return status;
+    }
+
+    if (pcie_bdf_table_list_flag == 1) {
+        val_print(ACS_PRINT_WARN,
+                  "\n     *** Created device list with valid bdf doesn't match with the"
+                  " platform pcie device hierarchy, Skipping exerciser tests ***\n",
+                  0);
+        status = ACS_STATUS_SKIP;
+        return status;
+    }
+
+    val_print(ACS_PRINT_INFO, "\n      Starting Exerciser Setup\n", 0);
+    /* Create exerciser info table */
+    val_exerciser_create_info_table();
+    num_instances = val_exerciser_get_info(EXERCISER_NUM_CARDS);
+    if (num_instances == 0) {
+        val_print(ACS_PRINT_WARN,
+                  "\n     No Exerciser Devices Found, Skipping Exerciser tests...\n", 0);
+        status = ACS_STATUS_SKIP;
+        return status;
+    }
+
+    /* Initialize SMMU and disable all contexts initially */
+    val_print(ACS_PRINT_INFO, "\n      Initializing SMMU\n", 0);
+    if (val_smmu_init() == ACS_STATUS_ERR) {
+        val_print(ACS_PRINT_ERR, "\n     val_smmu_init() failed \n", 0);
+        status = ACS_STATUS_SKIP;
+        return status;
+    }
+
+    num_smmu = val_iovirt_get_smmu_info(SMMU_NUM_CTRL, 0);
+    for (instance = 0; instance < num_smmu; ++instance) {
+        val_smmu_disable(instance);
+    }
+
+    /* Configure ITS once */
+    if (g_its_init != 1) {
+        val_print(ACS_PRINT_INFO, "\n      Initializing ITS\n", 0);
+        if (val_gic_its_configure() == ACS_STATUS_ERR) {
+            val_print(ACS_PRINT_ERR, "\n     val_gic_its_configure() failed \n", 0);
+            status = ACS_STATUS_SKIP;
+            return status;
+        }
+        g_its_init = 1;
+    }
+
+    status = ACS_STATUS_PASS;
+    return status;
 }
