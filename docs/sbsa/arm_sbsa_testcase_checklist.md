@@ -3257,7 +3257,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td></td>
+      <td>Requires BRBE enabled for Non-Secure EL2 in TF-A. Missing this firmware dependency can cause EL2→EL3 traps and potential system hang</td>
     </tr>
     <tr>
       <td>Version 8.0</td>
