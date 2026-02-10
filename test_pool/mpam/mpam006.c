@@ -287,6 +287,9 @@ payload(void)
     /*Perform first memory transaction */
     val_memcpy(src_buf, dest_buf, BUFFER_SIZE);
 
+    val_mem_issue_dsb();
+    val_time_delay_ms(100 * ONE_MILLISECOND);
+
     /* Monitor all MSCs with expected count in CSU monitors to be 0 */
     read_all_msc_csu_counters(0);
 
@@ -319,6 +322,9 @@ payload(void)
 
     /*Perform second memory transaction */
     val_memcpy(src_buf, dest_buf, BUFFER_SIZE);
+
+    val_mem_issue_dsb();
+    val_time_delay_ms(100 * ONE_MILLISECOND);
 
     /* Monitor all MSCs with expected count in CSU monitors to be non-zero */
     read_all_msc_csu_counters(1);
