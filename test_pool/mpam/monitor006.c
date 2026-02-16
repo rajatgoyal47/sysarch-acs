@@ -15,91 +15,18 @@
  * limitations under the License.
 **/
 
-#include "val/include/acs_val.h"
-#include "val/include/acs_pe.h"
-#include "val/include/acs_mpam.h"
-#include "val/include/acs_mpam_reg.h"
-#include "val/include/acs_memory.h"
-#include "val/include/val_interface.h"
+#include "acs_val.h"
+#include "acs_pe.h"
+#include "acs_mpam.h"
+#include "acs_mpam_reg.h"
+#include "acs_memory.h"
+#include "val_interface.h"
 
-#define TEST_NUM   ACS_MPAM_MONITOR_TEST_NUM_BASE + 6
+#define TEST_NUM   ACS_MPAM_MEMORY_TEST_NUM_BASE + 4
 #define TEST_RULE  ""
 #define TEST_DESC  "Check MBWU MSMON CTL Disable behavior "
 
 #define TEST_BUF_SIZE         SIZE_1M
-#define MBWU_PREFILL_DELTA    0x1000
-
-/* Busy-wait until the monitor's NRDY interval completes */
-static void
-mbwu_wait_for_update(uint32_t msc_index)
-{
-  uint64_t nrdy_timeout = val_mpam_get_info(MPAM_MSC_NRDY, msc_index, 0);
-
-  while (nrdy_timeout)
-    --nrdy_timeout;
-}
-
-/* Program the MBWU counter with a raw value respecting NRDY semantics */
-static void
-mbwu_write_counter(uint32_t msc_index, uint64_t value)
-{
-  uint64_t data64;
-  uint32_t data32;
-
-  if (val_mpam_mbwu_supports_long(msc_index)) {
-    data64 = ((uint64_t)0 << MBWU_NRDY_SHIFT) | value;
-    val_mpam_mmr_write64(msc_index, REG_MSMON_MBWU_L, data64);
-  } else {
-    data32 = (0 << MBWU_NRDY_SHIFT) | (uint32_t)value;
-    val_mpam_mmr_write(msc_index, REG_MSMON_MBWU, data32);
-  }
-}
-
-/* Derive a counter value that causes an impending overflow */
-static uint64_t
-mbwu_get_prefill_value(uint32_t msc_index)
-{
-  uint64_t max_count;
-
-  if (val_mpam_mbwu_supports_long(msc_index)) {
-    if (val_mpam_mbwu_supports_lwd(msc_index))
-      max_count = MSMON_COUNT_63BIT;
-    else
-      max_count = MSMON_COUNT_44BIT;
-  } else {
-      max_count = MSMON_COUNT_31BIT;
-  }
-
-  return max_count - MBWU_PREFILL_DELTA;
-}
-
-/* Read whether the monitor has an overflow status set */
-static uint32_t
-mbwu_is_overflow_set(uint32_t msc_index)
-{
-  uint32_t ctl;
-
-  ctl = val_mpam_mmr_read(msc_index, REG_MSMON_CFG_MBWU_CTL);
-  return ((ctl & ((uint32_t)1 << MBWU_CTL_OFLOW_STATUS_BIT_SHIFT)) |
-          (ctl & ((uint32_t)1 << MBWU_CTL_OFLOW_STATUS_L_SHIFT)));
-}
-
-/* Clear overflow status and return Status Value */
-static uint32_t
-mbwu_clear_overflow_status(uint32_t msc_index)
-{
-  uint32_t ctl;
-
-  ctl = val_mpam_mmr_read(msc_index, REG_MSMON_CFG_MBWU_CTL);
-  ctl &= ~(((uint32_t)1 << MBWU_CTL_OFLOW_STATUS_BIT_SHIFT) |
-           ((uint32_t)1 << MBWU_CTL_OFLOW_STATUS_L_SHIFT));
-  val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MBWU_CTL, ctl);
-
-  ctl = val_mpam_mmr_read(msc_index, REG_MSMON_CFG_MBWU_CTL);
-
-  return ((ctl & ((uint32_t)1 << MBWU_CTL_OFLOW_STATUS_BIT_SHIFT)) |
-          (ctl & ((uint32_t)1 << MBWU_CTL_OFLOW_STATUS_L_SHIFT)));
-}
 
 /* Configure, trigger, and check an overflow for the current resource */
 static uint32_t
@@ -118,8 +45,10 @@ mbwu_prepare_overflow(uint32_t msc_index, void *src_buf, void *dest_buf, uint64_
   val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MBWU_CTL, ctl);
 
   /* Update Counter value to Near Maximum */
-  mbwu_write_counter(msc_index, mbwu_get_prefill_value(msc_index));
-  mbwu_wait_for_update(msc_index);
+  val_mpam_mbwu_write_counter(msc_index,
+      val_mpam_mbwu_get_prefill_value(msc_index, MBWU_SHORT_CHECK),
+      MBWU_SHORT_CHECK);
+  val_mpam_mbwu_wait_for_update(msc_index);
 
   /* Enable Monitor */
   ctl = val_mpam_mmr_read(msc_index, REG_MSMON_CFG_MBWU_CTL);
@@ -127,9 +56,9 @@ mbwu_prepare_overflow(uint32_t msc_index, void *src_buf, void *dest_buf, uint64_
   val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MBWU_CTL, ctl);
 
   val_memcpy(src_buf, dest_buf, buf_size);
-  mbwu_wait_for_update(msc_index);
+  val_mpam_mbwu_wait_for_update(msc_index);
 
-  if (!mbwu_is_overflow_set(msc_index)) {
+  if (!val_mpam_mbwu_is_overflow_set(msc_index)) {
     val_print(ACS_PRINT_ERR,
         "\n       Overflow status not set during setup for MSC %d", msc_index);
     goto exit_fail;
@@ -222,7 +151,7 @@ payload(void)
       }
 
       /* Ensure software clear deasserts overflow indication */
-      if (mbwu_clear_overflow_status(msc_index)) {
+      if (val_mpam_mbwu_clear_overflow_status(msc_index)) {
         val_print(ACS_PRINT_ERR,
             "\n       Overflow status not cleared for MSC %d", msc_index);
         test_fail++;

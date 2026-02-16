@@ -21,6 +21,8 @@
 #include "acs_std_smc.h"
 #include "acs_cfg.h"
 
+extern uint32_t g_its_init;
+
 /**
   @brief   This API will execute all MPAM Error tests
            1. Caller       -  Application layer.
@@ -73,6 +75,22 @@ val_mpam_execute_error_tests(uint32_t num_pe)
   status |= intr002_entry();
   status |= intr003_entry();
   status |= intr004_entry();
+
+  /* Setup ITS for MSI Tests */
+  if (g_its_init != 1) {
+      val_print(ACS_PRINT_INFO, "\n      Initializing ITS\n", 0);
+      if (val_gic_its_configure() == ACS_STATUS_ERR) {
+          val_print(ACS_PRINT_ERR, "\n     val_gic_its_configure() failed \n", 0);
+          status = ACS_STATUS_SKIP;
+          return status;
+      }
+      g_its_init = 1;
+  }
+
+  if (g_its_init) {
+    status |= intr005_entry();
+    status |= intr006_entry();
+  }
 
   val_print_test_end(status, "ERROR");
 

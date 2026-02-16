@@ -69,6 +69,10 @@ typedef enum {
 #define DEFAULT_PMG_MAX 255 //(2^8 - 1)
 #define MPAM_MON_NOT_READY -1
 
+#define MBWU_PREFILL_DELTA  0x1000
+#define MBWU_LONG_CHECK     1U
+#define MBWU_SHORT_CHECK    0U
+
 #define MAX_CPBM_WIDTH      32768
 #define MAX_BWPBM_WIDTH     4096
 
@@ -154,6 +158,11 @@ uint32_t val_mpam_msc_endis_partid(uint32_t msc_index, bool endis_flag,
                                   bool nfu_flag, uint16_t partid);
 uint32_t val_mpam_reset_csumon(uint32_t msc_index, uint16_t mon_sel);
 uint32_t val_mpam_write_csumon(uint32_t msc_index, uint32_t value);
+uint32_t val_mpam_mbwu_write_counter(uint32_t msc_index, uint64_t value, uint32_t is_long_check);
+uint64_t val_mpam_mbwu_get_prefill_value(uint32_t msc_index, uint32_t is_long_check);
+uint32_t val_mpam_mbwu_is_overflow_set(uint32_t msc_index);
+uint32_t val_mpam_mbwu_clear_overflow_status(uint32_t msc_index);
+void     val_mpam_mbwu_wait_for_update(uint32_t msc_index);
 
 uint32_t mpam001_entry(uint32_t num_pe);
 uint32_t mpam002_entry(uint32_t num_pe);
