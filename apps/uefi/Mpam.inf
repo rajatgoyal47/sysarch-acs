@@ -60,6 +60,8 @@
   ../../test_pool/mpam/intr002.c
   ../../test_pool/mpam/intr003.c
   ../../test_pool/mpam/intr004.c
+  ../../test_pool/mpam/intr005.c
+  ../../test_pool/mpam/intr006.c
   ../../test_pool/mpam/partition001.c
   ../../test_pool/mpam/partition002.c
   ../../test_pool/mpam/partition003.c

@@ -15,12 +15,12 @@
  * limitations under the License.
 **/
 
-#include "val/include/acs_val.h"
-#include "val/include/acs_pe.h"
-#include "val/include/acs_mpam.h"
-#include "val/include/acs_mpam_reg.h"
-#include "val/include/acs_memory.h"
-#include "val/include/val_interface.h"
+#include "acs_val.h"
+#include "acs_pe.h"
+#include "acs_mpam.h"
+#include "acs_mpam_reg.h"
+#include "acs_memory.h"
+#include "val_interface.h"
 
 #define TEST_NUM   ACS_MPAM_MONITOR_TEST_NUM_BASE + 5
 #define TEST_RULE  ""

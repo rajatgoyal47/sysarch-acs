@@ -27,6 +27,7 @@
 
 static uint32_t msc_index;
 static uint32_t intr_num;
+static uint32_t mpamf_ecr_saved;
 
 static void *branch_to_test;
 
@@ -50,6 +51,9 @@ static void intr_handler(void)
     val_print(ACS_PRINT_DEBUG, "\n       Received MSC Err interrupt %d", intr_num);
     val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
 
+    /* Restore Error Control Register original settings */
+    val_mpam_mmr_write(msc_index, REG_MPAMF_ECR, mpamf_ecr_saved);
+
     /* Write 0b0000 into MPAMF_ESR.ERRCODE to clear the interrupt */
     val_mpam_msc_reset_errcode(msc_index);
 
@@ -68,7 +72,6 @@ void payload(void)
     uint32_t status;
     uint32_t total_nodes;
     uint32_t timeout;
-    uint32_t mpamf_ecr;
     uint32_t intr_count = 0;
 
     pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
@@ -93,7 +96,7 @@ void payload(void)
         intr_type = intr_flags & MPAM_ACPI_ERR_INTR_TYPE_MASK;
 
         /* Read MPAMF_ECR before generating error. This will be used to restore to default later */
-        mpamf_ecr = val_mpam_mmr_read(msc_index, REG_MPAMF_ECR);
+        mpamf_ecr_saved = val_mpam_mmr_read(msc_index, REG_MPAMF_ECR);
         status    = val_mpam_msc_reset_errcode(msc_index);
 
         if (!status) {
@@ -133,9 +136,8 @@ void payload(void)
         timeout = TIMEOUT_LARGE;
         while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(pe_index))));
 
-        /* Restore Error Control Register original settings */
-        val_mpam_mmr_write(msc_index, REG_MPAMF_ECR, mpamf_ecr);
-
+        /* Restore Error Control Register original settings (safety net) */
+        val_mpam_mmr_write(msc_index, REG_MPAMF_ECR, mpamf_ecr_saved);
         if (timeout == 0) {
             val_print(ACS_PRINT_ERR, "\n       MSC Err Interrupt not received on %d", intr_num);
             val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 03));

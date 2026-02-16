@@ -805,6 +805,15 @@ uint32_t val_mpam_msc_generate_pmgor_error(uint32_t msc_index);
 void     val_mpam_msc_generate_msmon_config_error(uint32_t msc_index, uint16_t mon_count);
 void     val_mpam_msc_generate_msmon_oflow_error(uint32_t msc_index, uint16_t mon_count);
 void     val_mpam_msc_trigger_intr(uint32_t msc_index);
+uint32_t val_mpam_msc_request_msi(uint32_t msc_index, uint32_t device_id, uint32_t its_id,
+                                  uint32_t int_id, uint32_t is_oflow_msi);
+uint32_t val_mpam_msc_enable_msi(uint32_t msc_index, uint32_t is_oflow_msi);
+uint32_t val_mpam_mbwu_write_counter(uint32_t msc_index, uint64_t value, uint32_t is_long_check);
+uint64_t val_mpam_mbwu_get_prefill_value(uint32_t msc_index, uint32_t is_long_check);
+uint32_t val_mpam_mbwu_is_overflow_set(uint32_t msc_index);
+uint32_t val_mpam_mbwu_clear_overflow_status(uint32_t msc_index);
+void     val_mpam_mbwu_wait_for_update(uint32_t msc_index);
+uint32_t val_mpam_get_msc_device_info(uint32_t msc_index, uint32_t *device_id, uint32_t *its_id);
 
 // Register tests entry calls
 uint32_t reg001_entry(void);
@@ -838,6 +847,8 @@ uint32_t intr001_entry(void);
 uint32_t intr002_entry(void);
 uint32_t intr003_entry(void);
 uint32_t intr004_entry(void);
+uint32_t intr005_entry(void);
+uint32_t intr006_entry(void);
 
 /* Cache Tests */
 uint32_t partition001_entry(void);
