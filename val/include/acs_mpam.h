@@ -120,6 +120,7 @@ uint32_t val_mpam_supports_cpor(uint32_t msc_index);
 uint32_t val_mpam_supports_ccap(uint32_t msc_index);
 uint32_t val_mpam_supports_cassoc(uint32_t msc_index);
 bool     val_mpam_msc_supports_cmax_softlim(uint32_t msc_index);
+bool     val_mpam_msc_supports_cmin(uint32_t msc_index);
 uint32_t val_mpam_get_cmax_wd(uint32_t msc_index);
 uint32_t val_mpam_get_cassoc_wd(uint32_t msc_index);
 uint32_t val_mpam_get_msc_device_info(uint32_t msc_index, uint32_t *device_id, uint32_t *its_id);
@@ -136,6 +137,7 @@ void val_mpam_configure_ccap(uint32_t msc_index, uint16_t partid,
                                                      uint8_t softlim, uint32_t ccap_percentage);
 void val_mpam_configure_cassoc(uint32_t msc_index, uint16_t partid,
                                                  uint32_t cassoc_percentage);
+void val_mpam_configure_cmin(uint32_t msc_index, uint16_t partid, uint32_t cmin_percentage);
 void val_mpam_configure_mbwpbm(uint32_t msc_index, uint16_t partid, uint32_t mbwpbm_percentage);
 void val_mpam_msc_configure_mbwmin(uint32_t msc_index, uint16_t partid, uint32_t mbwmin_percentage);
 void val_mpam_msc_configure_mbwmax(uint32_t msc_index, uint16_t partid,

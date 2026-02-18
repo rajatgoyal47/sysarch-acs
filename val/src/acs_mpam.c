@@ -447,6 +447,21 @@ val_mpam_msc_supports_cmax_softlim(uint32_t msc_index)
 }
 
 /**
+  @brief   This API checks whether MSC supports CMIN partition controls.
+  @param   msc_index - index of the MSC node in the MPAM info table.
+  @return  1 if supported 0 otherwise.
+**/
+bool
+val_mpam_msc_supports_cmin(uint32_t msc_index)
+{
+    if (val_mpam_supports_ccap(msc_index))
+        return BITFIELD_READ(CCAP_IDR_HAS_CMIN,
+                   val_mpam_mmr_read(msc_index, REG_MPAMF_CCAP_IDR));
+
+    return 0;
+}
+
+/**
   @brief   This API checks whether 64 bit MPAMF_IDR is implemented for the MSC.
   @param   msc_index - index of the MSC node in the MPAM info table.
   @return  1 if supported 0 otherwise.
@@ -1374,6 +1389,47 @@ void val_mpam_configure_cassoc(uint32_t msc_index, uint16_t partid,
      */
     val_mpam_mmr_write(msc_index, REG_MPAMCFG_CASSOC,
                       (fixed_point_fraction << (16 - num_fractional_bits)) & 0xFFFF);
+
+    val_mem_issue_dsb();
+    return;
+}
+
+/**
+  @brief   This API Configures CMIN settings for given MSC
+           Prerequisite - If MSC supports RIS, Resource instance should be
+                          selected using val_mpam_memory_configure_ris_sel
+                          prior calling this API.
+  @param   msc_index - index of the MSC node in the MPAM info table.
+  @param   partid - PATRTID for CCAP configuration
+  @param   cmin_percentage - Minimum percentage of cache to be allocated for the given PARTID
+  @return  void.
+**/
+void val_mpam_configure_cmin(uint32_t msc_index, uint16_t partid, uint32_t cmin_percentage)
+{
+
+    uint8_t num_fractional_bits;
+    uint16_t fixed_point_fraction;
+
+    num_fractional_bits = val_mpam_get_cmax_wd(msc_index);
+    if (num_fractional_bits > 16) {
+        val_print(ACS_PRINT_ERR, "\n       Number of fractional bits = %d not permitted",
+                                                                            num_fractional_bits);
+        num_fractional_bits = 16;
+    }
+
+    fixed_point_fraction = ((1 << num_fractional_bits) * cmin_percentage / 100);
+    if (fixed_point_fraction != 0)
+        fixed_point_fraction -= 1;
+
+    /* Select the PARTID to configure capacity partition parameters */
+    val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, partid);
+
+    /*
+     * Configure the CMIN register -  min cache capacity to be allocated for the PARTID.
+     * Use num_fractional_bits fixed-point representation
+     */
+    val_mpam_mmr_write(msc_index, REG_MPAMCFG_CMIN,
+                      ((fixed_point_fraction << (16 - num_fractional_bits)) & 0xFFFF));
 
     val_mem_issue_dsb();
     return;

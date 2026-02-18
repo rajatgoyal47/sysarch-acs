@@ -34,7 +34,7 @@
 /* Macro can be used write a particular bitfield with name##_MASK and name##_SHIFT
    already defined or declared  for it without affecting other fields*/
 #define BITFIELD_WRITE(reg_val, name, val) \
-        ((reg_val & ~(name##_MASK << name##_SHIFT)) | val << name##_SHIFT)
+        ((reg_val & ~(name##_MASK << name##_SHIFT)) | (val << name##_SHIFT))
 
 /*******************************************************************************
  * MPAM memory mapped register offsets
@@ -57,6 +57,7 @@
 
 #define REG_MPAMCFG_PART_SEL        0x0100
 #define REG_MPAMCFG_CMAX            0x0108
+#define REG_MPAMCFG_CMIN            0x0110
 #define REG_MPAMCFG_CASSOC          0x0118
 #define REG_MPAMCFG_MBW_MIN         0x0200
 #define REG_MPAMCFG_EN              0x0300

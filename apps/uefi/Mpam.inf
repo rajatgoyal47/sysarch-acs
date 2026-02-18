@@ -67,6 +67,7 @@
   ../../test_pool/mpam/partition003.c
   ../../test_pool/mpam/partition004.c
   ../../test_pool/mpam/partition005.c
+  ../../test_pool/mpam/partition006.c
   ../../test_pool/mpam/monitor001.c
   ../../test_pool/mpam/monitor002.c
   ../../test_pool/mpam/monitor003.c

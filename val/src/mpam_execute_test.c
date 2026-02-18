@@ -232,6 +232,7 @@ val_mpam_execute_cache_tests(uint32_t num_pe)
   status |= partition003_entry();
   status |= partition004_entry();
   status |= partition005_entry();
+  status |= partition006_entry();
 
   status |= feat001_entry();
 

@@ -856,6 +856,7 @@ uint32_t partition002_entry(void);
 uint32_t partition003_entry(void);
 uint32_t partition004_entry(void);
 uint32_t partition005_entry(void);
+uint32_t partition006_entry(void);
 
 uint32_t feat001_entry(void);  // MPAM PARTID EN/DIS feature check test
 
