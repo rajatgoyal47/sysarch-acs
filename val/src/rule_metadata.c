@@ -1530,14 +1530,6 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .flag             = BASE_RULE,
             .test_num         = ACS_EXERCISER_TEST_NUM_BASE + 38,
         },
-        [IE_PWR_1] = {
-            .test_entry_id    = P034_ENTRY,
-            .module_id        = PCIE,
-            .rule_desc        = "Check Power Management rules: iEP/RP",
-            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
-            .flag             = BASE_RULE,
-            .test_num         = ACS_PCIE_TEST_NUM_BASE + 34,
-        },
         [IE_REG_1] = {
             .test_entry_id    = IE_REG_1_ENTRY,
             .module_id        = PCIE,
@@ -2040,10 +2032,10 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 84,
         },
-        [RE_PWR_1] = {
+        [RI_PWR_1] = {
             .test_entry_id    = P070_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Check Power Management rules: RCiEP",
+            .rule_desc        = "Check Power Mgmt rules: RCiEP/iEP/RP",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 70,
@@ -2172,6 +2164,13 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 100,
+        },
+        [S_PCIe_10] = {
+            .test_entry_id    = NULL_ENTRY,
+            .module_id        = PCIE,
+            .rule_desc        = "STE.DCP control & Steering Tag properties",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI | PLATFORM_LINUX,
+            .flag             = ALIAS_RULE,
         },
     /* MPAM */
         [S_L7MP_01] = {
@@ -3059,7 +3058,6 @@ test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL] = {
     [P031_ENTRY] = p031_entry, // used in wrapper.
     [P032_ENTRY] = p032_entry, // used in wrapper.
     [P033_ENTRY] = p033_entry, // used in wrapper.
-    [P034_ENTRY] = p034_entry,
     [P035_ENTRY] = p035_entry,
     [P036_ENTRY] = p036_entry, // used in wrapper.
     [P037_ENTRY] = p037_entry,
@@ -3570,7 +3568,6 @@ test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL] = {
     [P015_ENTRY] = p015_entry,
     [P016_ENTRY] = p016_entry,
     [P027_ENTRY] = p027_entry, // used in wrapper.
-    [P034_ENTRY] = p034_entry,
     [P047_ENTRY] = p047_entry,
     [P048_ENTRY] = p048_entry, // used in wrapper.
     [P049_ENTRY] = p049_entry, // used in wrapper.
@@ -4122,6 +4119,9 @@ RULE_ID_e sys_ras_rule_list[] = {
     RULE_ID_SENTINEL
 };
 
+/* S_PCIe_10 */
+RULE_ID_e s_pcie_10_rule_list[]   = {B_PCIe_10, B_PCIe_11, RULE_ID_SENTINEL};
+
 /* PCBSA alias lists */
 /* P_L2WD_01 */
 RULE_ID_e p_l2wd_01_rule_list[]   = {B_WD_01, B_WD_02, B_WD_03, B_WD_04, B_WD_05,
@@ -4207,6 +4207,7 @@ alias_rule_map_t alias_rule_map[] = {
     {S_L3WD_01, s_l3wd_01_rule_list},
     {S_L6PCI_1, s_l6pci_1_rule_list},
     {S_L6PE_01, s_l6pe_01_rule_list},
+    {S_PCIe_10, s_pcie_10_rule_list},
     {SYS_RAS,   sys_ras_rule_list},
     {LVQBC,     lvqbc_rule_list},
 

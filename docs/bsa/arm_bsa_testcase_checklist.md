@@ -2150,12 +2150,12 @@ The checklist provides information about:
     </tr>
     <tr>
       <td>RI_PWR_1</td>
-      <td>Not Covered</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>870</td>
+      <td>Check Power Mgmt rules: RCiEP/iEP/RP</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>RCiEP, iEP RP, iEP EP</td>
     </tr>
     <tr>
       <td>PCI_IN_01</td>
@@ -3043,12 +3043,12 @@ The checklist provides information about:
     </tr>
     <tr>
       <td>RI_PWR_1</td>
-      <td>Not Covered</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>870</td>
+      <td>Check Power Mgmt rules: RCiEP/iEP/RP</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>RCiEP, iEP RP, iEP EP</td>
     </tr>
     <tr>
       <td>PCI_IN_01</td>
@@ -3735,6 +3735,9 @@ The checklist provides information about:
 </table>
 
 ## Latest Checklist Changes
+- **RI_ Added:** RI_PWR_1
+
+### v25.12_BSA_1.2.0
 - Updated Rule Checklist as per BSA 1.2 Specification
 - **B_ Added:** B_SEC_01–05, B_IEP_1, B_REP_1
 - **B_ Removed:** B_MEM_04, B_PE_15, B_WAK_09

@@ -888,12 +888,12 @@ The checklist provides information about:
     </tr>
     <tr>
       <td>RI_PWR_1</td>
-      <td>Not Covered</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>870</td>
+      <td>Check Power Mgmt rules: RCiEP/iEP/RP</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>RCiEP, iEP RP, iEP EP</td>
     </tr>
     <tr>
       <td>PCI_IN_01</td>
@@ -1780,13 +1780,13 @@ The checklist provides information about:
       <td>RCiEP, iEP EP</td>
     </tr>
     <tr>
-      <td>RI_PWR_1</td>
-      <td>Not Covered</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <<td>RI_PWR_1</td>
+      <td>870</td>
+      <td>Check Power Mgmt rules: RCiEP/iEP/RP</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>RCiEP, iEP RP, iEP EP</td>
     </tr>
     <tr>
       <td>PCI_IN_01</td>
@@ -3370,15 +3370,24 @@ The checklist provides information about:
       <td>Exerciser VIP required</td>
     </tr>
     <tr>
-      <td>Version 8.0</td>
-      <td>S_PCIe_10</td>
-      <td>S_PCIe_10</td>
+      <td rowspan="2">Version 8.0</td>
+      <td rowspan="2">S_PCIe_10</td>
+      <td>B_PCIe_10</td>
       <td>1530</td>
       <td>Enable and disable STE.DCP bit</td>
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
       <td>Exerciser VIP required</td>
+    </tr>
+    <tr>
+      <td>B_PCIe_11</td>
+      <td>891</td>
+      <td>Steering Tag value properties</td>
+      <td>No</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td></td>
     </tr>
     <tr>
       <td rowspan="5">Version 8.0</td>
@@ -3620,6 +3629,8 @@ The checklist provides information about:
 
 ## Latest Checklist Changes
 - **FR Added:** LVQBC, KBRZG
+- **RI_ Added:** RI_PWR_1
+- B_PCIe_10 and B_PCIe_11 mapped to S_PCIe_10
 
 ### v25.12_SBSA_8.0.0
 - Updated checklist as per SBSA 8.0 specification.
