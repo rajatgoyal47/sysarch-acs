@@ -188,4 +188,5 @@ Only execute on **development** systems. Do **not** run on production systems wi
 
 Distributed under [Apache v2.0 License](https://www.apache.org/licenses/LICENSE-2.0).
 © 2025-2026 Arm Limited and Contributors.
-
+Some components, like `cca/firme/`, are licensed under the BSD 3-Clause License.
+See `cca/firme/README.md` and individual files for details.

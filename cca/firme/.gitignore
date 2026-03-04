@@ -1,0 +1,8 @@
+build/
+build-cmake/
+build-cmake-*/
+build-tfa/
+build-*/
+build-*.log
+build-fvp-*.log
+build-fvp-telnet/
