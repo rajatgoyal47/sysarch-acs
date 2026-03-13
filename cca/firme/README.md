@@ -116,7 +116,7 @@ package SPs, ensure your Python environment provides `fdt` so TF-A can generate 
 - Scenarios / rule coverage: `cca/firme/docs/FIRME_Architecture_Compliance_Suite_Scenario_Document.rst`
 
 ## Feedback, contributions, and support
-- Email: [support-systemready-acs@arm.com](mailto:support-systemready-acs@arm.com)
+- Email: [support-firme-acs@arm.com](mailto:support-firme-acs@arm.com)
 - GitHub Issues: [sysarch-acs issue tracker](https://github.com/ARM-software/sysarch-acs/issues)
 - Contributions: [GitHub Pull Requests](https://github.com/ARM-software/sysarch-acs/pulls)
 
