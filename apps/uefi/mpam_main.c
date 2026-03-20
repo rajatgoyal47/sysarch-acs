@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -106,6 +106,7 @@ createMpamInfoTable(
   val_mpam_create_info_table(MpamInfoTable);
 }
 
+
 VOID
 createHmatInfoTable(
 )
@@ -140,6 +141,17 @@ createPccInfoTable(
 }
 
 VOID
+createIovirtInfoTable(
+)
+{
+  UINT64 *IoVirtInfoTable;
+
+  IoVirtInfoTable = val_aligned_alloc(SIZE_4K, IOVIRT_INFO_TBL_SZ);
+
+  val_iovirt_create_info_table(IoVirtInfoTable);
+}
+
+VOID
 createCacheInfoTable(
 )
 {
@@ -156,6 +168,7 @@ FreeMpamAcsMem (
 {
     val_pe_free_info_table();
     val_gic_free_info_table();
+    val_iovirt_free_info_table();
     val_mpam_free_info_table();
     val_hmat_free_info_table();
     val_srat_free_info_table();
@@ -399,6 +412,8 @@ execute_tests()
     if (Status)
         return Status;
 
+    createIovirtInfoTable();
+
     createCacheInfoTable();
 
     /* required before calling createMpamInfoTable() */
@@ -409,6 +424,7 @@ execute_tests()
     createSratInfoTable();
 
     createMpamInfoTable();
+    val_mpam_update_msc_device_names();
 
     /* Get total number of MSCs reported by MPAM ACPI table */
     msc_node_cnt = val_mpam_get_msc_count();

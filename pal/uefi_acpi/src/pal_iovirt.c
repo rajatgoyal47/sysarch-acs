@@ -371,12 +371,13 @@ iort_add_block(IORT_TABLE *iort, IORT_NODE *iort_node, IOVIRT_INFO_TABLE *IoVirt
        * Else save NULL pointer.
        */
       temp_block = ADD_PTR(IOVIRT_BLOCK, IoVirtTable, offset);
-      (*data).rc.smmu_base = 0;
-      if (((*block)->type == IOVIRT_NODE_PCI_ROOT_COMPLEX) &&
-           ((temp_block->type == IOVIRT_NODE_SMMU) ||
-            (temp_block->type == IOVIRT_NODE_SMMU_V3))) {
-        temp_data = &(temp_block->data);
-        (*data).rc.smmu_base = (*temp_data).smmu.base;
+      if ((*block)->type == IOVIRT_NODE_PCI_ROOT_COMPLEX) {
+        (*data).rc.smmu_base = 0;
+        if ((temp_block->type == IOVIRT_NODE_SMMU) ||
+            (temp_block->type == IOVIRT_NODE_SMMU_V3)) {
+          temp_data = &(temp_block->data);
+          (*data).rc.smmu_base = (*temp_data).smmu.base;
+        }
       }
 
       /* If this node is a named component, Check whether it is behind a SMMU

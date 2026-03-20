@@ -118,6 +118,7 @@ uint32_t val_mpam_supports_cassoc(uint32_t msc_index);
 bool     val_mpam_msc_supports_cmax_softlim(uint32_t msc_index);
 uint32_t val_mpam_get_cmax_wd(uint32_t msc_index);
 uint32_t val_mpam_get_cassoc_wd(uint32_t msc_index);
+uint32_t val_mpam_get_msc_device_info(uint32_t msc_index, uint32_t *device_id, uint32_t *its_id);
 uint32_t val_mpam_get_bwa_wd(uint32_t msc_index);
 uint64_t val_mpam_msc_get_mscbw(uint32_t msc_index, uint32_t rsrc_index);
 uint32_t val_mpam_mbwu_supports_long(uint32_t msc_index);

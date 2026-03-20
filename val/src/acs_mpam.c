@@ -20,6 +20,7 @@
 #include "acs_mmu.h"
 #include "acs_common.h"
 #include "acs_mpam.h"
+#include "acs_iovirt.h"
 #include "acs_memory.h"
 #include "acs_mpam_reg.h"
 
@@ -997,6 +998,25 @@ val_mpam_create_info_table(uint64_t *mpam_info_table)
 }
 
 /**
+  @brief   This API will call PAL layer to update MPAM table MSC entries
+           with device object names parsed from DSDT.
+           1. Caller       -  Application layer.
+           2. Prerequisite -  MPAM info table created.
+  @return  None
+**/
+void
+val_mpam_update_msc_device_names(void)
+{
+#ifndef TARGET_LINUX
+  if (g_mpam_info_table == NULL) {
+    val_print(ACS_PRINT_ERR, "MPAM info table is not created\n", 0);
+    return;
+  }
+  pal_mpam_parse_dsdt_info(g_mpam_info_table);
+#endif
+}
+
+/**
   @brief   This API frees the memory allocated for MPAM info table.
   @param   None
   @return  None
@@ -1013,6 +1033,59 @@ val_mpam_free_info_table(void)
                   "\n WARNING: g_mpam_info_table pointer is already NULL",
         0);
     }
+}
+
+
+/**
+  @brief  This API returns Device ID and ITS ID for a given MSC identifier.
+  @param  identifier  MSC identifier
+  @param  device_id   Pointer to device id
+  @param  its_id      Pointer to ITS id
+  @return status
+**/
+uint32_t
+val_mpam_get_msc_device_info(uint32_t msc_index, uint32_t *device_id, uint32_t *its_id)
+{
+  uint32_t identifier;
+  char *device_name;
+  MPAM_MSC_NODE *msc_node;
+
+  if (g_mpam_info_table == NULL) {
+    val_print(ACS_PRINT_ERR, "MPAM info table is not created\n", 0);
+    return ACS_STATUS_ERR;
+  }
+  if (device_id == NULL) {
+    val_print(ACS_PRINT_ERR, "MPAM info invalid params\n", 0);
+    return ACS_STATUS_ERR;
+  }
+  if (msc_index >= g_mpam_info_table->msc_count) {
+    val_print(ACS_PRINT_ERR, "MPAM info invalid MSC index %d\n", msc_index);
+    return ACS_STATUS_ERR;
+  }
+
+  msc_node = &g_mpam_info_table->msc_node[0];
+  for (uint32_t i = 0; i < msc_index; i++)
+    msc_node = MPAM_NEXT_MSC(msc_node);
+
+  identifier = msc_node->identifier;
+  device_name = msc_node->device_obj_name;
+  if (device_name[0] == '\0') {
+    val_print(ACS_PRINT_ERR, "MPAM info missing device name for MSC %d\n", msc_index);
+    return ACS_STATUS_ERR;
+  }
+
+  uint32_t status = val_iovirt_get_named_comp_device_info(device_name,
+                                                          identifier, device_id, its_id);
+  if (status == 0) {
+    val_print(ACS_PRINT_INFO, " MPAM MSC Device info: idx=%d", msc_index);
+    val_print(ACS_PRINT_INFO, " id=0x%x", identifier);
+    val_print(ACS_PRINT_INFO, " dev=0x%x", *device_id);
+    val_print(ACS_PRINT_INFO, " its=0x%x\n", its_id ? *its_id : 0);
+  } else {
+    val_print(ACS_PRINT_ERR, " MPAM MSC devinfo failed: idx=%d", msc_index);
+    val_print(ACS_PRINT_ERR, " id=0x%x\n", identifier);
+  }
+  return status;
 }
 
 /**

@@ -1110,6 +1110,7 @@
 #define PLATFORM_MPAM_MSC0_ADDR_LEN           0x1008      /* MPAM MSC MMIO address length        */
 #define PLATFORM_MPAM_MSC0_MAX_NRDY           0           /* Max time (in ms) NRDY signal asserts*/
 #define PLATFORM_MPAM_MSC0_RSRC_COUNT         0x1         /* Resources described by MSC0         */
+#define PLATFORM_MPAM_MSC0_NAME               "MSC0"
 #define PLATFORM_MPAM_MSC0_RSRC0_RIS_INDEX    0x0         /* RIS0: Index                         */
 #define PLATFORM_MPAM_MSC0_RSRC0_LOCATOR_TYPE 0x0         /* RIS0: Locator type                  */
 #define PLATFORM_MPAM_MSC0_RSRC0_DESCRIPTOR1  0x0         /* RIS0: Resource specific field #1    */

@@ -162,6 +162,7 @@ pal_mpam_create_info_table(MPAM_INFO_TABLE *MpamTable)
       curr_entry->err_intr       = msc_node->error_interrupt;
       curr_entry->err_intr_flags = msc_node->error_int_flags;
       curr_entry->max_nrdy = msc_node->max_nrdy_usec;
+      curr_entry->device_obj_name[0] = '\0';
       curr_entry->rsrc_count = msc_node->num_resource_nodes;
       curr_entry->intrf_type = msc_node->InterfaceType;
       curr_entry->identifier = msc_node->identifier;

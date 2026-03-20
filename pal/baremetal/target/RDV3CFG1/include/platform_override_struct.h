@@ -438,6 +438,7 @@ typedef struct {
     uint32_t    err_intr_flags;/* Error interrupt flags */
     uint32_t    max_nrdy;      /* max time in microseconds that MSC not ready
                                 after config change */
+    char        device_obj_name[MAX_NAMED_COMP_LENGTH]; /* Device object name */
     uint32_t    rsrc_count;    /* number of resource nodes */
     /* Details of resource node*/
     PLATFORM_OVERRIDE_MPAM_RESOURCE_NODE rsrc_node[MPAM_MAX_RSRC_NODE];
@@ -447,6 +448,7 @@ typedef struct {
     uint32_t          msc_count;  /* Number of MSC node */
     PLATFORM_OVERRIDE_MPAM_MSC_NODE   msc_node[MPAM_MAX_MSC_NODE]; /* Details of MSC node */
 } PLATFORM_OVERRIDE_MPAM_INFO_TABLE;
+
 
 /* Platform Communication Channel (PCC) info table */
 #ifndef GAS_STRUCT

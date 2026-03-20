@@ -457,6 +457,109 @@ val_iovirt_get_named_comp_info(NAMED_COMP_INFO_e type, uint32_t index)
 }
 
 /**
+  @brief  Calculate device id and ITS id for a named component
+  @param  dev_name    Named component device object name
+  @param  identifier  MSC identifier
+  @param  *device_id  Pointer to device id
+  @param  *its_id     Pointer to its id
+  @return status
+**/
+int
+val_iovirt_get_named_comp_device_info(const char *dev_name, uint32_t identifier,
+                                      uint32_t *device_id, uint32_t *its_id)
+{
+  uint32_t i, j;
+  uint32_t id = 0;
+  uint32_t did = 0;
+  uint32_t oref = 0;
+  uint32_t itsid = 0;
+  uint32_t mapping_found = 0;
+  uint32_t dev_len = 0;
+  IOVIRT_BLOCK *block;
+  NODE_DATA_MAP *map;
+
+  if (g_iovirt_info_table == NULL) {
+    val_print(ACS_PRINT_ERR, "\n       GET_DEVICE_ID: iovirt info table is not created", 0);
+    return ACS_STATUS_ERR;
+  }
+  if ((device_id == NULL) || (dev_name == NULL)) {
+    val_print(ACS_PRINT_ERR, "\n       GET_DEVICE_ID: Invalid parameters", 0);
+    return ACS_STATUS_ERR;
+  }
+
+  while ((dev_len < MAX_NAMED_COMP_LENGTH) && (dev_name[dev_len] != '\0'))
+    dev_len++;
+  if (dev_len == 0u) {
+    val_print(ACS_PRINT_ERR, "\n       GET_DEVICE_ID: Invalid device name", 0);
+    return ACS_STATUS_ERR;
+  }
+
+  block = &g_iovirt_info_table->blocks[0];
+  for (i = 0; i < g_iovirt_info_table->num_blocks; i++, block = IOVIRT_NEXT_BLOCK(block)) {
+    if (block->type != IOVIRT_NODE_NAMED_COMPONENT)
+      continue;
+    if (val_strncmp((char8_t *)block->data.named_comp.name,
+                    (char8_t *)dev_name, dev_len) ||
+        block->data.named_comp.name[dev_len] != '\0')
+      continue;
+
+    for (j = 0, map = &block->data_map[0]; j < block->num_data_map; j++, map++) {
+      if (identifier >= (*map).map.input_base &&
+          identifier <= ((*map).map.input_base + (*map).map.id_count)) {
+        id = (identifier - (*map).map.input_base) + (*map).map.output_base;
+        oref = (*map).map.output_ref;
+        mapping_found = 1;
+        break;
+      }
+    }
+    break;
+  }
+
+  if (!mapping_found) {
+    val_print(ACS_PRINT_ERR, "\n       GET_DEVICE_ID: Named component mapping not found", 0);
+    return ACS_STATUS_ERR;
+  }
+
+  block = (IOVIRT_BLOCK *)((uint8_t *)g_iovirt_info_table + oref);
+  if (block->type == IOVIRT_NODE_ITS_GROUP) {
+    did = id;
+    itsid = block->data_map[0].id[0];
+  } else if (block->type == IOVIRT_NODE_SMMU || block->type == IOVIRT_NODE_SMMU_V3) {
+    uint32_t sid = id;
+    mapping_found = 0;
+    for (i = 0, map = &block->data_map[0]; i < block->num_data_map; i++, map++) {
+      if (sid >= (*map).map.input_base &&
+          sid <= ((*map).map.input_base + (*map).map.id_count)) {
+        did = (sid - (*map).map.input_base) + (*map).map.output_base;
+        oref = (*map).map.output_ref;
+        mapping_found = 1;
+        break;
+      }
+    }
+    if (!mapping_found) {
+      val_print(ACS_PRINT_ERR,
+                "\n       GET_DEVICE_ID: Stream ID to Device ID mapping not found", 0);
+      return ACS_STATUS_ERR;
+    }
+    block = (IOVIRT_BLOCK *)((uint8_t *)g_iovirt_info_table + oref);
+    if (block->type == IOVIRT_NODE_ITS_GROUP) {
+      itsid = block->data_map[0].id[0];
+    } else {
+      val_print(ACS_PRINT_ERR, "\n       GET_DEVICE_ID: Invalid mapping for Named component", 0);
+      return ACS_STATUS_ERR;
+    }
+  } else {
+    val_print(ACS_PRINT_ERR, "\n       GET_DEVICE_ID: Invalid mapping for Named component", 0);
+    return ACS_STATUS_ERR;
+  }
+
+  if (its_id)
+    *its_id = itsid;
+  *device_id = did;
+  return 0;
+}
+
+/**
   @brief   This API is a single point of entry to retrieve
            PMCG information stored in the IoVirt Info table
            1. Caller       -  Test suite

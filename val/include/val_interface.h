@@ -545,6 +545,7 @@ uint64_t val_get_primary_mpidr(void);
 
 void val_mpam_create_info_table(uint64_t *mpam_info_table);
 void val_mpam_free_info_table(void);
+void val_mpam_update_msc_device_names(void);
 
 typedef enum {
   MPAM_RSRC_TYPE_PE_CACHE,

@@ -1140,6 +1140,7 @@ PLATFORM_OVERRIDE_MPAM_INFO_TABLE platform_mpam_cfg = {
     .msc_node[0].rsrc_node[0].locator_type  = PLATFORM_MPAM_MSC0_RSRC0_LOCATOR_TYPE,
     .msc_node[0].rsrc_node[0].descriptor1   = PLATFORM_MPAM_MSC0_RSRC0_DESCRIPTOR1,
     .msc_node[0].rsrc_node[0].descriptor2   = PLATFORM_MPAM_MSC0_RSRC0_DESCRIPTOR2,
+    .msc_node[0].device_obj_name = PLATFORM_MPAM_MSC0_NAME,
 
     .msc_node[1].intrf_type    = PLATFORM_MPAM_MSC1_INTR_TYPE,
     .msc_node[1].identifier    = PLATFORM_MPAM_MSC1_ID,
@@ -1151,6 +1152,7 @@ PLATFORM_OVERRIDE_MPAM_INFO_TABLE platform_mpam_cfg = {
     .msc_node[1].rsrc_node[0].locator_type  = PLATFORM_MPAM_MSC1_RSRC0_LOCATOR_TYPE,
     .msc_node[1].rsrc_node[0].descriptor1   = PLATFORM_MPAM_MSC1_RSRC0_DESCRIPTOR1,
     .msc_node[1].rsrc_node[0].descriptor2   = PLATFORM_MPAM_MSC1_RSRC0_DESCRIPTOR2,
+    .msc_node[1].device_obj_name = "",
 
     .msc_node[2].intrf_type    = PLATFORM_MPAM_MSC2_INTR_TYPE,
     .msc_node[2].identifier    = PLATFORM_MPAM_MSC2_ID,
@@ -1162,6 +1164,7 @@ PLATFORM_OVERRIDE_MPAM_INFO_TABLE platform_mpam_cfg = {
     .msc_node[2].rsrc_node[0].locator_type  = PLATFORM_MPAM_MSC2_RSRC0_LOCATOR_TYPE,
     .msc_node[2].rsrc_node[0].descriptor1   = PLATFORM_MPAM_MSC2_RSRC0_DESCRIPTOR1,
     .msc_node[2].rsrc_node[0].descriptor2   = PLATFORM_MPAM_MSC2_RSRC0_DESCRIPTOR2,
+    .msc_node[2].device_obj_name = "",
 
     .msc_node[3].intrf_type    = PLATFORM_MPAM_MSC3_INTR_TYPE,
     .msc_node[3].identifier    = PLATFORM_MPAM_MSC3_ID,
@@ -1173,6 +1176,7 @@ PLATFORM_OVERRIDE_MPAM_INFO_TABLE platform_mpam_cfg = {
     .msc_node[3].rsrc_node[0].locator_type  = PLATFORM_MPAM_MSC3_RSRC0_LOCATOR_TYPE,
     .msc_node[3].rsrc_node[0].descriptor1   = PLATFORM_MPAM_MSC3_RSRC0_DESCRIPTOR1,
     .msc_node[3].rsrc_node[0].descriptor2   = PLATFORM_MPAM_MSC3_RSRC0_DESCRIPTOR2,
+    .msc_node[3].device_obj_name = "",
 
     .msc_node[4].intrf_type    = PLATFORM_MPAM_MSC4_INTR_TYPE,
     .msc_node[4].identifier    = PLATFORM_MPAM_MSC4_ID,
@@ -1184,6 +1188,7 @@ PLATFORM_OVERRIDE_MPAM_INFO_TABLE platform_mpam_cfg = {
     .msc_node[4].rsrc_node[0].locator_type  = PLATFORM_MPAM_MSC4_RSRC0_LOCATOR_TYPE,
     .msc_node[4].rsrc_node[0].descriptor1   = PLATFORM_MPAM_MSC4_RSRC0_DESCRIPTOR1,
     .msc_node[4].rsrc_node[0].descriptor2   = PLATFORM_MPAM_MSC4_RSRC0_DESCRIPTOR2,
+    .msc_node[4].device_obj_name = "",
 
     .msc_node[5].intrf_type    = PLATFORM_MPAM_MSC5_INTR_TYPE,
     .msc_node[5].identifier    = PLATFORM_MPAM_MSC5_ID,
@@ -1195,6 +1200,7 @@ PLATFORM_OVERRIDE_MPAM_INFO_TABLE platform_mpam_cfg = {
     .msc_node[5].rsrc_node[0].locator_type  = PLATFORM_MPAM_MSC5_RSRC0_LOCATOR_TYPE,
     .msc_node[5].rsrc_node[0].descriptor1   = PLATFORM_MPAM_MSC5_RSRC0_DESCRIPTOR1,
     .msc_node[5].rsrc_node[0].descriptor2   = PLATFORM_MPAM_MSC5_RSRC0_DESCRIPTOR2,
+    .msc_node[5].device_obj_name = "",
 
     .msc_node[6].intrf_type    = PLATFORM_MPAM_MSC6_INTR_TYPE,
     .msc_node[6].identifier    = PLATFORM_MPAM_MSC6_ID,
@@ -1206,6 +1212,7 @@ PLATFORM_OVERRIDE_MPAM_INFO_TABLE platform_mpam_cfg = {
     .msc_node[6].rsrc_node[0].locator_type  = PLATFORM_MPAM_MSC6_RSRC0_LOCATOR_TYPE,
     .msc_node[6].rsrc_node[0].descriptor1   = PLATFORM_MPAM_MSC6_RSRC0_DESCRIPTOR1,
     .msc_node[6].rsrc_node[0].descriptor2   = PLATFORM_MPAM_MSC6_RSRC0_DESCRIPTOR2,
+    .msc_node[6].device_obj_name = "",
 
     .msc_node[7].intrf_type    = PLATFORM_MPAM_MSC7_INTR_TYPE,
     .msc_node[7].identifier    = PLATFORM_MPAM_MSC7_ID,
@@ -1217,7 +1224,9 @@ PLATFORM_OVERRIDE_MPAM_INFO_TABLE platform_mpam_cfg = {
     .msc_node[7].rsrc_node[0].locator_type  = PLATFORM_MPAM_MSC7_RSRC0_LOCATOR_TYPE,
     .msc_node[7].rsrc_node[0].descriptor1   = PLATFORM_MPAM_MSC7_RSRC0_DESCRIPTOR1,
     .msc_node[7].rsrc_node[0].descriptor2   = PLATFORM_MPAM_MSC7_RSRC0_DESCRIPTOR2,
+    .msc_node[7].device_obj_name = "",
 };
+
 
 PLATFORM_OVERRIDE_PCC_INFO_TABLE platform_pcc_cfg = {
     .subspace_cnt = PLATFORM_PCC_SUBSPACE_COUNT,
