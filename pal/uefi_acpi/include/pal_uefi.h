@@ -569,6 +569,7 @@ typedef struct {
     UINT32           err_intr_flags;/* Error interrupt flags */
     UINT32           max_nrdy;      /* max time in microseconds that MSC not ready
                                          after config change */
+    CHAR8            device_obj_name[MAX_NAMED_COMP_LENGTH]; /* Device object name */
     UINT32           rsrc_count;    /* number of resource nodes */
     MPAM_RESOURCE_NODE rsrc_node[]; /* Details of resource node */
 } MPAM_MSC_NODE;
@@ -587,6 +588,7 @@ typedef struct {
     UINT32          msc_count;  /* Number of MSC node */
     MPAM_MSC_NODE   msc_node[]; /* Details of MSC node */
 } MPAM_INFO_TABLE;
+UINT32 pal_mpam_parse_dsdt_info(MPAM_INFO_TABLE *MpamTable);
 
 
 /* Platform Communication Channel (PCC) info table */

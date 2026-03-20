@@ -115,8 +115,9 @@
                                        /*[36 B Each + 4 B Header]*/
 #define SRAT_INFO_TBL_SZ        16384  /*Support maximum of 500 mem proximity domain entries*/
                                        /*[32 B Each + 8 B Header]*/
-#define MPAM_INFO_TBL_SZ        262144 /*Supports maximum of 1800 MSC entries*/
-                                       /*[24+(24*5) B Each + 4 B Header]*/
+#define MPAM_INFO_TBL_SZ        409600 /*Supports maximum of 1800 MSC entries*/
+                                       /*[(200+24) B Each + 4 B Header]*/
+                                       /*[includes device object name]*/
 #define HMAT_INFO_TBL_SZ        12288  /*Supports maximum of 400 Proximity domains*/
                                        /*[24 B Each + 8 B Header]*/
 #define PCC_INFO_TBL_SZ         262144 /*Supports maximum of 234 PCC info entries*/

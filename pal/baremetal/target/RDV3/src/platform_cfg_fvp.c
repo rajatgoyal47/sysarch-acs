@@ -1437,6 +1437,7 @@ PLATFORM_OVERRIDE_MPAM_INFO_TABLE platform_mpam_cfg = {
     .msc_node[0].msc_addr_len  = PLATFORM_MPAM_MSC0_ADDR_LEN,
     .msc_node[0].max_nrdy      = PLATFORM_MPAM_MSC0_MAX_NRDY,
     .msc_node[0].rsrc_count    = PLATFORM_MPAM_MSC0_RSRC_COUNT,
+    .msc_node[0].device_obj_name = PLATFORM_MPAM_MSC0_NAME,
 
     .msc_node[0].rsrc_node[0].ris_index     = PLATFORM_MPAM_MSC0_RSRC0_RIS_INDEX,
     .msc_node[0].rsrc_node[0].locator_type  = PLATFORM_MPAM_MSC0_RSRC0_LOCATOR_TYPE,
@@ -1444,6 +1445,7 @@ PLATFORM_OVERRIDE_MPAM_INFO_TABLE platform_mpam_cfg = {
     .msc_node[0].rsrc_node[0].descriptor2   = PLATFORM_MPAM_MSC0_RSRC0_DESCRIPTOR2,
     */
 };
+
 
 PLATFORM_OVERRIDE_PCC_INFO_TABLE platform_pcc_cfg = {
     .subspace_cnt = PLATFORM_PCC_SUBSPACE_COUNT,

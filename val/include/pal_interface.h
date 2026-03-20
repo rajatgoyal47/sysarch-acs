@@ -1147,6 +1147,7 @@ typedef struct {
     uint32_t           err_intr_flags;/* Error interrupt flags */
     uint32_t           max_nrdy;      /* max time in microseconds that MSC not ready
                                          after config change */
+    char               device_obj_name[MAX_NAMED_COMP_LENGTH]; /* Device object name */
     uint32_t           rsrc_count;    /* number of resource nodes */
     MPAM_RESOURCE_NODE rsrc_node[];   /* Details of resource node */
 } MPAM_MSC_NODE;
@@ -1169,6 +1170,7 @@ typedef struct {
 } MPAM_INFO_TABLE;
 
 void pal_mpam_create_info_table(MPAM_INFO_TABLE *MpamTable);
+uint32_t pal_mpam_parse_dsdt_info(MPAM_INFO_TABLE *MpamTable);
 void *pal_mem_alloc_at_address(uint64_t mem_base, uint64_t size);
 void pal_mem_free_at_address(uint64_t mem_base, uint64_t size);
 

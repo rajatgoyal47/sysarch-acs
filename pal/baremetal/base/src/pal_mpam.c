@@ -135,6 +135,16 @@ pal_mpam_create_info_table(MPAM_INFO_TABLE *MpamTable)
       curr_entry->msc_base_addr = platform_mpam_cfg.msc_node[Index].msc_base_addr;
       curr_entry->msc_addr_len  = platform_mpam_cfg.msc_node[Index].msc_addr_len;
       curr_entry->max_nrdy      = platform_mpam_cfg.msc_node[Index].max_nrdy;
+      {
+        uint32_t j = 0;
+        while ((j < (MAX_NAMED_COMP_LENGTH - 1)) &&
+               (platform_mpam_cfg.msc_node[Index].device_obj_name[j] != '\0')) {
+            curr_entry->device_obj_name[j] =
+                platform_mpam_cfg.msc_node[Index].device_obj_name[j];
+            j++;
+        }
+        curr_entry->device_obj_name[j] = '\0';
+      }
       curr_entry->rsrc_count    = platform_mpam_cfg.msc_node[Index].rsrc_count;
 
       i = 0;
@@ -156,6 +166,23 @@ pal_mpam_create_info_table(MPAM_INFO_TABLE *MpamTable)
 
   if (g_print_level <= ACS_PRINT_INFO)
       pal_mpam_dump_table(MpamTable);
+}
+
+/**
+  @brief  Baremetal stub: no DSDT parsing support.
+
+  @param  MpamTable  - MPAM info table.
+
+  @return  0
+**/
+uint32_t
+pal_mpam_parse_dsdt_info(MPAM_INFO_TABLE *MpamTable)
+{
+  if (MpamTable == NULL) {
+      print(ACS_PRINT_ERR, " Input MPAM Table Pointer is NULL\n");
+      return 0;
+  }
+  return 0;
 }
 
 /**

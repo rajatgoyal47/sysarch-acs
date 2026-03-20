@@ -43,6 +43,7 @@
   src/pal_ras.c
   src/pal_misc.c
   src/pal_mpam.c
+  src/pal_dsdt.c
   src/pal_pptt.c
   src/pal_pmu.c
   src/pal_pcc.c
