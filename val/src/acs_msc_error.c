@@ -91,21 +91,47 @@ bool val_mpam_msc_get_esr_ovrwr(uint32_t msc_index)
   @param   msc_index  - index of the MSC node in the MPAM info table.
   @return  void
 **/
-void val_mpam_msc_generate_psr_error(uint32_t msc_index)
+uint32_t val_mpam_msc_generate_psr_error(uint32_t msc_index)
 {
 
     uint16_t max_partid;
+    uint32_t part_sel_value;
+    uint32_t part_sel_read;
+    uint32_t partid_sel_read;
 
     /* Extract max PARTID supported by this MSC */
     max_partid = val_mpam_get_max_partid(msc_index);
     val_print(ACS_PRINT_DEBUG, "\n       Max PARTID is %d", max_partid);
 
+    if (max_partid == MPAMIDR_PARTID_MAX_MASK) {
+        val_print(ACS_PRINT_WARN,
+                  "\n       MSC index %d: Max PARTID is 0xFFFF; cannot test out-of-range PARTID. Skipping MSC",
+                  msc_index);
+        return ACS_STATUS_SKIP;
+    }
+
     /* Write (max_partid+1) to PART_SEL register to generate PSR error */
-    val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, max_partid + 1);
-    val_print(ACS_PRINT_DEBUG, "\n       PARTID written to MPAMCFG_PART_SEL is %d", max_partid + 1);
+    part_sel_value = val_mpam_mmr_read(msc_index, REG_MPAMCFG_PART_SEL);
+    part_sel_value = (part_sel_value &
+                      ~(PART_SEL_PARTID_SEL_MASK << PART_SEL_PARTID_SEL_SHIFT)) |
+                     BITFIELD_SET(PART_SEL_PARTID_SEL, (max_partid + 1));
+    val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, part_sel_value);
+    val_print(ACS_PRINT_DEBUG, "\n       PARTID written to MPAMCFG_PART_SEL is %d",
+                               (max_partid + 1));
+
+    /* Check whether MPAMCFG_PART_SEL.PARTID_SEL is updated */
+    part_sel_read = val_mpam_mmr_read(msc_index, REG_MPAMCFG_PART_SEL);
+    partid_sel_read = BITFIELD_READ(PART_SEL_PARTID_SEL, part_sel_read);
+    val_print(ACS_PRINT_DEBUG, "\n       PARTID read from MPAMCFG_PART_SEL is %d",
+                               partid_sel_read);
+
+    if (partid_sel_read == (uint32_t)(max_partid + 1)) {
+        /* If updated, access the configuration register to cause the error */
+        val_mpam_mmr_read(msc_index, REG_MPAMCFG_PART_SEL);
+    }
 
     val_mem_issue_dsb();
-    return;
+    return ACS_STATUS_PASS;
 }
 
 /**

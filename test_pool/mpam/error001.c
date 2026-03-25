@@ -55,11 +55,13 @@ static void payload(void)
             return;
         }
 
+        /* Generate PARTID selection range (PSR) error */
+        status = val_mpam_msc_generate_psr_error(index);
+        if (status == ACS_STATUS_SKIP)
+            continue;
+
         /* Test runs on atleast one MSC */
         test_skip = 0;
-
-        /* Generate PARTID selection range (PSR) error */
-        val_mpam_msc_generate_psr_error(index);
 
         /* Wait for some time for the error to be reflected in MPAMF_ESR */
         val_time_delay_ms(100 * ONE_MILLISECOND);
