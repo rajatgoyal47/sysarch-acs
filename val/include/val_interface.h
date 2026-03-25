@@ -798,7 +798,7 @@ uint32_t val_mpam_execute_membw_tests(uint32_t num_pe);
 uint32_t val_mpam_msc_reset_errcode(uint32_t msc_index);
 uint32_t val_mpam_msc_get_errcode(uint32_t msc_index);
 bool     val_mpam_msc_get_esr_ovrwr(uint32_t msc_index);
-void     val_mpam_msc_generate_psr_error(uint32_t msc_index);
+uint32_t val_mpam_msc_generate_psr_error(uint32_t msc_index);
 void     val_mpam_msc_generate_msr_error(uint32_t msc_index, uint16_t mon_count);
 uint32_t val_mpam_msc_generate_por_error(uint32_t msc_index);
 uint32_t val_mpam_msc_generate_pmgor_error(uint32_t msc_index);
