@@ -1,87 +1,109 @@
+## Table of Contents
 
-# MPAM System Component Specification - Architecture Compliance Suite
+- [MPAM Memory System Component Specification](#mpam-memory-system-component-specification)
+- [SYS-MPAM Architecture Compliance Suite](#sys-mpam-architecture-compliance-suite)
+- [Release details](#release-details)
+- [Documentation & Guides](#documentation-and-guides)
+- [SYS-MPAM build steps](#sys-mpam-build-steps)
+  - [UEFI Shell application](#uefi-shell-application)
+- [SYS-MPAM run steps](#sys-mpam-run-steps)
+  - [For UEFI application](#for-uefi-application)
+- [Application arguments](#application-arguments)
+- [Limitations](#limitations)
+- [Feedback, contributions and support](#feedback-contributions-and-support)
+- [License](#license)
 
-## Memory System Resource Partitioning and Monitoring
-**Memory System Resource Partitioning and Monitoring** (MPAM) System Component specification describes propagation of a Partition ID (PARTID) and Performance Monitoring Group (PMG) through the memory system, a framework for memory-system component (MSC) controls that partition one or more of the performance resources of the component.
+## MPAM Memory System Component Specification
+**Memory System Resource Partitioning and Monitoring (MPAM)** describes
+propagation of Partition ID (PARTID) and Performance Monitoring Group (PMG)
+through the memory system, along with controls that partition performance
+resources of a memory-system component (MSC).
 
-For more information, download the [MPAM System Component Specification](https://developer.arm.com/documentation/ihi0099/latest/).
+For more information, download the
+[MPAM System Component Specification](https://developer.arm.com/documentation/ihi0099/aa/).
+
+## SYS-MPAM Architecture Compliance Suite
+
+The SYS-MPAM **Architecture Compliance Suite (ACS)** is a collection of
+self-checking, portable C-based tests.
+This suite provides examples of the invariant behaviors defined in the MPAM
+System Component specification, enabling verification that these behaviors have
+been implemented and interpreted correctly.
 
 ## Release details
- - Code Quality: Alpha
- - The tests are written for version A.a of the MPAM Memory System Component Specification.
-- For more details on tests implemented in this release, Please refer [MPAM Test Scenario Document](arm_mpam_architecture_compliance_test_scenario.pdf).
+- **Code quality:** Beta
+- **Latest release version:** v0.7.0
+- **Release tag:** `v26.03_MPAM_0.7.0`
+- **Specification coverage:** MPAM Memory System Component Specification vA.a
+- **Scope:** The compliance suite is **not** a substitute for design verification.
+- **Prebuilt binaries:** [`prebuilt_images/MPAM/v26.03_MPAM_0.7.0`](https://github.com/ARM-software/bsa-acs/tree/main/prebuilt_images/MPAM/v26.03_MPAM_0.7.0)
+- For details on tests implemented in this release, see the
+  [SYS-MPAM Test Scenario Document](arm_mpam_architecture_compliance_test_scenario.md).
 
-## Downloading MPAM ACS
+#### SYS-MPAM ACS version mapping
 
-MPAM ACS code is present in the sysarch-acs repository.
+| SYS-MPAM ACS Version | SYS-MPAM Tag ID | Spec Version |
+|:--------------------:|:---------------:|:------------:|
+| v0.7.0 | v26.03_MPAM_0.7.0     | MPAM Memory System Component A.a |
+| v0.5.0 | v25.03_MPAM_0.5.0_ALP | MPAM Memory System Component A.a |
 
- - git clone https://github.com/ARM-software/sysarch-acs.git <br/>
- - cd sysarch-acs <br/>
+## Documentation and Guides
+- [SYS-MPAM Test Scenario Document](arm_mpam_architecture_compliance_test_scenario.md)
+- [Common CLI arguments](../common/cli_args.md)
+- [Common UEFI build guide](../common/uefi_build.md)
 
-## Building MPAM ACS
-### UEFI application
-#### Prerequisites
+## SYS-MPAM build steps
 
-ACS build requires that the following requirements are met, Please skip this if you are using [MPAM Application Build Script](../../tools/scripts/build_mpam_uefi.sh).
+### UEFI Shell application
 
-- Any mainstream Linux based OS distribution.
-- git clone EDK2 tree.
-- git clone EDK2-libc tree.
-- Install GCC-ARM 14.3 [toolchain](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads).
-- Install the build prerequisite packages to build EDK2. The details of the packages are beyond the scope of this document.
+Follow the [Common UEFI build guide](../common/uefi_build.md) to set up the
+edk2 workspace and Arm toolchain, then run:
 
-#### Build Steps
+- `source ShellPkg/Application/sysarch-acs/tools/scripts/acsbuild.sh mpam`
 
- - cd /path/to/bsa-acs/<br/>
- - source mpam/scripts/build_mpam_uefi.sh
+The flow emits `Mpam.efi` under `Build/Shell/<TOOL_CHAIN_TAG>/AARCH64/` inside
+the edk2 workspace.
 
-#### Build Output
+## SYS-MPAM run steps
 
-The following output file is created in /path/to/bsa-acs/workspace/output/:
+### For UEFI application
 
-- Mpam.efi
+#### Silicon System
+On a system with a functional USB port:
+1. Copy `Mpam.efi` to a FAT-formatted USB device.
+2. Boot to the UEFI shell.
+3. Refresh mappings with: `map -r`.
+4. Switch to the USB filesystem (for example, `fs0:`).
+5. Run `Mpam.efi` with the required parameters (see
+   [Application arguments](#application-arguments)).
+6. Capture the UART console output to a log file for analysis.
 
-#### Note : Steps to get toolchain
-- wget https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-x86_64-aarch64-none-linux-gnu.tar.xz
-- tar -xf arm-gnu-toolchain-14.3.rel1-x86_64-aarch64-none-linux-gnu.tar.xz
-- export GCC_AARCH64_PREFIX= GCC 14.3 toolchain path pointing to arm-gnu-toolchain-14.3.rel1-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-
+**Example**
 
-## Test suite execution in UEFI
+`Shell> Mpam.efi -v 1 -skip 15,20,30 -f mpam_uefi.log`
 
-### Post-Silicon
+Runs at INFO level, skips tests 15/20/30, and saves the UART log to
+`mpam_uefi.log`.
 
-On a system where a USB port is available and functional, perform the following steps:
-
-1. Copy 'Mpam.efi' to a USB Flash drive.
-2. Plug in the USB Flash drive to one of the functional USB ports on the system.
-3. Boot the system to UEFI shell.
-4. To determine the file system number of the plugged in USB drive, execute 'map -r' command.
-5. Type 'fsx' where 'x' is replaced by the number determined in step 4.
-6. To start the compliance tests, run the executable Mpam.efi with the appropriate arguments.
-
-### Emulation environment with secondary storage
-
-On an emulation environment with secondary storage, perform the following steps:
-
-1. Create an image file which contains the 'Mpam.efi' file. For Example: <br/>
- - mkfs.vfat -C -n HD0 hda.img 31457280 <br/>
- - sudo mount hda.img /mnt/mpam <br/>
- - cd /path/to/bsa-acs/workspace/output/ <br/>
- - sudo cp Mpam.efi /mnt/mpam/ <br/>
- - sudo umount /mnt/mpam
-2. Load the image file to the secondary storage using a backdoor. The steps followed to load the image file are Emulation environment specific and beyond the scope of this document.
-3. Boot the system to UEFI shell.
-4. To determine the file system number of the secondary storage, execute 'map -r' command.
-5. Type 'fsx' where 'x' is replaced by the number determined in step 4.
-6. To start the compliance tests, run the executable Mpam.efi with the appropriate arguments.
+#### Emulation environment with secondary storage
+1. Create a FAT image containing `Mpam.efi`:
+   `mkfs.vfat -C -n HD0 hda.img 31457280`
+   `sudo mount hda.img /mnt/mpam`
+   `sudo cp <path to Mpam.efi> /mnt/mpam/`
+   `sudo umount /mnt/mpam`
+2. Attach the image to the virtual platform or emulator using its documented
+   backdoor method.
+3. Boot to the UEFI shell.
+4. Refresh filesystem mappings with: `map -r`.
+5. Switch to the assigned filesystem (`fs<x>`), then run `Mpam.efi`.
+6. Capture UART console output for certification and debug reports.
 
 ## Application arguments
 
-Command line arguments are similar for uefi application, with some exceptions.
+SYS-MPAM ACS currently supports numeric test and module selectors. See the
+[Common CLI arguments](../common/cli_args.md) for shared options.
 
-### UEFI
-
-Shell> Mpam.efi [-v &lt;verbosity&gt;] [-skip &lt;test_id&gt;] [-f &lt;filename&gt;]
+Shell> Mpam.efi [-v <verbosity>] [-skip <test_id>] [-t <test_id>] [-m <module_id>] [-f <filename>]
 
 #### -v
 Choose the verbosity level.
@@ -93,42 +115,37 @@ Choose the verbosity level.
 - 5 - ERROR
 
 #### -skip
-Overrides the suite to skip the execution of a particular
-test. For example, <i>-skip 10</i> skips test 10.
+Skip execution of particular test IDs. For example, `-skip 10` skips test 10.
 
 #### -t
-If Test ID(s) set, will only run the specified test(s), all others will be skipped
-For example, <i>-t 10</i> Run test 10.
+If test ID(s) are set, only those tests run. For example, `-t 10` runs test 10.
 
 #### -m
-If Module ID(s) set, will only run the specified module(s), all others will be skipped
-For example, <i>-m 100</i> Run Cache Module.
+If module ID(s) are set, only those modules run. For example, `-m 100` runs the
+Cache module.
 
-#### -f (Only for UEFI application)
-Save the test output into a file in secondary storage. For example <i>-f mpam.log</i> creates a file mpam.log with test output.
-
-### UEFI example
-
-Shell> Mpam.efi -v 1 -skip 15,20,30 -f mpam_uefi.log
-
-Runs MPAM ACS with verbosity INFO, skips test 15, 20 and 30 and saves the test results in <i>mpam_uefi.log</i>.
+#### -f (UEFI only)
+Save test output to a file in secondary storage. For example,
+`-f mpam.log` creates `mpam.log` with test output.
 
 ## Limitations
+- This is an Alpha-quality release with a limited number of tests based on the
+  MPAM MSC specification.
+- Some tests related to MSC error handling have been verified on limited
+  platforms. If you encounter failures or errors during ACS runs, please raise
+  an issue.
+- Memory Bandwidth Partitioning tests have been implemented but not yet
+  verified on any platform.
 
- - Since this is a Alpha quality release, contains limited number of tests based on MPAM MSC Specification.
- - Few of the tests related to Errors in MSC have been verified on limited platforms. Please reach out to us in case of any help.
- - Memory Bandwidth Partitioning tests have been implemented but have not yet been verified on any platform. If you encounter any failures or errors during the ACS run, Please raise an issue.
+## Feedback, contributions and support
+
+- Email: [support-systemready-acs@arm.com](mailto:support-systemready-acs@arm.com)
+- GitHub Issues: [sysarch-acs issue tracker](https://github.com/ARM-software/sysarch-acs/issues)
+- Arm licensees can contact Arm through their partner managers.
 
 ## License
-MPAM ACS is distributed under Apache v2.0 License.
-
-## Feedback, contributions, and support
-
- - For feedback, use the GitHub Issue Tracker that is associated with this repository.
- - For support, send an email to "support-systemready-acs@arm.com" with details.
- - Arm licensees may contact Arm directly through their partner managers.
- - Arm welcomes code contributions through GitHub pull requests. See the GitHub documentation on how to raise pull requests.
+SYS-MPAM ACS is distributed under Apache v2.0 License.
 
 --------------
 
-*Copyright (c) 2025, Arm Limited and Contributors. All rights reserved.*
+*Copyright (c) 2025-2026, Arm Limited and Contributors. All rights reserved.*
