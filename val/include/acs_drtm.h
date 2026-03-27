@@ -78,7 +78,8 @@
 #define DRTM_DRTM_FEATURES_DMA_PROTECTION         0x1
 #define DRTM_DRTM_FEATURES_PCR_SCHEMA             0x2
 #define DRTM_DRTM_FEATURES_TPM_BASED_HASHING      0x3
-
+#define DRTM_DRTM_FEATURES_FW_HASH_ALGOROTHM      0x4
+#define DRTM_LAUNCH_FEAT_SECURE_INT_DISABLE       (1 << 7)
 #define DRTM_DMA_FEATURES_DMA_PROTECTION_ALL      0x1
 #define DRTM_DMA_FEATURES_DMA_PROTECTION_REGION   0x2
 #define DRTM_DLME_IMG_FEAT_DLME_IMG_AUTH_SUPP     0x1
@@ -86,6 +87,7 @@
 #define DRTM_LAUNCH_FEAT_MEM_PROT_REGION_SUPP     0x1
 #define DRTM_LAUNCH_FEAT_REQ_DLME_IMG_AUTH        0x1
 #define DRTM_TPM_FEAT_PCR_SCHEMA_DEF_SUPP         0x1
+#define DRTM_TPM_FEAT_PCR_SCHEMA_DLME_AUTH_SUPP   0x10
 #define DRTM_LAUNCH_FEAT_PCR_SCHEMA_DEF_SUPP      0x0
 #define DRTM_LAUNCH_FEAT_DLME_AUTH_SUPP           0x1
 #define DRTM_TPM_BASED_HASHING_SUPPORT            0x1
@@ -103,6 +105,8 @@
 
 #define DRTM_LAUNCH_FEATURES_SHIFT_TYPE_HASH      0
 #define DRTM_LAUNCH_FEATURES_MASK_TYPE_HASH       (0x1 << DRTM_LAUNCH_FEATURES_SHIFT_TYPE_HASH)
+#define DRTM_PCR_SCHEMA_USAGE_MASK_DEF_SCHEMA     0x1
+#define DRTM_PCR_SCHEMA_USAGE_MASK_AUTH_SCHEMA    0x10
 
 #define DRTM_GET_FEATURES_MASK_DLME_IMAGE_AUTH    0x1
 #define DRTM_GET_FEATURES_MASK_DMA_PROTECTION     0x7
@@ -112,6 +116,7 @@
 
 #define DRTM_GET_FEATURES_SHIFT_PCR_SCHEMA        33
 #define DRTM_GET_FEATURES_SHIFT_TPM_BASED_HASHING 32
+#define DRTM_LAUNCH_FEAT_SHIFT_DLME_IMG_AUTH      6
 
 #define DRTM_NS_EXECPTION_SHIFT_AIF               6
 #define DRTM_NS_EXECPTION_MASK_AIF                0x7
@@ -148,14 +153,24 @@
                          DRTM_REGION_TYPE_NON_VOLATILE, \
                          DRTM_MEM_PROT_MAX_4KB_PAGES)
 
+#define DRTM_EVTYPE_ARM_PCR_SCHEMA                0x9001
 #define DRTM_EVTYPE_ARM_DCE                       0x9002
+#define DRTM_EVTYPE_ARM_DCE_PUBKEY                0x9003
 #define DRTM_EVTYPE_ARM_DLME                      0x9004
+#define DRTM_EVTYPE_ARM_DLME_ENTRY_POINT          0x9005
+#define DRTM_EVTYPE_ARM_DEBUG_CONFIG              0x9006
+#define DRTM_EVTYPE_ARM_NONSECURE_CONFIG          0x9007
+#define DRTM_EVTYPE_ARM_DCE_SECONDARY             0x9008
+#define DRTM_EVTYPE_ARM_TZFW                      0x9009
 #define DRTM_EVTYPE_ARM_SEPARATOR                 0x900A
+#define DRTM_EVTYPE_ARM_DLME_PUBKEY               0x900B
+#define DRTM_EVTYPE_ARM_DLME_SVN                  0x900C
+#define DRTM_EVTYPE_ARM_SECURE_INT_DISABLE        0x900E
 
 #define DRTM_TPM_ALG_SHA256                       0xB
 #define DRTM_TPM_ALG_SHA384                       0xC
+#define DRTM_TPM_ALG_SHA512                       0xD
 
-#define REQUEST_DLME_IMAGE_AUTH   1 << DRTM_LAUNCH_FEATURES_MASK_DLME_IMAGE_AUTH
 #define REQUEST_TPM_BASED_HASHING 1
 
 /* Event Log Defines*/
@@ -164,6 +179,9 @@
 
 #define TPM_SHA1_160_HASH_LEN  20
 #define SHA256_DIGEST_SIZE     32
+
+#define DRTM_UINT32_MAX 0xFFFFFFFFu
+#define DRTM_UINT64_MAX 0xFFFFFFFFFFFFFFFFull
 
 /*
  * The g_drtm_features structure is a global structure that
@@ -339,6 +357,20 @@ typedef struct {
     uint8_t  digest_sizes[];
 } TCG_EFI_SPECID_EVENT;
 
+typedef struct {
+    uint8_t              *event_log_start;
+    uint8_t              *event_log_end;
+    uint8_t              *next_event;
+    uint32_t              remaining_size;
+    TCG_EFI_SPECID_EVENT *event_spec;
+} DRTM_EVENT_LOG_STATE;
+
+typedef struct {
+    TCG_PCR_EVENT2 *event;
+    uint8_t        *digest_data;
+    EVENT_DATA     *event_data;
+} DRTM_EVENT_LOG_ENTRY;
+
 #define ARM_GICR_CTLR           0x0000  /* Redistributor Control Register      */
 #define ARM_GICR_PENDBASER      0x0078  /* Redistributor LPI Pending Table Base Addr Register */
 #define ARM_GITS_CTLR           0x0000  /* ITS Control Register */
@@ -363,6 +395,13 @@ uint32_t val_drtm_create_info_table(void);
 int64_t val_drtm_check_dl_result(uint64_t dlme_base_addr, uint64_t dlme_data_offset);
 int64_t val_drtm_init_drtm_params(DRTM_PARAMETERS *drtm_params);
 uint64_t val_drtm_get_feature(uint64_t feature_type);
+uint32_t val_drtm_get_digest_size(uint16_t hash_alg);
+uint32_t val_drtm_are_dce_and_drtm_images_distinct(void);
+int32_t val_drtm_event_log_init(DRTM_PARAMETERS *drtm_params, DRTM_EVENT_LOG_STATE *event_log);
+int32_t val_drtm_event_log_next(DRTM_EVENT_LOG_STATE *event_log, DRTM_EVENT_LOG_ENTRY *entry);
+int32_t val_drtm_event_log_get_digest(const DRTM_EVENT_LOG_STATE *event_log,
+                                      const DRTM_EVENT_LOG_ENTRY *entry, uint16_t hash_alg,
+                                      uint8_t **digest, uint16_t *digest_size);
 
 uint32_t interface001_entry(uint32_t num_pe);
 uint32_t interface002_entry(uint32_t num_pe);
@@ -392,6 +431,7 @@ uint32_t dl009_entry(uint32_t num_pe);
 uint32_t dl010_entry(uint32_t num_pe);
 uint32_t dl011_entry(uint32_t num_pe);
 uint32_t dl012_entry(uint32_t num_pe);
+uint32_t dl013_entry(uint32_t num_pe);
 uint32_t dl014_entry(uint32_t num_pe);
 
 
