@@ -1439,6 +1439,7 @@ long pal_invoke_drtm_fn(unsigned long function_id, unsigned long arg1,
             unsigned long arg4, unsigned long arg5,
             unsigned long *ret1, unsigned long *ret2,
             unsigned long *ret3);
+uint32_t pal_drtm_are_dce_and_drtm_images_distinct(void);
 
 typedef struct drtm_log_control {
     int print_level;

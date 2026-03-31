@@ -668,6 +668,16 @@ uint32_t val_drtm_get_digest_size(uint16_t hash_alg)
 }
 
 /**
+  @brief Determine if DCE and DRTM images are distinct
+
+  @return non-zero if the images are distinct, otherwise zero.
+**/
+uint32_t val_drtm_are_dce_and_drtm_images_distinct(void)
+{
+    return pal_drtm_are_dce_and_drtm_images_distinct();
+}
+
+/**
   @brief Initialize DRTM event log state
 
   @param pointer to DRTM parameters

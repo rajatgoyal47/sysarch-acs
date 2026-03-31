@@ -433,6 +433,7 @@ uint32_t dl011_entry(uint32_t num_pe);
 uint32_t dl012_entry(uint32_t num_pe);
 uint32_t dl013_entry(uint32_t num_pe);
 uint32_t dl014_entry(uint32_t num_pe);
+uint32_t dl015_entry(uint32_t num_pe);
 
 
 #endif /* __VAL_SPECIFICATION_H */
