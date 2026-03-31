@@ -1,5 +1,5 @@
 #/** @file
-# Copyright (c) 2023-2025, Arm Limited or its affiliates. All rights reserved.
+# Copyright (c) 2023-2026, Arm Limited or its affiliates. All rights reserved.
 # SPDX-License-Identifier : Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +24,7 @@
 GCC_ASM_EXPORT(DataCacheCleanInvalidateVA)
 GCC_ASM_EXPORT(DataCacheInvalidateVA)
 GCC_ASM_EXPORT(DataCacheCleanVA)
+GCC_ASM_EXPORT(DataCacheInvalidateVAPoC)
 
 ASM_PFX(DataCacheCleanInvalidateVA):
   dc  civac, x0
@@ -39,6 +40,12 @@ ASM_PFX(DataCacheCleanVA):
 
 ASM_PFX(DataCacheInvalidateVA):
   dc  ivac, x0
+  dsb ish
+  isb
+  ret
+
+ASM_PFX(DataCacheInvalidateVAPoC):
+  dc  cvap, x0
   dsb ish
   isb
   ret

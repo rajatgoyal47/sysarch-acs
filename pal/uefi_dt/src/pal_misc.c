@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,7 @@
 #include  <Protocol/Cpu.h>
 
 
-#include "include/pal_uefi.h"
+#include "pal_uefi.h"
 
 UINT8   *gSharedMemory;
 
@@ -206,6 +206,22 @@ pal_print(CHAR8 *string, UINT64 data)
       acs_print(ACS_PRINT_ERR, L" Error in writing to log file\n");
   } else
       AsciiPrint(string, data);
+}
+
+/**
+  @brief  Emit a warning indicating the given PAL API is not implemented.
+  @param  api_name  Name of the unimplemented API (typically __func__).
+**/
+VOID
+pal_warn_not_implemented(const CHAR8 *api_name)
+{
+  if (api_name == NULL)
+    return;
+
+  pal_print("\n       %a is not implemented."
+            "\n       Please implement the PAL function in test suite or"
+            "\n       conduct an offline review for this rule.\n",
+              (UINT64)(UINTN)api_name);
 }
 
 /**

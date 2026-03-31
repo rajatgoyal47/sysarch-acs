@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,14 +15,15 @@
  * limitations under the License.
 **/
 
-#include "include/rule_based_execution.h"
-#include "include/val_interface.h"
+#include "rule_based_execution.h"
+#include "val_interface.h"
 
 extern rule_test_map_t rule_test_map[RULE_ID_SENTINEL];
 extern char *rule_id_string[RULE_ID_SENTINEL];
 extern char *module_name_string[MODULE_ID_SENTINEL];
-extern uint32_t alias_rule_map_count;
-extern alias_rule_map_t alias_rule_map[];
+extern const uint32_t alias_rule_map_count;
+extern const alias_rule_map_t alias_rule_map[];
+extern uint8_t g_current_pal;
 
 /**
  * @brief Check if a rule ID exists in a list.
@@ -136,6 +137,30 @@ void quick_sort_rule_list(RULE_ID_e *rule_list, uint32_t list_size)
 void
 print_rule_test_start(uint32_t rule_enum, uint32_t indent)
 {
+    static MODULE_NAME_e prev_module = MODULE_UNKNOWN;
+    MODULE_NAME_e curr_module = MODULE_UNKNOWN;
+
+    /* Check for module change */
+    if (rule_test_map[rule_enum].flag == INVALID_ENTRY) {
+        curr_module = MODULE_UNKNOWN;
+    } else {
+        curr_module = rule_test_map[rule_enum].module_id;
+    }
+
+    /* Print "Running <module> tests" if module change seen.
+       Don't print if MODULE_UNKNOWN was encounterd */
+    if (prev_module != curr_module && curr_module != MODULE_UNKNOWN) {
+        val_print(ACS_PRINT_TEST, "\n\n    ", 0);
+        if (indent)
+            val_print(ACS_PRINT_TEST, "    ", 0);
+        val_print(ACS_PRINT_TEST, "*** Running ", 0);
+        val_print(ACS_PRINT_TEST, module_name_string[curr_module], 0);
+        val_print(ACS_PRINT_TEST, " tests ***", 0);
+
+        /* Update prev_module for next call */
+        prev_module = curr_module;
+    }
+
     val_print(ACS_PRINT_TEST, "\n\n", 0);
     /* Print indent spaces */
     while (indent) {
@@ -143,21 +168,13 @@ print_rule_test_start(uint32_t rule_enum, uint32_t indent)
         indent--;
     }
 
-    val_print(ACS_PRINT_TEST, "START ", 0);
-
-    /* Print module name */
-    if (rule_test_map[rule_enum].flag == INVALID_ENTRY) {
-        val_print(ACS_PRINT_TEST, "-", 0);
-    } else {
-        val_print(ACS_PRINT_TEST, module_name_string[rule_test_map[rule_enum].module_id], 0);
-    }
-    val_print(ACS_PRINT_TEST, " ", 0);
+    /* Print rule id */
     val_print(ACS_PRINT_TEST, rule_id_string[rule_enum], 0);
 
     /* TODO
        Note: Test ID print would be deprecated in future, please use rule id as primary key to
        identify tests and comment on coverage */
-    val_print(ACS_PRINT_TEST, " ", 0);
+    val_print(ACS_PRINT_TEST, " : ", 0);
     if (rule_test_map[rule_enum].test_num == INVALID_ENTRY) {
         val_print(ACS_PRINT_TEST, "-", 0);
     }
@@ -170,6 +187,50 @@ print_rule_test_start(uint32_t rule_enum, uint32_t indent)
     if (rule_test_map[rule_enum].flag != INVALID_ENTRY) {
         val_print(ACS_PRINT_TEST, rule_test_map[rule_enum].rule_desc, 0);
     }
+}
+
+/**
+ * @brief Print PALs that validate the rule when current PAL cannot.
+ *
+ * When a rule is marked `NOT TESTED (PAL NOT SUPPORTED)`, this helper prints
+ * an informational line listing which PAL(s) validate the rule, based on
+ * the rule metadata bitmask.
+ *
+ * @param rule_enum Rule identifier
+ * @param indent    Indentation level; output is prefixed by (indent * 4)
+ *                  spaces.
+ */
+void
+print_pal_validation_info(uint32_t rule_enum, uint32_t indent)
+{
+    uint8_t pal_mask = rule_test_map[rule_enum].platform_bitmask;
+    uint8_t other_pals = pal_mask & ~g_current_pal;
+    bool first = 1;
+    uint32_t i;
+
+    if (!other_pals)
+        return;
+
+    for (i = 0; i < indent; i++)
+        val_print(ACS_PRINT_TEST, "    ", 0);
+
+    val_print(ACS_PRINT_TEST, "   Rule is validated by ", 0);
+
+    if (other_pals & PLATFORM_BAREMETAL) {
+        val_print(ACS_PRINT_TEST, "Baremetal", 0);
+        first = 0;
+    }
+    if (other_pals & PLATFORM_UEFI) {
+        if (!first) val_print(ACS_PRINT_TEST, "/", 0);
+        val_print(ACS_PRINT_TEST, "UEFI", 0);
+        first = 0;
+    }
+    if (other_pals & PLATFORM_LINUX) {
+        if (!first) val_print(ACS_PRINT_TEST, "/", 0);
+        val_print(ACS_PRINT_TEST, "Linux", 0);
+    }
+
+    val_print(ACS_PRINT_TEST, " test\n", 0);
 }
 
 /**
@@ -186,18 +247,22 @@ print_rule_test_start(uint32_t rule_enum, uint32_t indent)
 void
 print_rule_test_status(uint32_t rule_enum, uint32_t indent, uint32_t status)
 {
+    (void)rule_enum;
     /* Only count top-level rules (indent == 0) */
     uint32_t top_level_rule = (indent == 0);
 
     val_print(ACS_PRINT_TEST, "\n", 0);
+    /* Print other PAL(s) that validate this rule */
+    if (status == TEST_PAL_NS) {
+        print_pal_validation_info(rule_enum, indent);
+    }
     /* Print indent spaces */
     while (indent) {
         val_print(ACS_PRINT_TEST, "    ", 0);
         indent--;
     }
 
-    val_print(ACS_PRINT_TEST, "END ", 0);
-    val_print(ACS_PRINT_TEST, rule_id_string[rule_enum], 0);
+    val_print(ACS_PRINT_TEST, "   Result: ", 0);
     val_print(ACS_PRINT_TEST, " ", 0);
 
     /* Update global counters for top-level rules only */

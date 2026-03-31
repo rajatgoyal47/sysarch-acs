@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2018-2021, 2023-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2021, 2023-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
-#include "val/include/acs_val.h"
-#include "val/include/acs_pcie_enumeration.h"
-#include "val/include/acs_pcie.h"
-#include "val/include/acs_memory.h"
-#include "val/include/acs_exerciser.h"
-#include "val/include/acs_pcie.h"
-#include "val/driver/gic/gic.h"
+#include "acs_val.h"
+#include "acs_pcie_enumeration.h"
+#include "acs_pcie.h"
+#include "acs_memory.h"
+#include "acs_exerciser.h"
+#include "acs_pcie.h"
+#include "gic.h"
 
 #define TEST_NUM   (ACS_EXERCISER_TEST_NUM_BASE + 6)
 #define TEST_RULE  "PCI_LI_02"
@@ -31,6 +31,7 @@
 static uint32_t instance;
 static uint32_t e_intr_line;
 static uint32_t test_fail;
+static uint32_t warn_cnt;
 static volatile uint32_t e_intr_pending;
 uint32_t e_bdf;
 
@@ -170,13 +171,10 @@ payload (void)
             val_gic_disableInterruptSource(e_intr_line);
             val_gic_free_irq(e_intr_line, 0);
         }
-   } else {
-        if (status == NOT_IMPLEMENTED) {
-           val_print(ACS_PRINT_DEBUG,
-           "\n       pal_pcie_get_legacy_irq_map unimplemented for bdf: 0x%x", e_bdf);
-           val_print(ACS_PRINT_DEBUG, "\n     The API is platform specific and to be populated", 0);
-           val_print(ACS_PRINT_DEBUG, "\n     by partners with system legacy irq map", 0);
-            continue;
+    } else {
+        if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
+           warn_cnt++;
+           break;
         }
         else {
            val_print(ACS_PRINT_DEBUG, "\n    PCIe Legacy IRQs unmapped. Skipping bdf: 0x%x", e_bdf);
@@ -187,6 +185,8 @@ payload (void)
 
   if (test_fail)
       val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 03));
+  else if (warn_cnt)
+      val_set_status(pe_index, RESULT_WARN(TEST_NUM, 01));
   else if (test_skip)
       val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
   else

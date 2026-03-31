@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +15,13 @@
  * limitations under the License.
  **/
 
-#include "include/acs_val.h"
-#include "include/acs_common.h"
-#include "include/acs_pcie_enumeration.h"
-#include "include/val_interface.h"
-#include "include/acs_pcie.h"
-#include "include/acs_memory.h"
-#include "driver/pcie/pcie.h"
+#include "acs_val.h"
+#include "acs_common.h"
+#include "acs_pcie_enumeration.h"
+#include "val_interface.h"
+#include "acs_pcie.h"
+#include "acs_memory.h"
+#include "pcie.h"
 
 #define WARN_STR_LEN 7
 
@@ -630,6 +630,10 @@ val_pcie_create_device_bdf_table()
 
                       dp_type = val_pcie_device_port_type(bdf);
 
+                      /* Disable DPC for RP and DP */
+                      if ((dp_type == RP) || (dp_type == DP))
+                          val_pcie_disable_dpc(bdf);
+
                       /* RCiEP rules are for SBSA L6 */
                       if ((dp_type == RCiEP) || (dp_type == RCEC))
                           g_pcie_integrated_devices++;
@@ -639,6 +643,7 @@ val_pcie_create_device_bdf_table()
                           g_pcie_integrated_devices++;
 
                       g_pcie_bdf_table->device[g_pcie_bdf_table->num_entries++].bdf = bdf;
+
                   }
               }
           }
@@ -792,7 +797,10 @@ val_pcie_get_info(PCIE_INFO_e type, uint32_t index)
   @param   bdf      - PCIe BUS/Device/Function
   @param   mvector  - Pointer to MSI vector's list head
 
-  @return  number of MSI(X) vectors
+  @return
+    - 0               : Success
+    - NOT_IMPLEMENTED : Feature not implemented
+    - non-zero        : Failure (implementation-specific error code)
 **/
 uint32_t
 val_get_msi_vectors (uint32_t bdf, PERIPHERAL_VECTOR_LIST **mvector)
@@ -954,7 +962,7 @@ val_pcie_find_capability(uint32_t bdf, uint32_t cid_type, uint32_t cid, uint32_t
 
   if (cid_type == PCIE_CAP) {
 
-      /* Serach in PCIe configuration space */
+      /* Search in PCIe configuration space */
       ret = val_pcie_read_cfg(bdf, TYPE01_CPR, &reg_value);
       if (ret == PCIE_NO_MAPPING || reg_value == PCIE_UNKNOWN_RESPONSE)
           return ret;
@@ -973,11 +981,16 @@ val_pcie_find_capability(uint32_t bdf, uint32_t cid_type, uint32_t cid, uint32_t
   } else if (cid_type == PCIE_ECAP)
   {
 
-      /* Serach in PCIe extended configuration space */
+      /* Search in PCIe extended configuration space */
       next_cap_offset = PCIE_ECAP_START;
       while (next_cap_offset)
       {
           val_pcie_read_cfg(bdf, next_cap_offset, &reg_value);
+
+          /* if data at next ECAP offset reads 0xFFFF-FFFF, exit with failure code */
+          if (reg_value == PCIE_UNKNOWN_RESPONSE)
+            return PCIE_UNKNOWN_RESPONSE;
+
           if ((reg_value & PCIE_ECAP_CIDR_MASK) == cid)
           {
               *cid_offset = next_cap_offset;
@@ -1095,6 +1108,60 @@ val_pcie_is_msa_enabled(uint32_t bdf)
       return 0;
   else
       return 1;
+}
+
+/**
+  @brief  Enable DPC trigger enable bits
+  @param  bdf   - Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
+  @param  err_type - 1 for fatal error and 2 for fatal and non-fatal error
+  @return None
+**/
+void
+val_pcie_enable_dpc(uint32_t bdf, uint32_t err_type)
+{
+  uint32_t dpc_cap_base;
+  uint32_t reg_value;
+  uint32_t status;
+
+  /* Check DPC capability */
+  status = val_pcie_find_capability(bdf, PCIE_ECAP, ECID_DPC, &dpc_cap_base);
+  if (status == PCIE_CAP_NOT_FOUND)
+  {
+      val_print(ACS_PRINT_DEBUG, "DPC Capability not supported \n", 0);
+      return;
+  }
+
+  /* Enable DPC trigger enable bits */
+  val_pcie_read_cfg(bdf, dpc_cap_base + DPC_CTRL_OFFSET, &reg_value);
+  reg_value |= err_type << DPC_CTRL_TRG_EN_SHIFT;
+  val_pcie_write_cfg(bdf, dpc_cap_base + DPC_CTRL_OFFSET, reg_value);
+}
+
+/**
+  @brief  Disable DPC trigger enable bits
+  @param  bdf   - Segment/Bus/Dev/Func in the format of PCIE_CREATE_BDF
+  @return DPC trigger enable bits value
+**/
+void
+val_pcie_disable_dpc(uint32_t bdf)
+{
+
+  uint32_t reg_value;
+  uint32_t dpc_cap_base;
+  uint32_t status;
+
+  /* Check DPC capability */
+  status = val_pcie_find_capability(bdf, PCIE_ECAP, ECID_DPC, &dpc_cap_base);
+  if (status == PCIE_CAP_NOT_FOUND)
+  {
+      val_print(ACS_PRINT_DEBUG, "DPC Capability not supported \n", 0);
+      return;
+  }
+
+  /* Disable "DPC Trigger Enable" bits */
+  val_pcie_read_cfg(bdf, dpc_cap_base + DPC_CTRL_OFFSET, &reg_value);
+  reg_value &= ~(DPC_CTRL_TRG_EN_MASK << DPC_CTRL_TRG_EN_SHIFT);
+  val_pcie_write_cfg(bdf, dpc_cap_base + DPC_CTRL_OFFSET, reg_value);
 }
 
 /**
@@ -1273,7 +1340,7 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
           id = bf_entry->ecap_id;
           break;
       default:
-          val_print(ACS_PRINT_ERR, "\n       Invalid reg_type : 0x%x  ", bf_entry->reg_type);
+          val_print(ACS_PRINT_ERR, "\n       Invalid reg_type  0x%x  ", bf_entry->reg_type);
           return 1;
   }
 
@@ -1297,9 +1364,9 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
   /* Check if bit-field value is proper */
   if (bf_value != bf_entry->cfg_value)
   {
-      val_print(ACS_PRINT_ERR, "\n       BDF 0x%x : ", bdf);
+      val_print(ACS_PRINT_ERR, "\n       BDF 0x%x  ", bdf);
       val_print(ACS_PRINT_ERR, bf_entry->err_str1, 0);
-      val_print(ACS_PRINT_ERR, ": 0x%x", bf_value);
+      val_print(ACS_PRINT_ERR, " 0x%x", bf_value);
       val_print(ACS_PRINT_ERR, " instead of 0x%x", bf_entry->cfg_value);
       if (!val_strncmp(bf_entry->err_str1, "WARNING", WARN_STR_LEN))
           return 0;
@@ -1348,15 +1415,15 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
           val_pcie_write_cfg(bdf, cap_base + reg_offset, temp_reg_value);
           break;
       default:
-          val_print(ACS_PRINT_ERR, "\n       Invalid Attribute : 0x%x  ", bf_entry->attr);
+          val_print(ACS_PRINT_ERR, "\n       Invalid Attribute  0x%x  ", bf_entry->attr);
           return 1;
   }
 
   if (reg_overwrite_value != reg_value)
   {
-      val_print(ACS_PRINT_ERR, "\n       BDF 0x%x : ", bdf);
+      val_print(ACS_PRINT_ERR, "\n       BDF 0x%x  ", bdf);
       val_print(ACS_PRINT_ERR, bf_entry->err_str2, 0);
-      val_print(ACS_PRINT_ERR, ": 0x%x",
+      val_print(ACS_PRINT_ERR, " 0x%x",
                           reg_overwrite_value >> REG_SHIFT(alignment_byte_cnt, bf_entry->start));
       val_print(ACS_PRINT_ERR, " instead of 0x%x",
                           reg_value >> REG_SHIFT(alignment_byte_cnt, bf_entry->start));
@@ -1366,7 +1433,7 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
   }
 
   /* Return pass status */
-  val_print(ACS_PRINT_INFO, "\n       BDF 0x%x : PASS", bdf);
+  val_print(ACS_PRINT_INFO, "\n       BDF 0x%x  PASS", bdf);
   return 0;
 }
 

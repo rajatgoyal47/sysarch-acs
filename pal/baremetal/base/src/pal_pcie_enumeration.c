@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 #include "platform_override_struct.h"
 
 extern PCIE_INFO_TABLE *g_pcie_info_table;
-extern PCIE_ROOT_INFO_TABLE platform_root_pcie_cfg;
+extern const PCIE_ROOT_INFO_TABLE platform_root_pcie_cfg;
 
 uint32_t pcie_index = 0, enumerate = 1;
 /*64-bit address initialisation*/
@@ -584,7 +584,7 @@ void pal_pcie_enumerate(void)
     print(ACS_PRINT_INFO, "\nStarting Enumeration\n", 0);
     while (pcie_index < g_pcie_info_table->num_entries)
     {
-       hb_count = platform_root_pcie_cfg.block[pcie_index].hb_enteries;
+       hb_count = platform_root_pcie_cfg.block[pcie_index].hb_entries;
        count = 0;
        while (count < hb_count)
        {

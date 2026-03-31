@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +15,13 @@
  * limitations under the License.
  **/
 
-#include "include/val_interface.h"
-#include "include/acs_common.h"
-#include "include/pal_interface.h"
-#include "include/acs_std_smc.h"
-#include "include/acs_cfg.h"
+#include "val_interface.h"
+#include "acs_common.h"
+#include "pal_interface.h"
+#include "acs_std_smc.h"
+#include "acs_cfg.h"
+
+extern uint32_t g_its_init;
 
 /**
   @brief   This API will execute all MPAM Error tests
@@ -66,9 +68,29 @@ val_mpam_execute_error_tests(uint32_t num_pe)
   status |= error009_entry();
   status |= error010_entry();
   status |= error011_entry();
+  status |= error012_entry();
+  status |= error013_entry();
+  status |= error014_entry();
   status |= intr001_entry();
   status |= intr002_entry();
   status |= intr003_entry();
+  status |= intr004_entry();
+
+  /* Setup ITS for MSI Tests */
+  if (g_its_init != 1) {
+      val_print(ACS_PRINT_INFO, "\n      Initializing ITS\n", 0);
+      if (val_gic_its_configure() == ACS_STATUS_ERR) {
+          val_print(ACS_PRINT_ERR, "\n     val_gic_its_configure() failed \n", 0);
+          status = ACS_STATUS_SKIP;
+          return status;
+      }
+      g_its_init = 1;
+  }
+
+  if (g_its_init) {
+    status |= intr005_entry();
+    status |= intr006_entry();
+  }
 
   val_print_test_end(status, "ERROR");
 
@@ -116,6 +138,10 @@ val_mpam_execute_membw_tests(uint32_t num_pe)
   status |= mem002_entry();
   status |= mem003_entry();
 
+  status |= monitor006_entry();
+  status |= monitor007_entry();
+  status |= monitor008_entry();
+
   val_print_test_end(status, "MEMORY BANDWIDTH");
 
   return status;
@@ -158,6 +184,9 @@ val_mpam_execute_register_tests(uint32_t num_pe)
   status |= reg001_entry();
   status |= reg002_entry();
   status |= reg003_entry();
+  status |= reg004_entry();
+  status |= reg005_entry();
+  status |= reg006_entry();
 
   val_print_test_end(status, "REGISTER");
 
@@ -201,11 +230,17 @@ val_mpam_execute_cache_tests(uint32_t num_pe)
   status |= partition001_entry();
   status |= partition002_entry();
   status |= partition003_entry();
+  status |= partition004_entry();
+  status |= partition005_entry();
+  status |= partition006_entry();
+
+  status |= feat001_entry();
 
   status |= monitor001_entry();
   status |= monitor002_entry();
   status |= monitor003_entry();
   status |= monitor004_entry();
+  status |= monitor005_entry();
 
   val_print_test_end(status, "CACHE");
 

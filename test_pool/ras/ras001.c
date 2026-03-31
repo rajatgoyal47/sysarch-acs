@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,12 +15,12 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/acs_common.h"
-#include "val/include/val_interface.h"
-#include "val/include/acs_memory.h"
-#include "val/include/acs_pe.h"
-#include "val/include/acs_ras.h"
+#include "acs_val.h"
+#include "acs_common.h"
+#include "val_interface.h"
+#include "acs_memory.h"
+#include "acs_pe.h"
+#include "acs_ras.h"
 
 #define TEST_NUM   (ACS_RAS_TEST_NUM_BASE + 1)
 #define TEST_RULE  "RAS_01"
@@ -36,13 +36,17 @@ payload()
   uint64_t num_node;
   uint64_t value;
   uint32_t node_index;
+  uint32_t err_rec_idx;
+  uint64_t num_err_recs;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   /* Get Number of nodes with RAS Functionality */
   status = val_ras_get_info(RAS_INFO_NUM_NODES, 0, &num_node);
   if (status || (num_node == 0)) {
-    val_print(ACS_PRINT_DEBUG, "\n       RAS Nodes not found. Skipping...", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
+    val_print(ACS_PRINT_DEBUG, "\n       No RAS Nodes found in AEST table.", 0);
+    val_print(ACS_PRINT_DEBUG, "\n       The test must be considered fail if system \
+                                        components supports RAS nodes", 0);
+    val_set_status(index, RESULT_WARN(TEST_NUM, 01));
     return;
   }
 
@@ -73,21 +77,31 @@ payload()
         continue;
     }
 
-    /* Read FR register of the first error record */
-    value = val_ras_reg_read(node_index, RAS_ERR_FR, 0);
-    if (value == INVALID_RAS_REG_VAL) {
-        val_print(ACS_PRINT_ERR,
-                    "\n       Couldn't read ERR<0>FR register for RAS node index: 0x%lx",
-                    node_index);
-        fail_cnt++;
-        continue;
+    /* Get Error Record number for Current Node */
+    status = val_ras_get_info(RAS_INFO_NUM_ERR_REC, node_index, &num_err_recs);
+    if (status || num_err_recs == 0) {
+         val_print(ACS_PRINT_ERR, "\n       RAS Node %d has no error records implemented ",
+                                   node_index);
+         continue;
     }
 
-    /* Check only if ERR_FR.CE != 0 - Check ERR_FR.CEC[14:12] != 0 for CEC to be implemented */
-    if ((value & ERR_FR_CE_MASK) && !(value & ERR_FR_CEC_MASK)) {
-      val_print(ACS_PRINT_ERR, "\n       CEC not implemented for node_index %d", node_index);
-      fail_cnt++;
-      continue;
+    /* Enumerate all implemented Error Records */
+    for (err_rec_idx = 0; err_rec_idx < num_err_recs; err_rec_idx++) {
+      /* Read FR register of the current error record */
+      value = val_ras_reg_read(node_index, RAS_ERR_FR, err_rec_idx);
+      if (value == INVALID_RAS_REG_VAL) {
+          val_print(ACS_PRINT_ERR, "\n       Couldn't read ERR<%d>FR register", err_rec_idx);
+          val_print(ACS_PRINT_ERR, "\n       RAS node index: %d", node_index);
+          fail_cnt++;
+          continue;
+      }
+
+      /* Check only if ERR_FR.CE != 0 - Check ERR_FR.CEC[14:12] != 0 for CEC to be implemented */
+      if ((value & ERR_FR_CE_MASK) && !(value & ERR_FR_CEC_MASK)) {
+        val_print(ACS_PRINT_ERR, "\n       CEC not implemented for node_index %d", node_index);
+        fail_cnt++;
+        continue;
+      }
     }
   }
 

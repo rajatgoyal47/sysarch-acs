@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -50,7 +50,8 @@ UINT32  g_acs_tests_fail;
 UINT64  g_stack_pointer;
 UINT64  g_exception_ret_addr;
 UINT64  g_ret_addr;
-UINT32  g_wakeup_timeout;
+UINT32  g_timeout_pass;
+UINT32  g_timeout_fail;
 UINT32  g_build_sbsa = 0;
 UINT32  g_build_pcbsa = 0;
 UINT32  g_print_mmio;
@@ -61,13 +62,35 @@ UINT32  g_crypto_support = TRUE;
 UINT32  g_num_tests = 0;
 UINT32  *g_execute_modules;
 UINT32  g_num_modules = 0;
-/* VE systems run acs at EL1 and in some systems crash is observed during acess
-   of EL1 phy and virt timer, Below command line option is added only for debug
-   purpose to complete BSA run on these systems */
-UINT32  g_el1physkip = FALSE;
+UINT32  g_el1skiptrap_mask = 0;
 
 SHELL_FILE_HANDLE g_acs_log_file_handle;
 SHELL_FILE_HANDLE g_dtb_log_file_handle;
+
+static BOOLEAN
+w_ascii_streq_caseins(const CHAR16 *a, const CHAR16 *b)
+{
+  CHAR16 ca;
+  CHAR16 cb;
+
+  if (a == NULL || b == NULL)
+    return FALSE;
+
+  while (*a && *b) {
+    ca = *a;
+    cb = *b;
+    if (ca >= L'A' && ca <= L'Z')
+      ca = (CHAR16)(ca - L'A' + L'a');
+    if (cb >= L'A' && cb <= L'Z')
+      cb = (CHAR16)(cb - L'A' + L'a');
+    if (ca != cb)
+      return FALSE;
+    a++;
+    b++;
+  }
+
+  return (*a == L'\0' && *b == L'\0');
+}
 
 VOID
 HelpMsg (
@@ -100,15 +123,18 @@ HelpMsg (
          "-no_crypto_ext  Pass this flag if cryptography extension not supported due to export restrictions\n"
          "-p2p    Pass this flag to indicate that PCIe Hierarchy Supports Peer-to-Peer\n"
          "-cache  Pass this flag to indicate that if the test system supports PCIe address translation cache\n"
-         "-timeout  Set timeout multiple for wakeup tests\n"
-         "        1 - min value  5 - max value\n"
+         "-timeout <n> \n"
+         "        Set pass timeout (in microseconds) for wakeup tests (500 us - 2 sec)\n"
+         "        Example: -timeout 2000 \n"
          "-os     Enable the execution of operating system tests\n"
          "-hyp    Enable the execution of hypervisor tests\n"
          "-ps     Enable the execution of platform security tests\n"
          "-dtb    Enable the execution of dtb dump\n"
          "-sbsa   Enable sbsa requirements for bsa binary\n"
-         "-el1physkip Skips EL1 register checks\n"
-         "-skip-dp-nic-ms Skip PCIe tests for DisplayPort, Network, and Mass Storage devices\n"
+         "-el1skiptrap <list>\n"
+         "        Skip specific EL1 register reads known to trap by the hypervisor.\n"
+         "        Tokens: cntpct, devmem, pmsidr\n"
+         "-skip-dp-nic-ms Skip PCIe tests for DisplayPort, Network, Mass Storage devices and Unclassified devices\n"
 );
 }
 
@@ -134,7 +160,7 @@ CONST SHELL_PARAM_ITEM ParamList[] = {
   {L"-sbsa", TypeFlag},  // -sbsa # Enable sbsa requirements for bsa binary\n"
   {L"-no_crypto_ext", TypeFlag},  // -no_crypto_ext  # Skip tests which have export restrictions
   {L"-mmio", TypeFlag}, // -mmio # Enable pal_mmio prints
-  {L"-el1physkip", TypeFlag}, // -el1physkip # Skips EL1 register checks
+  {L"-el1skiptrap", TypeValue}, // -el1skiptrap <list> # Skip specific EL1 register reads
   {NULL, TypeMax}
   };
 
@@ -204,16 +230,50 @@ command_init ()
     }
   }
 
-  // Options with Values
+  /* Parse -timeout */
   CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-timeout");
   if (CmdLineArg == NULL) {
-    g_wakeup_timeout = 1;
+      g_timeout_pass = WAKEUP_WD_PASS_TIMEOUT_DEFAULT;
+      g_timeout_fail = g_timeout_pass * WAKEUP_WD_FAILSAFE_TIMEOUT_MULTIPLIER;
   } else {
-    g_wakeup_timeout = StrDecimalToUintn(CmdLineArg);
-    Print(L"Wakeup timeout multiple %d.\n", g_wakeup_timeout);
-    if (g_wakeup_timeout > 5)
-        g_wakeup_timeout = 5;
-    }
+      /* Accept a single value; ignore any trailing delimiters */
+      CHAR16 buf[64];
+      UINTN len = StrLen(CmdLineArg);
+      UINTN i;
+
+      if (len >= (sizeof(buf) / sizeof(buf[0])))
+          len = (sizeof(buf) / sizeof(buf[0])) - 1;
+
+      for (i = 0; i < len; i++) {
+          buf[i] = CmdLineArg[i];
+      }
+      buf[i] = L'\0';
+
+      if (i == 0) {
+          Print(L"Invalid -timeout: provide a timeout value\n");
+          return SHELL_INVALID_PARAMETER;
+      }
+
+      /* trim leading/trailing spaces */
+      while (buf[0] == L' ' || buf[0] == L'\t') {
+          for (i = 0; buf[i] != L'\0'; i++) buf[i] = buf[i + 1];
+      }
+      i = StrLen(buf);
+      while (i > 0 && (buf[i - 1] == L' ' || buf[i - 1] == L'\t')) {
+          buf[i - 1] = L'\0';
+          i--;
+      }
+
+      g_timeout_pass = (UINT32)StrDecimalToUintn(buf);
+      g_timeout_fail = g_timeout_pass * WAKEUP_WD_FAILSAFE_TIMEOUT_MULTIPLIER;
+      if (!(g_timeout_pass >= WAKEUP_WD_PASS_TIMEOUT_THRESHOLD &&
+            g_timeout_pass <= WAKEUP_WD_PASS_TIMEOUT_MAX_THRESHOLD)) {
+          Print(L"Invalid -timeout: pass timeout range should be within 500ms and 2sec\n");
+          return SHELL_INVALID_PARAMETER;
+      }
+
+      Print(L"Timeouts (us): PASS=%d, FAIL=%d\n", g_timeout_pass, g_timeout_fail);
+  }
 
     // Options with Values
   CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-v");
@@ -459,8 +519,52 @@ command_init ()
     g_pcie_cache_present = FALSE;
   }
 
-  if (ShellCommandLineGetFlag (ParamPackage, L"-el1physkip")) {
-    g_el1physkip = TRUE;
+  CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-el1skiptrap");
+  if (CmdLineArg != NULL) {
+    UINTN arg_len = StrLen(CmdLineArg);
+    UINTN token_start = 0;
+    UINTN token_end = 0;
+
+    while (token_start < arg_len) {
+      token_end = token_start;
+      while (token_end < arg_len && CmdLineArg[token_end] != L','
+                                 && CmdLineArg[token_end] != L'\n'
+                                 && CmdLineArg[token_end] != L'\r')
+        token_end++;
+
+      while (token_start < token_end &&
+             (CmdLineArg[token_start] == L' ' || CmdLineArg[token_start] == L'\t'))
+        token_start++;
+      while (token_end > token_start &&
+             (CmdLineArg[token_end - 1] == L' ' || CmdLineArg[token_end - 1] == L'\t'))
+        token_end--;
+
+      if (token_end > token_start) {
+        CHAR16 token[32];
+        UINTN tlen = token_end - token_start;
+        UINTN ii;
+
+        if (tlen >= (sizeof(token) / sizeof(token[0])))
+          tlen = (sizeof(token) / sizeof(token[0])) - 1;
+        for (ii = 0; ii < tlen; ii++)
+          token[ii] = CmdLineArg[token_start + ii];
+        token[tlen] = L'\0';
+
+        if (w_ascii_streq_caseins(token, L"pmsidr")) {
+          g_el1skiptrap_mask |= EL1SKIPTRAP_PMSIDR;
+        } else if (w_ascii_streq_caseins(token, L"cntpct")) {
+          g_el1skiptrap_mask |= EL1SKIPTRAP_CNTPCT;
+        } else if (w_ascii_streq_caseins(token, L"devmem")) {
+          g_el1skiptrap_mask |= EL1SKIPTRAP_DEVMEM;
+        } else {
+          Print(L"Invalid -el1skiptrap token: %s\n", token);
+          HelpMsg();
+          return SHELL_INVALID_PARAMETER;
+        }
+      }
+
+      token_start = (token_end < arg_len) ? token_end + 1 : token_end;
+    }
   }
   //
   // Initialize global counters

@@ -1,6 +1,6 @@
 ## VBSA ACS Testcase checklist
 
-The VBSA ACS test checklist is based on **VBSA 1.0 specification** and **VBSA ACS 0.7.0** tag.
+The VBSA ACS test checklist is based on **VBSA 1.0 specification** and **VBSA ACS 1.0.0** tag.
 
 The checklist provides information about:
 
@@ -133,7 +133,7 @@ The checklist provides information about:
       <td>Check PMUv3 support in vPE</td>
       <td>✅</td>
       <td>❌</td>
-      <td></td>
+      <td>Related rules from other specifications: B_PE_09 (BSA)</td>
     </tr>
     <tr>
       <td rowspan="6">L1</td>
@@ -193,7 +193,7 @@ The checklist provides information about:
       <td>DMA requestors access to NS addr space</td>
       <td>❌</td>
       <td>✅</td>
-      <td></td>
+      <td>Related rules from other specifications: B_MEM_03 (BSA), B_MEM_06 (BSA)</td>
     </tr>
     <tr>
       <td rowspan="5">L1</td>
@@ -321,7 +321,7 @@ The checklist provides information about:
       <td>Check SMMU stage 1 support for VE</td>
       <td>✅</td>
       <td>❌</td>
-      <td></td>
+      <td>Related rules from other specifications: B_SMMU_08 (BSA)</td>
     </tr>
     <tr>
       <td>L1</td>
@@ -331,7 +331,7 @@ The checklist provides information about:
       <td></td>
       <td></td>
       <td></td>
-      <td></td>
+      <td>Manual testing required</td>
     </tr>
     <tr>
       <td>L1</td>
@@ -341,7 +341,7 @@ The checklist provides information about:
       <td>Check Virt and Phy counter presence</td>
       <td>✅</td>
       <td>❌</td>
-      <td></td>
+      <td>Related rules from other specifications: B_TIME_01 (BSA)</td>
     </tr>
     <tr>
       <td>L1</td>
@@ -351,12 +351,28 @@ The checklist provides information about:
       <td>Check Virt and Phy counter min freq</td>
       <td>✅</td>
       <td>❌</td>
+      <td>Related rules from other specifications: B_TIME_02 (BSA)</td>
+    </tr>
+    <tr>
+      <td rowspan="3">L1</td>
+      <td rowspan="3"><a href="arm_vbsa_architecture_compliance_test_scenario.md#v_l1tm_03--generic-timer-conformance">V_L1TM_03</td>
+      <td></td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
       <td></td>
     </tr>
     <tr>
-      <td>L1</td>
-      <td><a href="arm_vbsa_architecture_compliance_test_scenario.md#v_l1tm_03--generic-timer-conformance">V_L1TM_03</td>
+      <td>B_TIME_03</td>
+      <td>Not Covered</td>
       <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>B_TIME_04</td>
       <td>Not Covered</td>
       <td></td>
       <td></td>
@@ -381,7 +397,7 @@ The checklist provides information about:
       <td></td>
       <td></td>
       <td></td>
-      <td></td>
+      <td>Related rules from other specifications: B_WAK_01 (BSA)</td>
     </tr>
     <tr>
       <td rowspan="3">L1</td>
@@ -391,7 +407,7 @@ The checklist provides information about:
       <td>Check power wakeup interrupts</td>
       <td>✅</td>
       <td>❌</td>
-      <td></td>
+      <td>Related rules from other specifications: B_WAK_03 (BSA)</td>
     </tr>
     <tr>
       <td></td>
@@ -416,14 +432,29 @@ The checklist provides information about:
       <td></td>
       <td></td>
       <td></td>
-      <td></td>
+      <td>Related rules from other specifications: B_WAK_04 (BSA)</td>
     </tr>
     <tr>
-      <td>L1</td>
-      <td><a href="arm_vbsa_architecture_compliance_test_scenario.md#v_l1wk_04--wakeup-semantics">V_L1WK_04</td>
+      <td rowspan="3">L1</td>
+      <td rowspan="3"><a href="arm_vbsa_architecture_compliance_test_scenario.md#v_l1wk_04--wakeup-semantics">V_L1WK_04</td>
       <td></td>
       <td>Not Covered</td>
       <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>B_WAK_05</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>B_WAK_06</td>
+      <td>Not Covered</td>
       <td></td>
       <td></td>
       <td></td>
@@ -436,7 +467,7 @@ The checklist provides information about:
       <td>Check vPE power state semantics</td>
       <td>✅</td>
       <td>❌</td>
-      <td></td>
+      <td>Related rules from other specifications: B_WAK_07 (BSA)</td>
     </tr>
     <tr>
       <td></td>
@@ -456,7 +487,7 @@ The checklist provides information about:
     <tr>
       <td>L1</td>
       <td><a href="arm_vbsa_architecture_compliance_test_scenario.md#v_l1wk_06--power-state-semantics">V_L1WK_06</td>
-      <td></td>
+      <td>B_WAK_08</td>
       <td>Not Covered</td>
       <td></td>
       <td></td>
@@ -471,7 +502,7 @@ The checklist provides information about:
       <td></td>
       <td></td>
       <td></td>
-      <td></td>
+      <td>Related rules from other specifications: B_WAK_09 (BSA)</td>
     </tr>
     <tr>
       <td>L1</td>
@@ -481,7 +512,7 @@ The checklist provides information about:
       <td></td>
       <td></td>
       <td></td>
-      <td></td>
+      <td>Related rules from other specifications: B_WAK_10 (BSA)</td>
     </tr>
     <tr>
       <td>L1</td>
@@ -491,7 +522,7 @@ The checklist provides information about:
       <td></td>
       <td></td>
       <td></td>
-      <td></td>
+      <td>Related rules from other specifications: B_WAK_11 (BSA)</td>
     </tr>
     <tr>
       <td rowspan="11">L1</td>
@@ -591,7 +622,7 @@ The checklist provides information about:
       <td>Check Virt PCIe arch compliance</td>
       <td></td>
       <td></td>
-      <td></td>
+      <td>Related rules from other specifications: B_PER_08 (BSA)</td>
     </tr>
     <tr>
       <td>PCI_IN_01</td>
@@ -903,7 +934,7 @@ The checklist provides information about:
       <td>Check MSI support for PCIe dev</td>
       <td>✅</td>
       <td>❌</td>
-      <td></td>
+      <td>MSI/MSI-X support required</td>
     </tr>
     <tr>
       <td>PCI_MSI_2</td>
@@ -911,7 +942,7 @@ The checklist provides information about:
       <td>Check MSI=X vectors uniqueness</td>
       <td>❌</td>
       <td>✅</td>
-      <td></td>
+      <td>MSI/MSI-X support required</td>
     </tr>
     <tr>
       <td></td>
@@ -1079,7 +1110,7 @@ The checklist provides information about:
       <td>RP must suprt ACS if P2P Txn are allow</td>
       <td>✅</td>
       <td>❌</td>
-      <td></td>
+      <td>PCIe Hierarchy P2P support required</td>
     </tr>
     <tr>
       <td>PCI_PP_04</td>
@@ -1087,7 +1118,7 @@ The checklist provides information about:
       <td>Check RP Adv Error Report</td>
       <td>✅</td>
       <td>❌</td>
-      <td></td>
+      <td>PCIe Hierarchy and Device P2P support required</td>
     </tr>
     <tr>
       <td></td>
@@ -1111,7 +1142,7 @@ The checklist provides information about:
       <td>Check Direct Transl P2P Support</td>
       <td>✅</td>
       <td>❌</td>
-      <td></td>
+      <td>PCIe Hierarchy and Device P2P support required</td>
     </tr>
     <tr>
       <td>PCI_PP_06</td>
@@ -1127,7 +1158,7 @@ The checklist provides information about:
       <td>PASID support atleast 16 bits</td>
       <td>✅</td>
       <td>❌</td>
-      <td></td>
+      <td>PASID support required</td>
     </tr>
     <tr>
       <td>PCI_PTM_1</td>
@@ -1145,7 +1176,7 @@ The checklist provides information about:
       <td>Check num PMU counters for vPEs</td>
       <td>✅</td>
       <td>❌</td>
-      <td></td>
+      <td>Related rules from other specifications: B_PE_09 (BSA)</td>
     </tr>
     <tr>
       <td>L2</td>
@@ -1155,7 +1186,7 @@ The checklist provides information about:
       <td>Check vPE PMU overflow signal</td>
       <td>✅</td>
       <td>❌</td>
-      <td></td>
+      <td>Related rules from other specifications: B_PE_10 (BSA)</td>
     </tr>
     <tr>
       <td>L2</td>
@@ -1165,7 +1196,7 @@ The checklist provides information about:
       <td></td>
       <td></td>
       <td></td>
-      <td></td>
+      <td>Related rules from other specifications: S_L3WD_01 (SBSA)</td>
     </tr>
   </tbody>
 </table>
@@ -1173,3 +1204,6 @@ The checklist provides information about:
 ## Latest Checklist Changes
 #### v25.12_VBSA_0.7.0 - *Dec, 2025*
 - Initial VBSA ACS testcase checklist check-in.
+#### v26.03_VBSA_1.0.0 - *Mar, 2026*
+- Guidance on compliance with the V_L1SM_03 rule.
+- Adds 'related rules from other specifications' to align more accurately with the VBSA specification.

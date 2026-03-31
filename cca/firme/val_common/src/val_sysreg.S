@@ -1,0 +1,234 @@
+/*
+ * Copyright (c) 2026, Arm Limited or its affiliates. All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
+
+    .section .text, "ax"
+
+	/* Minimal AArch64 system register accessors used by FIRME-ACS payloads. */
+
+/*
+ * Toolchain portability:
+ * Some AArch64 assemblers do not accept the symbolic sysreg name
+ * `ID_AA64MMFR4_EL1`, so use an explicit encoding via a macro.
+ *
+ * ID_AA64MMFR4_EL1 == S3_0_C0_C7_4.
+ */
+#define VAL_SYSREG_ID_AA64MMFR4_EL1 S3_0_C0_C7_4
+
+    .global read_currentel
+read_currentel:
+    mrs x0, CurrentEL
+    ret
+
+    .global read_mpidr_el1
+read_mpidr_el1:
+    mrs x0, MPIDR_EL1
+    ret
+
+    .global read_id_aa64pfr0_el1
+read_id_aa64pfr0_el1:
+    mrs x0, ID_AA64PFR0_EL1
+    ret
+
+    .global read_id_aa64mmfr4_el1
+read_id_aa64mmfr4_el1:
+    mrs x0, VAL_SYSREG_ID_AA64MMFR4_EL1
+    ret
+
+    .global read_cptr_el2
+read_cptr_el2:
+    mrs x0, CPTR_EL2
+    ret
+
+    .global write_cptr_el2
+write_cptr_el2:
+    msr CPTR_EL2, x0
+    isb
+    ret
+
+    .global read_cpacr_el1
+read_cpacr_el1:
+    mrs x0, CPACR_EL1
+    ret
+
+    .global write_cpacr_el1
+write_cpacr_el1:
+    msr CPACR_EL1, x0
+    isb
+    ret
+
+    .global write_vbar_el2
+write_vbar_el2:
+    msr VBAR_EL2, x0
+    isb
+    ret
+
+    .global write_vbar_el1
+write_vbar_el1:
+    msr VBAR_EL1, x0
+    isb
+    ret
+
+    .global write_elr_el2
+write_elr_el2:
+    msr ELR_EL2, x0
+    isb
+    ret
+
+    .global write_elr_el1
+write_elr_el1:
+    msr ELR_EL1, x0
+    isb
+    ret
+
+    .global write_spsr_el2
+write_spsr_el2:
+    msr SPSR_EL2, x0
+    isb
+    ret
+
+    .global read_sctlr_el2
+read_sctlr_el2:
+    mrs x0, SCTLR_EL2
+    ret
+
+    .global write_sctlr_el2
+write_sctlr_el2:
+    msr SCTLR_EL2, x0
+    isb
+    ret
+
+    .global read_sctlr_el1
+read_sctlr_el1:
+    mrs x0, SCTLR_EL1
+    ret
+
+    .global write_sctlr_el1
+write_sctlr_el1:
+    msr SCTLR_EL1, x0
+    isb
+    ret
+
+    .global write_tcr_el2
+write_tcr_el2:
+    msr TCR_EL2, x0
+    isb
+    ret
+
+    .global write_tcr_el1
+write_tcr_el1:
+    msr TCR_EL1, x0
+    isb
+    ret
+
+    .global write_ttbr0_el2
+write_ttbr0_el2:
+    msr TTBR0_EL2, x0
+    isb
+    ret
+
+    .global write_ttbr0_el1
+write_ttbr0_el1:
+    msr TTBR0_EL1, x0
+    isb
+    ret
+
+    .global write_mair_el2
+write_mair_el2:
+    msr MAIR_EL2, x0
+    isb
+    ret
+
+    .global write_mair_el1
+write_mair_el1:
+    msr MAIR_EL1, x0
+    isb
+    ret
+
+    .global dsb_sy
+dsb_sy:
+    dsb sy
+    ret
+
+    .global isb_sy
+isb_sy:
+    isb
+    ret
+
+    .global enable_irq
+enable_irq:
+    msr DAIFClr, #2
+    ret
+
+    .global disable_irq
+disable_irq:
+    msr DAIFSet, #2
+    ret
+
+    .global mask_fiq
+mask_fiq:
+    msr DAIFSet, #1
+    ret
+
+    .global unmask_fiq
+unmask_fiq:
+    msr DAIFClr, #1
+    ret
+
+    .global mask_serror
+mask_serror:
+    msr DAIFSet, #4
+    ret
+
+    .global unmask_serror
+unmask_serror:
+    msr DAIFClr, #4
+    ret
+
+    .global write_icc_sre_el2
+write_icc_sre_el2:
+    msr ICC_SRE_EL2, x0
+    isb
+    ret
+
+    .global write_icc_sre_el1
+write_icc_sre_el1:
+    msr ICC_SRE_EL1, x0
+    isb
+    ret
+
+    .global write_icc_pmr_el1
+write_icc_pmr_el1:
+    msr ICC_PMR_EL1, x0
+    isb
+    ret
+
+    .global write_icc_igrpen1_el1
+write_icc_igrpen1_el1:
+    msr ICC_IGRPEN1_EL1, x0
+    isb
+    ret
+
+    .global read_icc_iar1_el1
+read_icc_iar1_el1:
+    mrs x0, ICC_IAR1_EL1
+    ret
+
+    .global write_icc_eoir1_el1
+write_icc_eoir1_el1:
+    msr ICC_EOIR1_EL1, x0
+    isb
+    ret
+
+    .global val_wfe
+val_wfe:
+    wfe
+    ret
+
+    .global val_hvc0
+val_hvc0:
+    hvc #0
+    ret

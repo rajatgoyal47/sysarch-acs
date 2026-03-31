@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2024-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2024-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,8 +18,8 @@
 #include "pal_pcie_enum.h"
 #include "platform_override_struct.h"
 
-extern PLATFORM_OVERRIDE_CACHE_INFO_TABLE platform_cache_cfg;
-extern PLATFORM_OVERRIDE_PPTT_INFO_TABLE platform_pptt_cfg;
+extern const PLATFORM_OVERRIDE_CACHE_INFO_TABLE platform_cache_cfg;
+extern const PLATFORM_OVERRIDE_PPTT_INFO_TABLE platform_pptt_cfg;
 
 /**
   @brief  This API prints cache info table and cache entry indices for each pe.
@@ -131,9 +131,16 @@ pal_cache_create_info_table(CACHE_INFO_TABLE *CacheTable, PE_INFO_TABLE *PeTable
     curr_entry->cache_id = platform_cache_cfg.cache_info[i].cache_id;
     curr_entry->is_private = platform_cache_cfg.cache_info[i].is_private;
     curr_entry->next_level_index = platform_cache_cfg.cache_info[i].next_level_index;
+
+    /* TODO: Cache associativity info is only required for MPAM ACS. Not parsing in BM
+       as it requires partners to fill redundant info. */
+    curr_entry->flags.associativity_valid = 1;
+    curr_entry->associativity = 0;
     curr_entry++;
    }
 
   pal_cache_store_pe_res(CacheTable, PeTable);
-  pal_cache_dump_info_table(CacheTable, PeTable);
+
+  if (g_print_level <= ACS_PRINT_INFO)
+      pal_cache_dump_info_table(CacheTable, PeTable);
 }

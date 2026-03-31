@@ -1,5 +1,5 @@
 ## @file
- # Copyright (c) 2023-2025, Arm Limited or its affiliates. All rights reserved.
+ # Copyright (c) 2023-2026, Arm Limited or its affiliates. All rights reserved.
  # SPDX-License-Identifier : Apache-2.0
  #
  # Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,8 +22,7 @@
 )
 
 #Create compile list files
-list(APPEND COMPILE_LIST ${PAL_SRC})
-set(COMPILE_LIST ${COMPILE_LIST} PARENT_SCOPE)
+acs_append_compile_list(${PAL_SRC})
 
 # Create PAL library
 add_library(${PAL_LIB} STATIC ${PAL_SRC})
@@ -33,6 +32,7 @@ target_include_directories(${PAL_LIB} PRIVATE
  ${ROOT_DIR}/
  ${ROOT_DIR}/apps/baremetal/
  ${ROOT_DIR}/pal/baremetal/
+ ${ROOT_DIR}/pal/include/
  ${ROOT_DIR}/pal/baremetal/base/include/
  ${ROOT_DIR}/pal/baremetal/base/src/AArch64/
  ${ROOT_DIR}/pal/baremetal/target/${TARGET}/include/

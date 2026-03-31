@@ -1,5 +1,5 @@
 /** @file
-* Copyright (c) 2025, Arm Limited or its affiliates. All rights reserved.
+* Copyright (c) 2025-2026, Arm Limited or its affiliates. All rights reserved.
 * SPDX-License-Identifier : Apache-2.0
 
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,10 +15,10 @@
 * limitations under the License.
 **/
 
-#include "val/include/acs_val.h"
-#include "val/include/acs_pcie.h"
-#include "val/include/acs_pe.h"
-#include "val/include/acs_memory.h"
+#include "acs_val.h"
+#include "acs_pcie.h"
+#include "acs_pe.h"
+#include "acs_memory.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 10)
 #define TEST_RULE  "PCI_ER_01"
@@ -51,7 +51,7 @@ payload(void)
       /* Check entry is RP or iEP_RP */
       if ((dp_type == RP) || (dp_type == iEP_RP))
       {
-          /* Test runs for atleast an endpoint */
+          /* Test runs for atleast one RP/iEP_RP */
           test_skip = 0;
           val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
 

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2024-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2024-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +19,7 @@
 #include "pal_pcie_enum.h"
 #include "platform_override_struct.h"
 
-extern PLATFORM_OVERRIDE_PCC_INFO_TABLE platform_pcc_cfg;
+extern const PLATFORM_OVERRIDE_PCC_INFO_TABLE platform_pcc_cfg;
 
 /**
   @brief  This API prints cache info table and cache entry indices for each pe.
@@ -36,6 +36,7 @@ pal_pcc_dump_info_table(PCC_INFO_TABLE *PccInfoTable)
 
   if (PccInfoTable == NULL) {
       print(ACS_PRINT_ERR, "\nUnable to dump PCC info table, input pointer is NULL\n");
+      return;
   }
 
   print(ACS_PRINT_INFO, "\n*** PCC Information ***");
@@ -127,7 +128,10 @@ pal_pcc_create_info_table(PCC_INFO_TABLE *PccInfoTable)
           = platform_pcc_cfg.pcc_info[i].type_spec_info.pcc_ss_type_3.min_req_turnaround_usec;
     }
     curr_entry++;
-   }
-  pal_pcc_dump_info_table(PccInfoTable);
+  }
+
+  if (g_print_level <= ACS_PRINT_INFO)
+      pal_pcc_dump_info_table(PccInfoTable);
+
   return;
 }

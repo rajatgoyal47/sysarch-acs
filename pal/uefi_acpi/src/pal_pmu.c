@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2024-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2024-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,9 +20,9 @@
 #include <Library/BaseLib.h>
 #include <Library/BaseMemoryLib.h>
 
-#include "include/pal_uefi.h"
-#include "../include/platform_override.h"
-#include "include/pal_pmu.h"
+#include "pal_uefi.h"
+#include "platform_override.h"
+#include "pal_pmu.h"
 
 
 #define ADD_PTR(t, p, l) ((t*)((UINT8*)p + l))
@@ -113,42 +113,36 @@ pal_pmu_create_info_table(PMU_INFO_TABLE *PmuTable)
   pal_pmu_dump_info_table(PmuTable);
 }
 
-typedef struct{
-    PMU_NODE_INFO_TYPE node_type;
-    PMU_EVENT_TYPE_e event_desc;
-    UINT32 event_id;
-}event_details;
-
 /* Array containing the details of implementation defined system PMU events */
 event_details event_list[] = {
-  {PMU_NODE_MEM_CNTR, PMU_EVENT_IB_TOTAL_BW,  PMU_EVENT_INVALID},
-  {PMU_NODE_MEM_CNTR, PMU_EVENT_OB_TOTAL_BW,  PMU_EVENT_INVALID},
-  {PMU_NODE_MEM_CNTR, PMU_EVENT_IB_READ_BW,   PMU_EVENT_INVALID},
-  {PMU_NODE_MEM_CNTR, PMU_EVENT_IB_WRITE_BW,  PMU_EVENT_INVALID},
-  {PMU_NODE_MEM_CNTR, PMU_EVENT_OB_READ_BW,   PMU_EVENT_INVALID},
-  {PMU_NODE_MEM_CNTR, PMU_EVENT_OB_WRITE_BW,  PMU_EVENT_INVALID},
-  {PMU_NODE_MEM_CNTR, PMU_EVENT_IB_OPEN_TXN,  PMU_EVENT_INVALID},
-  {PMU_NODE_MEM_CNTR, PMU_EVENT_IB_TOTAL_TXN, PMU_EVENT_INVALID},
-  {PMU_NODE_MEM_CNTR, PMU_EVENT_OB_OPEN_TXN,  PMU_EVENT_INVALID},
-  {PMU_NODE_MEM_CNTR, PMU_EVENT_OB_TOTAL_TXN, PMU_EVENT_INVALID},
-  {PMU_NODE_MEM_CNTR, PMU_EVENT_LOCAL_BW,     PMU_EVENT_INVALID},
-  {PMU_NODE_MEM_CNTR, PMU_EVENT_REMOTE_BW,    PMU_EVENT_INVALID},
-  {PMU_NODE_MEM_CNTR, PMU_EVENT_ALL_BW,       PMU_EVENT_INVALID},
-  {PMU_NODE_PCIE_RC,  PMU_EVENT_IB_TOTAL_BW,  PMU_EVENT_INVALID},
-  {PMU_NODE_PCIE_RC,  PMU_EVENT_OB_TOTAL_BW,  PMU_EVENT_INVALID},
-  {PMU_NODE_PCIE_RC,  PMU_EVENT_IB_READ_BW,   PMU_EVENT_INVALID},
-  {PMU_NODE_PCIE_RC,  PMU_EVENT_IB_WRITE_BW,  PMU_EVENT_INVALID},
-  {PMU_NODE_PCIE_RC,  PMU_EVENT_OB_READ_BW,   PMU_EVENT_INVALID},
-  {PMU_NODE_PCIE_RC,  PMU_EVENT_OB_WRITE_BW,  PMU_EVENT_INVALID},
-  {PMU_NODE_PCIE_RC,  PMU_EVENT_IB_OPEN_TXN,  PMU_EVENT_INVALID},
-  {PMU_NODE_PCIE_RC,  PMU_EVENT_IB_TOTAL_TXN, PMU_EVENT_INVALID},
-  {PMU_NODE_PCIE_RC,  PMU_EVENT_OB_OPEN_TXN,  PMU_EVENT_INVALID},
-  {PMU_NODE_PCIE_RC,  PMU_EVENT_OB_TOTAL_TXN, PMU_EVENT_INVALID},
-  {PMU_NODE_PCIE_RC,  PMU_EVENT_LOCAL_BW,     PMU_EVENT_INVALID},
-  {PMU_NODE_PCIE_RC,  PMU_EVENT_REMOTE_BW,    PMU_EVENT_INVALID},
-  {PMU_NODE_PCIE_RC,  PMU_EVENT_ALL_BW,       PMU_EVENT_INVALID},
-  {PMU_NODE_ACPI_DEVICE, PMU_EVENT_TRAFFIC_1, PMU_EVENT_INVALID},
-  {PMU_NODE_ACPI_DEVICE, PMU_EVENT_TRAFFIC_2, PMU_EVENT_INVALID}
+  {0, PMU_NODE_MEM_CNTR, PMU_EVENT_IB_TOTAL_BW,  PMU_EVENT_INVALID},
+  {0, PMU_NODE_MEM_CNTR, PMU_EVENT_OB_TOTAL_BW,  PMU_EVENT_INVALID},
+  {0, PMU_NODE_MEM_CNTR, PMU_EVENT_IB_READ_BW,   PMU_EVENT_INVALID},
+  {0, PMU_NODE_MEM_CNTR, PMU_EVENT_IB_WRITE_BW,  PMU_EVENT_INVALID},
+  {0, PMU_NODE_MEM_CNTR, PMU_EVENT_OB_READ_BW,   PMU_EVENT_INVALID},
+  {0, PMU_NODE_MEM_CNTR, PMU_EVENT_OB_WRITE_BW,  PMU_EVENT_INVALID},
+  {0, PMU_NODE_MEM_CNTR, PMU_EVENT_IB_OPEN_TXN,  PMU_EVENT_INVALID},
+  {0, PMU_NODE_MEM_CNTR, PMU_EVENT_IB_TOTAL_TXN, PMU_EVENT_INVALID},
+  {0, PMU_NODE_MEM_CNTR, PMU_EVENT_OB_OPEN_TXN,  PMU_EVENT_INVALID},
+  {0, PMU_NODE_MEM_CNTR, PMU_EVENT_OB_TOTAL_TXN, PMU_EVENT_INVALID},
+  {0, PMU_NODE_MEM_CNTR, PMU_EVENT_LOCAL_BW,     PMU_EVENT_INVALID},
+  {0, PMU_NODE_MEM_CNTR, PMU_EVENT_REMOTE_BW,    PMU_EVENT_INVALID},
+  {0, PMU_NODE_MEM_CNTR, PMU_EVENT_ALL_BW,       PMU_EVENT_INVALID},
+  {0, PMU_NODE_PCIE_RC,  PMU_EVENT_IB_TOTAL_BW,  PMU_EVENT_INVALID},
+  {0, PMU_NODE_PCIE_RC,  PMU_EVENT_OB_TOTAL_BW,  PMU_EVENT_INVALID},
+  {0, PMU_NODE_PCIE_RC,  PMU_EVENT_IB_READ_BW,   PMU_EVENT_INVALID},
+  {0, PMU_NODE_PCIE_RC,  PMU_EVENT_IB_WRITE_BW,  PMU_EVENT_INVALID},
+  {0, PMU_NODE_PCIE_RC,  PMU_EVENT_OB_READ_BW,   PMU_EVENT_INVALID},
+  {0, PMU_NODE_PCIE_RC,  PMU_EVENT_OB_WRITE_BW,  PMU_EVENT_INVALID},
+  {0, PMU_NODE_PCIE_RC,  PMU_EVENT_IB_OPEN_TXN,  PMU_EVENT_INVALID},
+  {0, PMU_NODE_PCIE_RC,  PMU_EVENT_IB_TOTAL_TXN, PMU_EVENT_INVALID},
+  {0, PMU_NODE_PCIE_RC,  PMU_EVENT_OB_OPEN_TXN,  PMU_EVENT_INVALID},
+  {0, PMU_NODE_PCIE_RC,  PMU_EVENT_OB_TOTAL_TXN, PMU_EVENT_INVALID},
+  {0, PMU_NODE_PCIE_RC,  PMU_EVENT_LOCAL_BW,     PMU_EVENT_INVALID},
+  {0, PMU_NODE_PCIE_RC,  PMU_EVENT_REMOTE_BW,    PMU_EVENT_INVALID},
+  {0, PMU_NODE_PCIE_RC,  PMU_EVENT_ALL_BW,       PMU_EVENT_INVALID},
+  {0, PMU_NODE_ACPI_DEVICE, PMU_EVENT_TRAFFIC_1, PMU_EVENT_INVALID},
+  {0, PMU_NODE_ACPI_DEVICE, PMU_EVENT_TRAFFIC_2, PMU_EVENT_INVALID}
 };
 
 /**
@@ -156,6 +150,7 @@ event_details event_list[] = {
           Prerequisite - event_list array. This API should be called after
           filling the required event IDs into event_list array.
 
+  @param  node_index  -  Index of PMU node.
   @param  event_type  -  Type of the event.
   @param  node_type   -  PMU Node type
 
@@ -163,10 +158,11 @@ event_details event_list[] = {
 
 **/
 UINT32
-pal_pmu_get_event_info(PMU_EVENT_TYPE_e event_type, PMU_NODE_INFO_TYPE node_type)
+pal_pmu_get_event_info(UINT32 node_index, PMU_EVENT_TYPE_e event_type, PMU_NODE_INFO_TYPE node_type)
 {
   UINT32 i=0;
-  while (event_list[i].node_type != node_type || event_list[i].event_desc != event_type) {
+  while (event_list[i].node_index != node_index || event_list[i].node_type != node_type
+         || event_list[i].event_desc != event_type) {
     i++;
   }
   return event_list[i].event_id;
@@ -176,14 +172,19 @@ pal_pmu_get_event_info(PMU_EVENT_TYPE_e event_type, PMU_NODE_INFO_TYPE node_type
   @brief   This API checks if pmu monitor count value is valid
   @param   interface_acpiid - acpiid of interface
   @param   count_value - monitor count value
-  @param   eventid - eventid  
-  @return  0 - monitor count value is valid
-           non-zero - error or invallid count value
+  @param   eventid - eventid
+  @return  PAL_STATUS_SUCCESS when the value is valid,
+           PAL_STATUS_NOT_IMPLEMENTED when platform-specific validation is absent.
 **/
 UINT32
 pal_pmu_check_monitor_count_value(UINT64 interface_acpiid, UINT32 count_value, UINT32 eventid)
 {
-    return NOT_IMPLEMENTED;
+    (void) interface_acpiid;
+    (void) count_value;
+    (void) eventid;
+
+    pal_warn_not_implemented(__func__);
+    return PAL_STATUS_NOT_IMPLEMENTED;
 }
 
 /**
@@ -192,26 +193,37 @@ pal_pmu_check_monitor_count_value(UINT64 interface_acpiid, UINT32 count_value, U
   @param   pmu_node_index - pmu node index
   @param   mon_index - monitor index
   @param   eventid - eventid
-  @return  0 - success status
-           non-zero - error status
+  @return  PAL_STATUS_SUCCESS on success,
+           PAL_STATUS_NOT_IMPLEMENTED if traffic generation is not available.
 **/
 UINT32
 pal_generate_traffic(UINT64 interface_acpiid, UINT32 pmu_node_index,
                                      UINT32 mon_index, UINT32 eventid)
 {
-    return NOT_IMPLEMENTED;
+    (void) interface_acpiid;
+    (void) pmu_node_index;
+    (void) mon_index;
+    (void) eventid;
+
+    pal_warn_not_implemented(__func__);
+    return PAL_STATUS_NOT_IMPLEMENTED;
 }
 
 /**
   @brief   This API checks if PMU node is secure only.
   @param   interface_acpiid - acpiid of interface
   @param   num_traffic_type_support - num of traffic type supported.
-  @return  0 - success status
-           non-zero - error status
+  @return  PAL_STATUS_SUCCESS on success,
+           PAL_STATUS_INVALID_PARAM for bad pointers,
+           PAL_STATUS_NOT_IMPLEMENTED if the capability is not yet provided.
 **/
 UINT32
 pal_pmu_get_multi_traffic_support_interface(UINT64 *interface_acpiid,
                                                        UINT32 *num_traffic_type_support)
 {
-    return NOT_IMPLEMENTED;
+    if ((interface_acpiid == NULL) || (num_traffic_type_support == NULL))
+        return PAL_STATUS_INVALID_PARAM;
+
+    pal_warn_not_implemented(__func__);
+    return PAL_STATUS_NOT_IMPLEMENTED;
 }

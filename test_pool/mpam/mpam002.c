@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2024-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2024-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,12 +15,12 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/acs_pe.h"
-#include "val/include/acs_common.h"
-#include "val/include/val_interface.h"
-#include "val/include/acs_pe.h"
-#include "val/include/acs_mpam.h"
+#include "acs_val.h"
+#include "acs_pe.h"
+#include "acs_common.h"
+#include "val_interface.h"
+#include "acs_pe.h"
+#include "acs_mpam.h"
 
 
 #define TEST_NUM   (ACS_MPAM_TEST_NUM_BASE + 2)
@@ -111,16 +111,6 @@ static void payload_check_mpam_llc_csu_support(void)
     uint32_t llc_msc_index;
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-    /* Check if PE implements FEAT_MPAM */
-    /* ID_AA64PFR0_EL1.MPAM bits[43:40] > 0 or ID_AA64PFR1_EL1.MPAM_frac bits[19:16] > 0
-       indicates implementation of MPAM extension */
-    if (!((VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 40, 43) > 0) ||
-       (VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR1_EL1), 16, 19) > 0))) {
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
-        val_print(ACS_PRINT_DEBUG, "\n       FEAT_MPAM not supported by PE", 0);
-        return;
-    }
-
     /* Get MPAM msc_index of LLC cache */
     llc_msc_index = get_llc_msc_index();
 
@@ -148,16 +138,6 @@ static void payload_check_llc_csu_mon_count(void)
     uint32_t llc_msc_index;
     uint32_t csumon_count;
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
-
-    /* Check if PE implements FEAT_MPAM */
-    /* ID_AA64PFR0_EL1.MPAM bits[43:40] > 0 or ID_AA64PFR1_EL1.MPAM_frac bits[19:16] > 0
-       indicates implementation of MPAM extension */
-    if (!((VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 40, 43) > 0) ||
-       (VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR1_EL1), 16, 19) > 0))) {
-        val_set_status(index, RESULT_SKIP(TEST_NUM1, 01));
-        val_print(ACS_PRINT_DEBUG, "\n       FEAT_MPAM not supported by PE", 0);
-        return;
-    }
 
     /* Get MPAM msc_index of LLC cache */
     llc_msc_index = get_llc_msc_index();

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2021, 2023-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2023-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,10 +15,10 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/acs_peripherals.h"
-#include "val/include/acs_memory.h"
-#include "val/include/acs_pe.h"
+#include "acs_val.h"
+#include "acs_peripherals.h"
+#include "acs_memory.h"
+#include "acs_pe.h"
 
 #define TEST_NUM   (ACS_MEMORY_MAP_TEST_NUM_BASE + 2)
 #define TEST_RULE  "B_MEM_01"
@@ -57,6 +57,12 @@ payload()
   val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
   val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
   val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+
+  if (g_el1skiptrap_mask & EL1SKIPTRAP_DEVMEM) {
+      val_print(ACS_PRINT_DEBUG,
+                "\n       Skipping device memory access due to -el1skiptrap devmem", 0);
+      goto normal_mem_test;
+  }
 
   branch_to_test = (uint64_t)&&exception_taken_d;
   while (loop_var) {

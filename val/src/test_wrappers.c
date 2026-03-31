@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,19 +18,20 @@
 /* @brief files contains test wrappers, which wraps multiple test entry functions required by
    single base rule into one single test entry function */
 
-#include "include/acs_val.h"
-#include "include/val_interface.h"
-#include "include/acs_pcie.h"
-#include "include/acs_gic.h"
-#include "include/acs_wakeup.h"
-#include "include/acs_mpam.h"
-#include "include/acs_ras.h"
-#include "include/acs_pe.h"
-#include "include/acs_exerciser.h"
-#include "include/test_wrappers.h"
-#include "include/rule_based_execution.h"
+#include "acs_val.h"
+#include "val_interface.h"
+#include "acs_pcie.h"
+#include "acs_gic.h"
+#include "acs_wakeup.h"
+#include "acs_mpam.h"
+#include "acs_ras.h"
+#include "acs_pe.h"
+#include "acs_exerciser.h"
+#include "test_wrappers.h"
+#include "rule_based_execution.h"
 
 extern test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL];
+extern RULE_ID_e g_base_rule;
 
 /* Helper to execute test entries  */
 static uint32_t run_test_entries(TEST_ENTRY_ID_e *tst_entry_list, uint32_t num_pe)
@@ -38,6 +39,9 @@ static uint32_t run_test_entries(TEST_ENTRY_ID_e *tst_entry_list, uint32_t num_p
     uint32_t i;
     uint32_t entry_status = TEST_STATUS_UNKNOWN;
     uint32_t rule_status = TEST_STATUS_UNKNOWN;
+    bool test_pass_flag = 0;
+    bool test_ns_flag = 0;
+    bool test_warn_flag = 0;
 
     for (i = 0; tst_entry_list[i] != TEST_ENTRY_SENTINEL ; i++) {
         if (test_entry_func_table[tst_entry_list[i]] != NULL) {
@@ -45,12 +49,35 @@ static uint32_t run_test_entries(TEST_ENTRY_ID_e *tst_entry_list, uint32_t num_p
         } else {
             /* If entry is NULL, then the entry is not supported in current PAL */
             entry_status = TEST_PART_COV;
+            test_ns_flag = 1;
+        }
+
+        /* Track atleast one pass */
+        if (entry_status == TEST_PASS) {
+            test_pass_flag = 1;
+        }
+        /* Track atleast one warn */
+        if (entry_status == TEST_WARN) {
+            test_warn_flag = 1;
         }
 
         /* Update overall status for the rule */
         if ((entry_status > rule_status) || (rule_status == TEST_STATUS_UNKNOWN)) {
             rule_status = entry_status;
         }
+    }
+
+    /* Mixed PASS+SKIP/WARN or PASS+unsupported entry should be reported as partial coverage
+       rather than worst-case max. */
+    if ((test_pass_flag &&
+        ((rule_status == TEST_SKIP) || (rule_status == TEST_WARN))) ||
+        (test_ns_flag && (rule_status == TEST_PASS))) {
+        rule_status = TEST_PART_COV;
+    }
+
+    /* If the combined result only saw WARN/SKIP outcomes, prefer WARN over SKIP. */
+    if (test_warn_flag && (rule_status == TEST_SKIP)) {
+        rule_status = TEST_WARN;
     }
 
     return rule_status;
@@ -68,12 +95,24 @@ static uint32_t run_pcie_static_and_exerciser(TEST_ENTRY_ID_e *static_list,
 {
     uint32_t static_status = run_test_entries(static_list, num_pe);
     uint32_t exr_status    = run_test_entries(exr_list,   num_pe);
+    uint32_t rule_status;
 
-    /* Report partial coverage if PCIe static tests PASS and excerciser tests SKIP */
-    if (static_status == TEST_PASS && exr_status == TEST_SKIP)
+    /* Report partial coverage for mixed PASS+SKIP/WARN aggregated results. */
+    if (((static_status == TEST_PASS) &&
+        ((exr_status == TEST_SKIP) || (exr_status == TEST_WARN))) ||
+        ((exr_status == TEST_PASS) &&
+        ((static_status == TEST_SKIP) || (static_status == TEST_WARN))))
         return TEST_PART_COV;
 
-    return max_status(static_status, exr_status);
+    /* For all other combinations, fall back to severity-based aggregation. */
+    rule_status = max_status(static_status, exr_status);
+    /* If the combined result only saw WARN/SKIP outcomes, prefer WARN over SKIP. */
+    if (((static_status == TEST_WARN) || (exr_status == TEST_WARN)) &&
+        (rule_status == TEST_SKIP)) {
+        rule_status = TEST_WARN;
+    }
+
+    return rule_status;
 }
 
 /* B_PPI_00 */
@@ -106,15 +145,6 @@ s_l7mp_03_entry(uint32_t num_pe)
 {
     TEST_ENTRY_ID_e tst_entry_list[] = {MPAM002_ENTRY, MPAM006_ENTRY, MPAM007_ENTRY,
                                         TEST_ENTRY_SENTINEL};
-
-    return run_test_entries(tst_entry_list, num_pe);
-}
-
-/* SYS_RAS_2 */
-uint32_t
-sys_ras_2_entry(uint32_t num_pe)
-{
-    TEST_ENTRY_ID_e tst_entry_list[] = {RAS011_ENTRY, RAS012_ENTRY, TEST_ENTRY_SENTINEL};
 
     return run_test_entries(tst_entry_list, num_pe);
 }
@@ -160,8 +190,12 @@ pci_ic_11_entry(uint32_t num_pe)
 uint32_t
 pci_in_04_entry(uint32_t num_pe)
 {
-    TEST_ENTRY_ID_e tst_entry_list[] = {P003_ENTRY, P072_ENTRY, TEST_ENTRY_SENTINEL};
 
+    if (g_base_rule == B_PER_08) {
+        TEST_ENTRY_ID_e tst_entry_list[] = {P003_ENTRY, TEST_ENTRY_SENTINEL};
+        return run_test_entries(tst_entry_list, num_pe);
+    }
+    TEST_ENTRY_ID_e tst_entry_list[] = {P003_ENTRY, P072_ENTRY, TEST_ENTRY_SENTINEL};
     return run_test_entries(tst_entry_list, num_pe);
 }
 
@@ -179,8 +213,12 @@ pci_li_02_entry(uint32_t num_pe)
 uint32_t
 pci_li_03_entry(uint32_t num_pe)
 {
-    TEST_ENTRY_ID_e tst_entry_list[] = {P023_ENTRY, P078_ENTRY, TEST_ENTRY_SENTINEL};
+    if (g_base_rule == B_PER_08) {
+        TEST_ENTRY_ID_e tst_entry_list[] = {P023_ENTRY, TEST_ENTRY_SENTINEL};
+        return run_test_entries(tst_entry_list, num_pe);
+    }
 
+    TEST_ENTRY_ID_e tst_entry_list[] = {P023_ENTRY, P078_ENTRY, TEST_ENTRY_SENTINEL};
     return run_test_entries(tst_entry_list, num_pe);
 }
 
@@ -254,6 +292,11 @@ pci_in_19_entry(uint32_t num_pe)
 uint32_t
 pci_li_01_entry(uint32_t num_pe)
 {
+    if (g_base_rule == B_PER_08) {
+        TEST_ENTRY_ID_e tst_entry_list[] = {P006_ENTRY, TEST_ENTRY_SENTINEL};
+        return run_test_entries(tst_entry_list, num_pe);
+    }
+
     TEST_ENTRY_ID_e tst_entry_list[] = {P006_ENTRY, P027_ENTRY, TEST_ENTRY_SENTINEL};
 
     return run_test_entries(tst_entry_list, num_pe);
@@ -263,7 +306,11 @@ pci_li_01_entry(uint32_t num_pe)
 uint32_t
 pci_mm_01_entry(uint32_t num_pe)
 {
+#ifdef BSA_LINUX_BUILD
+    TEST_ENTRY_ID_e p_list[] = { P045_ENTRY, TEST_ENTRY_SENTINEL };
+#else
     TEST_ENTRY_ID_e p_list[] = { P045_ENTRY, P103_ENTRY, TEST_ENTRY_SENTINEL };
+#endif
     TEST_ENTRY_ID_e e_list[] = { E016_ENTRY, TEST_ENTRY_SENTINEL };
 
     return run_pcie_static_and_exerciser(p_list, e_list, num_pe);
@@ -273,7 +320,11 @@ pci_mm_01_entry(uint32_t num_pe)
 uint32_t
 pci_mm_03_entry(uint32_t num_pe)
 {
+#ifdef BSA_LINUX_BUILD
+    TEST_ENTRY_ID_e p_list[] = { P094_ENTRY, TEST_ENTRY_SENTINEL };
+#else
     TEST_ENTRY_ID_e p_list[] = { P094_ENTRY, P104_ENTRY, TEST_ENTRY_SENTINEL };
+#endif
     TEST_ENTRY_ID_e e_list[] = { E039_ENTRY, TEST_ENTRY_SENTINEL };
 
     return run_pcie_static_and_exerciser(p_list, e_list, num_pe);
@@ -287,6 +338,34 @@ ri_smu_1_entry(uint32_t num_pe)
     TEST_ENTRY_ID_e e_list[] = { E019_ENTRY, E020_ENTRY, TEST_ENTRY_SENTINEL };
 
     return run_pcie_static_and_exerciser(p_list, e_list, num_pe);
+}
+
+/* RCXL_02 */
+uint32_t
+cxl_02_entry(uint32_t num_pe)
+{
+    TEST_ENTRY_ID_e cxl_list[] = { CXL002_ENTRY, TEST_ENTRY_SENTINEL };
+    TEST_ENTRY_ID_e e_list[]   = { E040_ENTRY, TEST_ENTRY_SENTINEL };
+
+    return run_pcie_static_and_exerciser(cxl_list, e_list, num_pe);
+}
+
+/* RCXL_11 */
+uint32_t
+cxl_11_entry(uint32_t num_pe)
+{
+    TEST_ENTRY_ID_e tst_entry_list[] = {CXL011_ENTRY, TEST_ENTRY_SENTINEL};
+
+    return run_test_entries(tst_entry_list, num_pe);
+}
+
+/* RCXL_12 */
+uint32_t
+cxl_12_entry(uint32_t num_pe)
+{
+    TEST_ENTRY_ID_e tst_entry_list[] = {E041_ENTRY, TEST_ENTRY_SENTINEL};
+
+    return run_test_entries(tst_entry_list, num_pe);
 }
 
 /* IE_REG_2 */
@@ -322,8 +401,15 @@ pci_in_13_entry(uint32_t num_pe)
 uint32_t
 pci_in_17_entry(uint32_t num_pe)
 {
-    TEST_ENTRY_ID_e p_list[] = { P036_ENTRY, P071_ENTRY, TEST_ENTRY_SENTINEL };
+
     TEST_ENTRY_ID_e e_list[] = { E015_ENTRY, TEST_ENTRY_SENTINEL };
+
+    if (g_base_rule == B_PER_08) {
+        TEST_ENTRY_ID_e p_list[] = {P036_ENTRY, TEST_ENTRY_SENTINEL};
+        return run_pcie_static_and_exerciser(p_list, e_list, num_pe);
+    }
+
+    TEST_ENTRY_ID_e p_list[] = { P036_ENTRY, P071_ENTRY, TEST_ENTRY_SENTINEL };
 
     return run_pcie_static_and_exerciser(p_list, e_list, num_pe);
 }
@@ -358,7 +444,7 @@ v_l1wk_02_05_entry(uint32_t num_pe)
     return TEST_SKIP;
 #endif
 
-    if (g_el1physkip) {
+    if (g_el1skiptrap_mask & EL1SKIPTRAP_CNTPCT) {
         val_print(ACS_PRINT_TEST,
                     "\n       Skipping rule as EL1 physical timer access not supported", 0);
         return TEST_SKIP;
@@ -388,7 +474,8 @@ v_l1pp_00_entry(uint32_t num_pe)
     TEST_ENTRY_ID_e skip_list[] = {G007_ENTRY, TEST_ENTRY_SENTINEL};
     TEST_ENTRY_ID_e default_list[] = {G006_ENTRY, G007_ENTRY, TEST_ENTRY_SENTINEL};
 
-    TEST_ENTRY_ID_e *entry_list = g_el1physkip ? skip_list : default_list;
+    TEST_ENTRY_ID_e *entry_list =
+        (g_el1skiptrap_mask & EL1SKIPTRAP_CNTPCT) ? skip_list : default_list;
 
     return run_test_entries(entry_list, num_pe);
 }

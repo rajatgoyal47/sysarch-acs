@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2024-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2024-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -148,7 +148,7 @@ typedef struct {
 } PLATFORM_OVERRIDE_IOVIRT_INFO_TABLE;
 
 typedef struct {
-  uint32_t   hb_enteries;                              ///< No. of HB's in the ECAM
+  uint32_t   hb_entries;                              ///< No. of HB's in the ECAM
   uint32_t   segment_num[PLATFORM_MAX_HB_COUNT];       ///< Segment number of the ECAM
   uint32_t   start_bus_num[PLATFORM_MAX_HB_COUNT];     ///< Start Bus number for this ecam space
   uint32_t   end_bus_num[PLATFORM_MAX_HB_COUNT];       ///< Last Bus number
@@ -438,6 +438,7 @@ typedef struct {
     uint32_t    err_intr_flags;/* Error interrupt flags */
     uint32_t    max_nrdy;      /* max time in microseconds that MSC not ready
                                 after config change */
+    char        device_obj_name[MAX_NAMED_COMP_LENGTH]; /* Device object name */
     uint32_t    rsrc_count;    /* number of resource nodes */
     /* Details of resource node*/
     PLATFORM_OVERRIDE_MPAM_RESOURCE_NODE rsrc_node[MPAM_MAX_RSRC_NODE];
@@ -447,6 +448,7 @@ typedef struct {
     uint32_t          msc_count;  /* Number of MSC node */
     PLATFORM_OVERRIDE_MPAM_MSC_NODE   msc_node[MPAM_MAX_MSC_NODE]; /* Details of MSC node */
 } PLATFORM_OVERRIDE_MPAM_INFO_TABLE;
+
 
 /* Platform Communication Channel (PCC) info table */
 #ifndef GAS_STRUCT
@@ -497,3 +499,38 @@ typedef struct {
     uint64_t tpm_base;            /* TPM MMIO base address */
     uint64_t tpm_interface_type;  /* StartMethod (6=TIS,7=CRB,...) */
 } PLATFORM_OVERRIDE_TPM2_INFO_TABLE;
+
+typedef enum {
+  PMU_EVENT_IB_TOTAL_BW,        /* Inbound total bandwidth     */
+  PMU_EVENT_OB_TOTAL_BW,        /* Outbound total bandwidth    */
+  PMU_EVENT_IB_READ_BW,         /* Inbound read bandwidth      */
+  PMU_EVENT_IB_WRITE_BW,        /* Inbound write bandwidth     */
+  PMU_EVENT_OB_READ_BW,         /* Outbound read bandwidth     */
+  PMU_EVENT_OB_WRITE_BW,        /* Outbound write bandwidth    */
+  PMU_EVENT_IB_OPEN_TXN,        /* Inbound open transactions   */
+  PMU_EVENT_IB_TOTAL_TXN,       /* Inbound total transactions  */
+  PMU_EVENT_OB_OPEN_TXN,        /* Outbound open transactions  */
+  PMU_EVENT_OB_TOTAL_TXN,       /* Outbound total transactions */
+  PMU_EVENT_LOCAL_BW,           /* Local traffic bandwidth     */
+  PMU_EVENT_REMOTE_BW,          /* Remote traffic bandwidth    */
+  PMU_EVENT_ALL_BW,             /* All traffic bandwidth       */
+  PMU_EVENT_TRAFFIC_1,          /* traffic type 1 */
+  PMU_EVENT_TRAFFIC_2           /* traffic type 2 */
+} PMU_EVENT_TYPE_e;
+
+typedef enum {
+  PMU_NODE_MEM_CNTR,
+  PMU_NODE_SMMU,
+  PMU_NODE_PCIE_RC,
+  PMU_NODE_ACPI_DEVICE,
+  PMU_NODE_PE_CACHE
+} PMU_NODE_INFO_TYPE;
+
+#define PMU_EVENT_INVALID 0xFFFFFFFF
+
+typedef struct{
+    uint32_t node_index;
+    PMU_NODE_INFO_TYPE node_type;
+    PMU_EVENT_TYPE_e event_desc;
+    uint32_t event_id;
+} PLATFORM_OVERRIDE_EVENT_DETAILS;

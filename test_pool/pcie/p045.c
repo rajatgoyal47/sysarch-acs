@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
-#include "val/include/acs_val.h"
-#include "val/include/acs_pe.h"
-#include "val/include/acs_pcie.h"
-#include "val/include/acs_memory.h"
+#include "acs_val.h"
+#include "acs_pe.h"
+#include "acs_pcie.h"
+#include "acs_memory.h"
 
 extern bool g_pcie_skip_dp_nic_ms;
 
@@ -65,7 +65,9 @@ payload(void)
   char    *baseptr;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint32_t test_skip = 1;
+  uint32_t test_warn = 1;
   uint32_t test_fail = 0;
+  uint32_t test_abort = 0;
   uint64_t offset;
   uint64_t base;
   pcie_device_bdf_table *bdf_tbl_ptr;
@@ -115,6 +117,8 @@ next_bdf:
 
       offset = BAR0_OFFSET;
 
+      val_print(ACS_PRINT_DEBUG, "\n   BDF under check %.6x", bdf);
+
       while (offset <= max_bar_offset) {
           val_pcie_read_cfg(bdf, offset, &bar_value);
           val_print(ACS_PRINT_DEBUG, "\n       The BAR value of bdf %.6x", bdf);
@@ -141,8 +145,9 @@ next_bdf:
           val_print(ACS_PRINT_DEBUG, "\n       Class code is 0x%x", reg_value);
           base_cc = reg_value >> TYPE01_BCC_SHIFT;
           if (g_pcie_skip_dp_nic_ms &&
-              ((base_cc == CNTRL_CC) || (base_cc == DP_CNTRL_CC) || (base_cc == MAS_CC))) {
-              val_print(ACS_PRINT_DEBUG, "\n   Skipping BDF as  0x%x", bdf);
+              ((base_cc == UNCLAS_CC) || (base_cc == CNTRL_CC)
+              || (base_cc == DP_CNTRL_CC) || (base_cc == MAS_CC))) {
+              val_print(ACS_PRINT_DEBUG, "\n       Skipping BDF as  0x%x", bdf);
               tbl_index++;
               goto next_bdf;
           }
@@ -189,15 +194,13 @@ next_bdf:
               base = bar_value;
           }
 
-          val_print(ACS_PRINT_DEBUG, "\n BAR size is %x", bar_size);
+          val_print(ACS_PRINT_DEBUG, "\n       BAR size is %x", bar_size);
 
           /* Check if bar supports the remap size */
           if (bar_size < 1024) {
               val_print(ACS_PRINT_ERR, "\n       Bar size less than remap requested size", 0);
               goto next_bar;
           }
-
-          test_skip = 0;
 
           /* Enable Memory Space Access to the BDF if not enabled */
           msa_en = val_pcie_is_msa_enabled(bdf);
@@ -206,10 +209,26 @@ next_bdf:
 
           branch_to_test = &&exception_return_device;
 
+          test_skip = 0;
+
           /* Map the BARs to a DEVICE memory (non-cachable) attribute
            * and check transaction.
            */
-          baseptr = (char *)val_memory_ioremap((void *)base, 1024, DEVICE_nGnRnE);
+          status = val_memory_ioremap((void *)base, 1024, DEVICE_nGnRnE, (void **)&baseptr);
+
+          /* Handle unimplemented PAL -> Report WARN */
+          if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
+            test_abort = 1;
+            break;
+          }
+          else if (status) {
+            val_print(ACS_PRINT_ERR, "\n       Failed in  ioremap with status %x", status);
+            test_fail++;
+            val_set_status(index, RESULT_FAIL(test_num, test_fail));
+            goto next_bar;
+          }
+
+          test_warn = 0;
 
           /* Access check. Not performing data comparison check. */
           old_data = *(uint32_t *)(baseptr);
@@ -238,10 +257,16 @@ next_bar:
           if (msa_en)
               val_pcie_disable_msa(bdf);
       }
+
+      if (test_abort == 1)
+         break;
   }
 
-  if (test_skip)
-      val_set_status(index, RESULT_SKIP(test_num, 0));
+  if (test_warn) {
+    val_set_status(index, RESULT_WARN(test_num, 0));
+    return;
+  } else if (test_skip)
+      val_set_status(index, RESULT_SKIP(test_num, 1));
   else if (test_fail)
       val_set_status(index, RESULT_FAIL(test_num, test_fail));
   else

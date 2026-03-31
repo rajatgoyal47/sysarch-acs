@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2024-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2024-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,9 +20,9 @@
 #include <Library/BaseLib.h>
 #include <Library/BaseMemoryLib.h>
 
-#include "include/pal_uefi.h"
-#include "../include/platform_override.h"
-#include "include/pal_mpam.h"
+#include "pal_uefi.h"
+#include "platform_override.h"
+#include "pal_mpam.h"
 
 
 #define ADD_PTR(t, p, l) ((t *)((UINT8 *)p + l))
@@ -162,6 +162,7 @@ pal_mpam_create_info_table(MPAM_INFO_TABLE *MpamTable)
       curr_entry->err_intr       = msc_node->error_interrupt;
       curr_entry->err_intr_flags = msc_node->error_int_flags;
       curr_entry->max_nrdy = msc_node->max_nrdy_usec;
+      curr_entry->device_obj_name[0] = '\0';
       curr_entry->rsrc_count = msc_node->num_resource_nodes;
       curr_entry->intrf_type = msc_node->InterfaceType;
       curr_entry->identifier = msc_node->identifier;

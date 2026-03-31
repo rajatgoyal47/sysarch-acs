@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,11 +31,11 @@
 #include <Protocol/PciRootBridgeIo.h>
 
 #include <libfdt.h>
-#include "../include/platform_override.h"
-#include "include/pal_uefi.h"
-#include "include/bsa_pcie_enum.h"
-#include "include/pal_dt.h"
-#include "include/pal_dt_spec.h"
+#include "platform_override.h"
+#include "pal_uefi.h"
+#include "bsa_pcie_enum.h"
+#include "pal_dt.h"
+#include "pal_dt_spec.h"
 
 static char pci_dt_arr[][PCI_COMPATIBLE_STR_LEN] = {
        "pci-host-ecam-generic"
@@ -351,11 +351,15 @@ pal_pcie_p2p_support()
    * This is platform specific API which needs to be populated with system p2p capability
    * PCIe support for peer to peer
    * transactions is platform implementation specific
-   */
+  */
   if (g_pcie_p2p)
       return 0;
-  else
-      return NOT_IMPLEMENTED;
+  else {
+      pal_warn_not_implemented(__func__);
+      acs_print(ACS_PRINT_WARN, L"\n       Test is applicable only if the system supports P2P."
+                                 "\n       Pass command line option '-p2p' when running.");
+      return PAL_STATUS_NOT_IMPLEMENTED;
+  }
 }
 
 /**
@@ -381,20 +385,23 @@ pal_pcie_dev_p2p_support (
    * transactions is platform implementation specific
    */
 
-  return 1;
+  pal_warn_not_implemented(__func__);
+  return PAL_STATUS_NOT_IMPLEMENTED;
 }
 
 /**
-    @brief   Create a list of MSI(X) vectors for a device
+  @brief   Create a list of MSI(X) vectors for a device
 
-    @param   Seg        PCI segment number
-    @param   Bus        PCI bus address
-    @param   Dev        PCI device address
-    @param   Fn         PCI function number
-    @param   MVector    pointer to a MSI(X) list address
+  @param   Seg        PCI segment number
+  @param   Bus        PCI bus address
+  @param   Dev        PCI device address
+  @param   Fn         PCI function number
+  @param   MVector    pointer to a MSI(X) list address
 
-    @return  mvector    list of MSI(X) vectors
-    @return  number of MSI(X) vectors
+  @return
+  - 0               : Success
+  - PAL_STATUS_NOT_IMPLEMENTED : Feature not implemented
+  - non-zero        : Failure (implementation-specific error code)
 **/
 UINT32
 pal_get_msi_vectors (
@@ -405,7 +412,8 @@ pal_get_msi_vectors (
   PERIPHERAL_VECTOR_LIST **MVector
   )
 {
-  return 0;
+  pal_warn_not_implemented(__func__);
+  return PAL_STATUS_NOT_IMPLEMENTED;
 }
 
 /**
@@ -419,7 +427,7 @@ pal_get_msi_vectors (
 
     @return  irq_map    IRQ routing map
     @return  status code If the device legacy irq map information is filled
-                         return 0, else returns NOT_IMPLEMENTED
+                         return 0, else returns PAL_STATUS_NOT_IMPLEMENTED
 **/
 UINT32
 pal_pcie_get_legacy_irq_map (
@@ -430,7 +438,8 @@ pal_pcie_get_legacy_irq_map (
   PERIPHERAL_IRQ_MAP *IrqMap
   )
 {
-  return NOT_IMPLEMENTED;
+  pal_warn_not_implemented(__func__);
+  return PAL_STATUS_NOT_IMPLEMENTED;
 }
 
 /** Place holder function. Need to be implemented if needed in later releases
@@ -472,8 +481,10 @@ pal_pcie_is_cache_present (
 {
   if (g_pcie_cache_present)
       return 1;
-  else
-      return NOT_IMPLEMENTED;
+  else {
+      pal_warn_not_implemented(__func__);
+      return PAL_STATUS_NOT_IMPLEMENTED;
+  }
 }
 
 /**

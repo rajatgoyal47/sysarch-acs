@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,12 +25,11 @@
 
 #define BSA_ACS_MAJOR_VER      1
 #define BSA_ACS_MINOR_VER      2
-#define BSA_ACS_SUBMINOR_VER   0
+#define BSA_ACS_SUBMINOR_VER   1
 
 #define SBSA_ACS_MAJOR_VER       8
 #define SBSA_ACS_MINOR_VER       0
-#define SBSA_ACS_SUBMINOR_VER    0
-#define SBSA_FR_LEVEL            0x8
+#define SBSA_ACS_SUBMINOR_VER    1
 
 #define PC_BSA_ACS_MAJOR_VER     1
 #define PC_BSA_ACS_MINOR_VER     0
@@ -59,7 +58,7 @@
 
 #define G_SBSA_LEVEL             4
 #define SBSA_MIN_LEVEL_SUPPORTED 3
-#define SBSA_MAX_LEVEL_SUPPORTED 8
+#define SBSA_MAX_LEVEL_SUPPORTED 9
 
 /*******************************************************************************
  * Used to align variables on the biggest cache line size in the platform.
@@ -102,6 +101,8 @@ extern uint32_t g_level_filter_mode;
 extern uint32_t g_sys_last_lvl_cache;
 
 /* Globals from apps/baremetal/acs_globals.c */
+extern RULE_ID_e *g_rule_tests;
+extern uint32_t  g_rule_tests_num;
 extern RULE_ID_e *g_rule_list;
 extern RULE_ID_e *g_skip_rule_list;
 extern uint32_t  *g_execute_modules;
@@ -116,7 +117,6 @@ extern uint32_t  g_acs_tests_fail;
 extern uint64_t  g_stack_pointer;
 extern uint64_t  g_exception_ret_addr;
 extern uint64_t  g_ret_addr;
-extern uint32_t  g_wakeup_timeout;
 extern bool      g_pcie_skip_dp_nic_ms;
 extern uint32_t  g_build_sbsa;
 extern uint32_t  g_build_pcbsa;
@@ -128,9 +128,12 @@ extern uint32_t  g_bsa_sw_view_mask;
 /* Function declarations */
 uint32_t createPeInfoTable(void);
 uint32_t createGicInfoTable(void);
+
+void     createMemoryInfoTable(void);
+void     createPcieInfoTable(void);
+void     createIoVirtInfoTable(void);
 void     createTimerInfoTable(void);
 void     createWatchdogInfoTable(void);
-void     createPcieVirtInfoTable(void);
 void     createPeripheralInfoTable(void);
 void     createDmaInfoTable(void);
 void     createSmbiosInfoTable(void);
@@ -143,6 +146,47 @@ void     createSratInfoTable(void);
 void     createPccInfoTable(void);
 void     createRas2InfoTable(void);
 void     createTpm2InfoTable(void);
+void     createCxlInfoTable(void);
 
 #endif /* __ASSEMBLER__ */
+/*
+ * MMU configuration
+ *
+ * 1 = do val_setup_mmu/val_enable_mmu
+ * 0 = skip MMU setup/enable
+ *
+ * Can be overridden from the build system, e.g.:
+ *   -DACS_ENABLE_MMU=0
+ */
+#ifndef ACS_ENABLE_MMU
+#define ACS_ENABLE_MMU   1
+#endif
+
+/*
+ * Optional compile-time default enabled module list.
+ *
+ * If the build system defines, for example:
+ *
+ *   -DACS_ENABLED_MODULE_LIST=TIMER,PCIE
+ *
+ * then ACS will treat that as a static uint32_t[] containing the module
+ * base IDs that are **enabled to run by default**.
+ *
+ * Semantics:
+ *   - All modules are still compiled into the binary.
+ *   - This list only controls which modules are enabled for execution.
+ *   - If a runtime override is provided (g_module_array / EL3 params),
+ *     it takes priority over this list.
+ *
+ * If ACS_ENABLED_MODULE_LIST is not defined, ACS falls back to:
+ *   - runtime overrides (if present), otherwise
+ *   - "all modules enabled" behaviour.
+ */
+#ifdef ACS_ENABLED_MODULE_LIST
+#define ACS_HAS_ENABLED_MODULE_LIST  1
+#else
+#define ACS_HAS_ENABLED_MODULE_LIST  0
+#endif
+
 #endif /* __BSA_AVS_LEVEL_H__ */
+

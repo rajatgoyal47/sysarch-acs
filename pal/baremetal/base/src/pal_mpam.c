@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2024-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2024-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,9 +19,9 @@
 #include "pal_common_support.h"
 #include "pal_pcie_enum.h"
 
-extern SRAT_INFO_TABLE platform_srat_cfg;
-extern PLATFORM_OVERRIDE_SRAT_NODE_INFO_TABLE platform_srat_node_type;
-extern PLATFORM_OVERRIDE_MPAM_INFO_TABLE platform_mpam_cfg;
+extern const SRAT_INFO_TABLE platform_srat_cfg;
+extern const PLATFORM_OVERRIDE_SRAT_NODE_INFO_TABLE platform_srat_node_type;
+extern const PLATFORM_OVERRIDE_MPAM_INFO_TABLE platform_mpam_cfg;
 
 /**
   @brief  Display MPAM info table details
@@ -135,6 +135,16 @@ pal_mpam_create_info_table(MPAM_INFO_TABLE *MpamTable)
       curr_entry->msc_base_addr = platform_mpam_cfg.msc_node[Index].msc_base_addr;
       curr_entry->msc_addr_len  = platform_mpam_cfg.msc_node[Index].msc_addr_len;
       curr_entry->max_nrdy      = platform_mpam_cfg.msc_node[Index].max_nrdy;
+      {
+        uint32_t j = 0;
+        while ((j < (MAX_NAMED_COMP_LENGTH - 1)) &&
+               (platform_mpam_cfg.msc_node[Index].device_obj_name[j] != '\0')) {
+            curr_entry->device_obj_name[j] =
+                platform_mpam_cfg.msc_node[Index].device_obj_name[j];
+            j++;
+        }
+        curr_entry->device_obj_name[j] = '\0';
+      }
       curr_entry->rsrc_count    = platform_mpam_cfg.msc_node[Index].rsrc_count;
 
       i = 0;
@@ -153,7 +163,26 @@ pal_mpam_create_info_table(MPAM_INFO_TABLE *MpamTable)
       MpamTable->msc_count++;
       curr_entry = MPAM_NEXT_MSC(curr_entry);
   }
-  pal_mpam_dump_table(MpamTable);
+
+  if (g_print_level <= ACS_PRINT_INFO)
+      pal_mpam_dump_table(MpamTable);
+}
+
+/**
+  @brief  Baremetal stub: no DSDT parsing support.
+
+  @param  MpamTable  - MPAM info table.
+
+  @return  0
+**/
+uint32_t
+pal_mpam_parse_dsdt_info(MPAM_INFO_TABLE *MpamTable)
+{
+  if (MpamTable == NULL) {
+      print(ACS_PRINT_ERR, " Input MPAM Table Pointer is NULL\n");
+      return 0;
+  }
+  return 0;
 }
 
 /**
@@ -207,5 +236,6 @@ pal_srat_create_info_table(SRAT_INFO_TABLE *SratTable)
       Ptr++;
   }
 
-  pal_srat_dump_table(SratTable);
+  if (g_print_level <= ACS_PRINT_INFO)
+      pal_srat_dump_table(SratTable);
 }

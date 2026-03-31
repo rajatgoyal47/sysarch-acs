@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,28 +15,28 @@
  * limitations under the License.
 **/
 
-#include "include/rule_based_execution.h"
-#include "include/acs_val.h"
-#include "include/acs_smmu.h"
-#include "include/acs_pcie.h"
-#include "include/acs_common.h"
-#include "include/val_interface.h"
-#include "include/acs_smmu.h"
-#include "include/acs_pe.h"
-#include "include/acs_memory.h"
-#include "include/acs_gic.h"
-#include "include/acs_wd.h"
-#include "include/acs_exerciser.h"
-#include "include/acs_mpam.h"
-#include "include/acs_pmu.h"
-#include "include/acs_ras.h"
-#include "include/acs_nist.h"
-#include "include/acs_ete.h"
-#include "include/acs_timer.h"
-#include "include/acs_peripherals.h"
-#include "include/acs_tpm.h"
-#include "include/acs_wakeup.h"
-#include "include/test_wrappers.h"
+#include "rule_based_execution.h"
+#include "acs_val.h"
+#include "acs_smmu.h"
+#include "acs_pcie.h"
+#include "acs_common.h"
+#include "val_interface.h"
+#include "acs_smmu.h"
+#include "acs_pe.h"
+#include "acs_memory.h"
+#include "acs_gic.h"
+#include "acs_wd.h"
+#include "acs_exerciser.h"
+#include "acs_mpam.h"
+#include "acs_pmu.h"
+#include "acs_ras.h"
+#include "acs_nist.h"
+#include "acs_ete.h"
+#include "acs_timer.h"
+#include "acs_peripherals.h"
+#include "acs_tpm.h"
+#include "acs_wakeup.h"
+#include "test_wrappers.h"
 
 /*
  * Per-rule test status map
@@ -48,6 +48,14 @@
  * entries to TEST_STATUS_UNKNOWN before a run.
  */
 uint32_t rule_status_map[RULE_ID_SENTINEL] = { 0 };
+
+/* The variable is used for special cases where a RULE needs to call
+ * different set of entry functions depending on base rule it is been
+ * called under, ex PCI_LI_01 needs to run only pci test when called
+ * as part of B_PER_08 and both pci and integrated endpoint when called
+ * as part of B_IEP_1
+ */
+RULE_ID_e g_base_rule = RULE_ID_SENTINEL;
 
 /* Following structure has every test entry that was is sysarch-acs on 23/07/25 */
 rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
@@ -664,6 +672,14 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .flag             = BASE_RULE,
             .test_num         = ACS_GIC_TEST_NUM_BASE + 12,
         },
+        [S_L3GI_02] = {
+            .test_entry_id    = P046_ENTRY,
+            .module_id        = GIC,
+            .rule_desc        = "Check all MSI(X) vectors are LPIs",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_LINUX,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PCIE_TEST_NUM_BASE + 46,
+        },
         [B_PPI_00] = {
             .test_entry_id    = B_PPI_00_ENTRY,
             .module_id        = GIC,
@@ -833,7 +849,7 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
         [B_MEM_06] = {
             .test_entry_id    = M007_ENTRY,
             .module_id        = MEM_MAP,
-            .rule_desc        = "Check non-DMA dev behind SMMU",
+            .rule_desc        = "Check NS non-64b DMA devices are behind SMMU",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_LINUX,
             .flag             = BASE_RULE,
             .test_num         = ACS_MEMORY_MAP_TEST_NUM_BASE + 7,
@@ -863,6 +879,14 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .test_num         = ACS_MEMORY_MAP_TEST_NUM_BASE + 8,
         },
     /* PMU */
+        [PMU_PE_01] = {
+            .test_entry_id    = PE040_ENTRY,
+            .module_id        = PMU,
+            .rule_desc        = "Check Performance Monitors Extension",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PE_TEST_NUM_BASE  +  40,
+        },
         [PMU_PE_02] = {
             .test_entry_id    = PMU001_ENTRY,
             .module_id        = PMU,
@@ -895,13 +919,14 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .flag             = BASE_RULE,
             .test_num         = ACS_PMU_TEST_NUM_BASE + 5,
         },
-        // [PMU_SYS_5] = {
-        //     .test_entry_id    = pmu008_entry,
-        //     .module_id        = PMU,
-        //     .rule_desc        = "Check System PMU for NUMA systems",
-        //     .platform_bitmask = 0,
-        //     .flag             = BASE_RULE,
-        // },
+        [PMU_SYS_5] = {
+            .test_entry_id    = PMU008_ENTRY,
+            .module_id        = PMU,
+            .rule_desc        = "Check System PMU for NUMA systems",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PMU_TEST_NUM_BASE + 8
+        },
         [PMU_SYS_6] = {
             .test_entry_id    = PMU009_ENTRY,
             .module_id        = PMU,
@@ -949,6 +974,20 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_PMU_TEST_NUM_BASE + 6,
+        },
+        [S_L7PMU] = {
+            .test_entry_id    = NULL_ENTRY,
+            .module_id        = PMU,
+            .rule_desc        = "Check for PMU Features",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = ALIAS_RULE,
+        },
+        [S_L8SHD_1] = {
+            .test_entry_id    = NULL_ENTRY,
+            .module_id        = ETE,
+            .rule_desc        = "Check for ETE Features",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = ALIAS_RULE,
         },
     /* RAS */
         [RAS_01] = {
@@ -1047,9 +1086,9 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .test_num         = ACS_RAS_TEST_NUM_BASE + 10,
         },
         [SYS_RAS_2] = {
-            .test_entry_id    = SYS_RAS_2_ENTRY,
+            .test_entry_id    = RAS011_ENTRY,
             .module_id        = RAS,
-            .rule_desc        = "Check Pseudo Fault Injection",
+            .rule_desc        = "Check Poison Storage & Forwarding",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
         },
@@ -1068,6 +1107,37 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_RAS_TEST_NUM_BASE + 13,
+        },
+        [LVQBC] = {
+            .test_entry_id    = NULL_ENTRY,
+            .module_id        = RAS,
+            .rule_desc        = "Check RASSA_RV, RASSA_DFI, CED supp",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = ALIAS_RULE,
+        },
+        [ZVDJG] = {
+            .test_entry_id    = RAS016_ENTRY,
+            .module_id        = RAS,
+            .rule_desc        = "Check FEAT_RASSA_RV implementation",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_RAS_TEST_NUM_BASE + 16,
+        },
+        [RKLPK] = {
+            .test_entry_id    = RAS017_ENTRY,
+            .module_id        = RAS,
+            .rule_desc        = "Check FEAT_RASSA_DFI and CED support",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_RAS_TEST_NUM_BASE + 17,
+        },
+        [KBRZG] = {
+            .test_entry_id    = RAS018_ENTRY,
+            .module_id        = RAS,
+            .rule_desc        = "Data abort on containable Device err",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_RAS_TEST_NUM_BASE + 18,
         },
     /* SMMU */
         [B_SMMU_01] = {
@@ -1390,6 +1460,14 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .flag             = BASE_RULE,
             .test_num         = ACS_WD_TEST_NUM_BASE + 1,
         },
+        [B_WD_02] = {
+            .test_entry_id    = W001_ENTRY,
+            .module_id        = WATCHDOG,
+            .rule_desc        = "Non Secure Watchdog Access ",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_WD_TEST_NUM_BASE + 1,
+        },
         [B_WD_03] = {
             .test_entry_id    = W002_ENTRY,
             .module_id        = WATCHDOG,
@@ -1460,25 +1538,33 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 21,
         },
+        [XDGKZ] = {
+            .test_entry_id    = NULL_ENTRY,
+            .module_id        = GPU,
+            .rule_desc        = "Check GPU devices",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = ALIAS_RULE,
+        },
         [GPU_03] = {
             .test_entry_id    = P093_ENTRY,
-            .module_id        = PCIE,
+            .module_id        = GPU,
             .rule_desc        = "Switches must support ACS if P2P",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
-            .test_num         = ACS_PCIE_TEST_NUM_BASE + 93,
+            .test_num         = ACS_GPU_TEST_NUM_BASE + 01,
         },
         [GPU_04] = {
             .test_entry_id    = GPU_04_ENTRY,
-            .module_id        = PCIE,
+            .module_id        = GPU,
             .rule_desc        = "Check ATS support for RC and SMMU",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
+            .test_num         = ACS_GPU_TEST_NUM_BASE + 02,
         },
         [IE_ACS_1] = {
             .test_entry_id    = P082_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Check ACS Cap on p2p support: iEP EP",
+            .rule_desc        = "Check ACS Cap on p2p support - iEP EP",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 82,
@@ -1486,7 +1572,7 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
         [IE_ACS_2] = {
             .test_entry_id    = P081_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Check iEP-RootPort P2P Support",
+            .rule_desc        = "Check P2P Support - iEP EP",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 81,
@@ -1494,44 +1580,36 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
         [IE_ORD_4] = {
             .test_entry_id    = E038_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Tx pending bit clear correctness: iEP",
+            .rule_desc        = "Check Sec Bus Reset - iEP EP",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_EXERCISER_TEST_NUM_BASE + 38,
         },
-        [IE_PWR_1] = {
-            .test_entry_id    = P034_ENTRY,
-            .module_id        = PCIE,
-            .rule_desc        = "Check Power Management rules: iEP/RP",
-            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
-            .flag             = BASE_RULE,
-            .test_num         = ACS_PCIE_TEST_NUM_BASE + 34,
-        },
         [IE_REG_1] = {
             .test_entry_id    = IE_REG_1_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Check config header rule: iEP_EP",
+            .rule_desc        = "Check config header rule - iEP EP",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
         },
         [IE_REG_2] = {
             .test_entry_id    = IE_REG_2_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Check Dev Cap & Ctrl Reg rule - iEP_EP",
+            .rule_desc        = "Check Dev Cap & Ctrl Reg rule - iEP EP",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
         },
         [IE_REG_3] = {
             .test_entry_id    = IE_REG_3_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Check config header rule: iEP_RP",
+            .rule_desc        = "Check config header rule - iEP RP",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
         },
         [IE_REG_4] = {
             .test_entry_id    = IE_REG_4_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Check PCIe capability rules: iEP_RP",
+            .rule_desc        = "Check PCIe capability rules - iEP RP",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
         },
@@ -1546,7 +1624,7 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
         [IE_REG_6] = {
             .test_entry_id    = P092_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Secondary PCIe ECap Check: iEP Pair",
+            .rule_desc        = "Secondary PCIe ECap Check - iEP Pair",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 92,
@@ -1554,7 +1632,7 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
         [IE_REG_7] = {
             .test_entry_id    = P012_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Datalink feature ECap Check: iEP Pair",
+            .rule_desc        = "Datalink feature ECap Check - iEP Pair",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 12,
@@ -1562,7 +1640,7 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
         [IE_REG_8] = {
             .test_entry_id    = P013_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Phy Layer 16GT/s ECap Check: iEP Pair",
+            .rule_desc        = "Phy Layer 16GT/s ECap Check - iEP Pair",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 13,
@@ -1570,7 +1648,7 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
         [IE_REG_9] = {
             .test_entry_id    = P014_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Lane Margining at Rec ECap Check: iEP",
+            .rule_desc        = "Phy Layer 16GT/s ECap Check - iEP Pair",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 14,
@@ -1578,7 +1656,7 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
         [IE_RST_2] = {
             .test_entry_id    = P079_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Check Sec Bus Reset For iEP_RP",
+            .rule_desc        = "Check Sec Bus Reset - iEP EP",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 79,
@@ -1921,14 +1999,6 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 35,
         },
-        [S_L3GI_02] = {
-            .test_entry_id    = P046_ENTRY,
-            .module_id        = PCIE,
-            .rule_desc        = "Check all MSI(X) vectors are LPIs",
-            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI | PLATFORM_LINUX,
-            .flag             = BASE_RULE,
-            .test_num         = ACS_PCIE_TEST_NUM_BASE + 46,
-        },
         [S_L4PCI_2] = {
             .test_entry_id    = P087_ENTRY,
             .module_id        = PCIE,
@@ -1940,7 +2010,7 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
         [RE_ACS_1] = {
             .test_entry_id    = P015_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Check ACS Cap on p2p support: RCiEP",
+            .rule_desc        = "Check ACS Cap on p2p support - RCiEP",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 15,
@@ -1948,7 +2018,7 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
         [RE_ACS_2] = {
             .test_entry_id    = P016_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Check AER Cap on ACS Cap support",
+            .rule_desc        = "Check AER Cap on ACS Cap support - RCiEP",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 16,
@@ -1956,7 +2026,7 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
         [RI_BAR_1] = {
             .test_entry_id    = P083_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Read and write to BAR reg",
+            .rule_desc        = "Read and write to BAR reg - RCiEP, iEP Pair",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 83,
@@ -1964,7 +2034,7 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
         [RI_BAR_3] = {
             .test_entry_id    = P062_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Check BAR memory space & type",
+            .rule_desc        = "Check BAR memory space & type - RCiEP, iEP Pair",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 62,
@@ -1972,7 +2042,7 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
         [RI_INT_1] = {
             .test_entry_id    = P069_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Check MSI and MSI-X support",
+            .rule_desc        = "Check MSI and MSI-X support - RCiEP, iEP Pair",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 69,
@@ -1980,23 +2050,23 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
         [RI_ORD_1] = {
             .test_entry_id    = E021_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Arrival order & Gathering Check",
+            .rule_desc        = "Arrival order & Gathering Check - RCiEP, iEP EP",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
-            .test_num         = ACS_PE_TEST_NUM_BASE  +  21,
+            .test_num         = ACS_EXERCISER_TEST_NUM_BASE  +  21,
         },
         [RE_ORD_4] = {
             .test_entry_id    = E008_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Tx pending bit clear correctness: RCiEP",
+            .rule_desc        = "Tx pending bit clear correctness - RCiEP",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
-            .test_num         = ACS_PE_TEST_NUM_BASE  +  8,
+            .test_num         = ACS_EXERCISER_TEST_NUM_BASE  +  8,
         },
         [RE_PCI_1] = {
             .test_entry_id    = P085_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Check RCiEP Hdr type & link Cap",
+            .rule_desc        = "Check Hdr type & link Cap - RCiEP, RCEC",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 85,
@@ -2004,15 +2074,15 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
         [RE_PCI_2] = {
             .test_entry_id    = P084_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Check RCEC Class code and Ext Cap",
+            .rule_desc        = "Check Class code and Ext Cap - RCEC",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 84,
         },
-        [RE_PWR_1] = {
+        [RI_PWR_1] = {
             .test_entry_id    = P070_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Check Power Management rules: RCiEP",
+            .rule_desc        = "Check Power Mgmt rules - RCiEP, iEP Pair",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 70,
@@ -2027,14 +2097,14 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
         [RE_REG_1] = {
             .test_entry_id    = RE_REG_1_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Check config header rule: RCEC/RCiEP",
+            .rule_desc        = "Check config header rule - RCEC, RCiEP",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
         },
         [RE_REG_2] = {
             .test_entry_id    = P056_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Check Power Mgmt Cap/Ctrl/Status - RC",
+            .rule_desc        = "Check PWR Mgmt Cap/Ctrl/Status - RCEC, RCiEP",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 56,
@@ -2050,15 +2120,15 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
         [RI_RST_1] = {
             .test_entry_id    = P063_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Check Function level reset",
+            .rule_desc        = "Check Function level reset - RCiEP, iEP EP",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 63,
         },
         [RI_SMU_1] = {
-            .test_entry_id    = E019_ENTRY,
+            .test_entry_id    = RI_SMU_1_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Check ATS Support Rule",
+            .rule_desc        = "Check ATS Support Rule -  RCiEP, iEP Pair",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_EXERCISER_TEST_NUM_BASE + 19,
@@ -2066,7 +2136,7 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
         [RI_SMU_3] = {
             .test_entry_id    = E036_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Generate PASID transactions",
+            .rule_desc        = "Generate PASID transactions - RCiEP, iEP EP",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_EXERCISER_TEST_NUM_BASE  +  36,
@@ -2108,7 +2178,7 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .rule_desc        = "Check Inbound writes seen in order",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
-            .test_num         = ACS_PE_TEST_NUM_BASE + 26,
+            .test_num         = ACS_EXERCISER_TEST_NUM_BASE + 26,
         },
         [S_PCIe_08] = {
             .test_entry_id    = E032_ENTRY,
@@ -2116,7 +2186,7 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .rule_desc        = "Check ordered writes flush prev writes",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
-            .test_num         = ACS_PE_TEST_NUM_BASE  +  32,
+            .test_num         = ACS_EXERCISER_TEST_NUM_BASE  +  32,
         },
         [B_PCIe_10] = {
             .test_entry_id    = E030_ENTRY,
@@ -2141,6 +2211,13 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 100,
+        },
+        [S_PCIe_10] = {
+            .test_entry_id    = NULL_ENTRY,
+            .module_id        = PCIE,
+            .rule_desc        = "STE.DCP control & Steering Tag properties",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI | PLATFORM_LINUX,
+            .flag             = ALIAS_RULE,
         },
     /* MPAM */
         [S_L7MP_01] = {
@@ -2433,7 +2510,7 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .test_entry_id    = P046_ENTRY,
             .module_id        = PCIE,
             .rule_desc        = "Check all MSI(X) vectors are LPIs",
-            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI | PLATFORM_LINUX,
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_LINUX,
             .flag             = BASE_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 46,
         },
@@ -2572,6 +2649,351 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .flag             = BASE_RULE,
             .test_num         = ACS_PE_TEST_NUM_BASE  +  10,
         },
+        /* PFDI ACS entries */
+        [R0053] = {
+            .test_entry_id    = PFDI001_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "Check PFDI Version is returned",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 1,
+        },
+        [R0104] = {
+            .test_entry_id    = PFDI002_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "Check PFDI Version in All PE's",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 2,
+        },
+        [R0102] = {
+            .test_entry_id    = PFDI003_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "Check PFDI mandatory functions",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 3,
+        },
+        [R0060] = {
+            .test_entry_id    = PFDI004_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "Check PFDI Feature function support",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 4,
+        },
+        [R0066] = {
+            .test_entry_id    = PFDI005_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "Check PE HW test mechanism info",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 5,
+        },
+        [R0071] = {
+            .test_entry_id    = PFDI006_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "Check num of Test Part supported",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 6,
+        },
+        [R0076] = {
+            .test_entry_id    = PFDI007_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "Execute Test Parts and All Parts on PE",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 7,
+        },
+        [R0082] = {
+            .test_entry_id    = PFDI008_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "Query PE boot test status",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 8,
+        },
+        [R0089] = {
+            .test_entry_id    = PFDI009_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "Query PFDI firmware check on all PEs",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 9,
+        },
+        [R0156] = {
+            .test_entry_id    = PFDI010_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "PFDI reserved function support check",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 10,
+        },
+        [R0040] = {
+            .test_entry_id    = PFDI011_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "Check if X5 to X17 are preserved",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 11,
+        },
+        [R0099] = {
+            .test_entry_id    = PFDI012_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "PFDI forced error injection",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 12,
+        },
+        [R0164] = {
+            .test_entry_id    = PFDI013_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "Check PE Run with Start exceeds End",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 13,
+        },
+        [R0165] = {
+            .test_entry_id    = PFDI014_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "Check PE Run with Start exceeds max",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 14,
+        },
+        [R0100] = {
+            .test_entry_id    = PFDI015_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "PFDI recovery after forced error",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 15,
+        },
+        [R0157] = {
+            .test_entry_id    = PFDI016_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "Check PFDI feature for invalid function",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 16,
+        },
+        [R0154] = {
+            .test_entry_id    = PFDI017_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "Check PFDI unsupported function",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 17,
+        },
+        [R0166] = {
+            .test_entry_id    = PFDI018_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "Check PE Run with End exceeds max index",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 18,
+        },
+        [R0167] = {
+            .test_entry_id    = PFDI019_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "Check PE Run with Start or End equals -1",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 19,
+        },
+        [R0168] = {
+            .test_entry_id    = PFDI020_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "Check PE Run with Start or End less -1",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 20,
+        },
+        [R0155] = {
+            .test_entry_id    = PFDI021_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "PFDI version invalid params check",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 21,
+        },
+        [R0179] = {
+            .test_entry_id    = PFDI022_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "PFDI Feature invalid params check",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 22,
+        },
+        [R0158] = {
+            .test_entry_id    = PFDI023_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "PFDI PE Test ID invalid params check",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 23,
+        },
+        [R0160] = {
+            .test_entry_id    = PFDI024_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "PFDI Test Part Count invalid params",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 24,
+        },
+        [R0172] = {
+            .test_entry_id    = PFDI025_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "PFDI PE Test Result invalid params check",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 25,
+        },
+        [R0173] = {
+            .test_entry_id    = PFDI026_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "PFDI Firmware Check invalid params",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 26,
+        },
+        [R0193] = {
+            .test_entry_id    = PFDI027_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "Check FORCE ERROR overwrite behavior",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 27,
+        },
+        [R0194] = {
+            .test_entry_id    = PFDI028_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "Check FORCE ERROR PE locality behavior",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 28,
+        },
+        [R0163] = {
+            .test_entry_id    = PFDI029_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "PFDI Test Run invalid params check",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 29,
+        },
+        [R0180] = {
+            .test_entry_id    = PFDI030_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "PFDI Force Error invalid params check",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 30,
+        },
+        [R0176] = {
+            .test_entry_id    = PFDI031_ENTRY,
+            .module_id        = PFDI,
+            .rule_desc        = "PFDI Force Error invalid function ID check",
+            .platform_bitmask = PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PFDI_TEST_NUM_BASE + 31,
+        },
+        /* CXL */
+        [S_L8CXL_1] = {
+            .test_entry_id    = NULL_ENTRY,
+            .module_id        = CXL,
+            .rule_desc        = "CXL Rules",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = ALIAS_RULE,
+        },
+        [CXL_01] = {
+            .test_entry_id    = CXL001_ENTRY,
+            .module_id        = CXL,
+            .rule_desc        = "Check CXL Version",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_CXL_TEST_NUM_BASE  +  1,
+        },
+        [CXL_02] = {
+            .test_entry_id    = CXL_02_ENTRY,
+            .module_id        = CXL,
+            .rule_desc        = "Check CXL Type1/2 SMMU ATS",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_CXL_TEST_NUM_BASE  +  2,
+        },
+        [CXL_03] = {
+            .test_entry_id    = CXL003_ENTRY,
+            .module_id        = CXL,
+            .rule_desc        = "Check CHBCR address map",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_CXL_TEST_NUM_BASE  +  3,
+        },
+        [CXL_04] = {
+            .test_entry_id    = CXL004_ENTRY,
+            .module_id        = CXL,
+            .rule_desc        = "Validate CHBCR capability registers",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_CXL_TEST_NUM_BASE  +  4,
+        },
+        [CXL_05] = {
+            .test_entry_id    = E044_ENTRY,
+            .module_id        = CXL,
+            .rule_desc        = "CXL root port PMReq/PMRes VDM handling",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_CXL_TEST_NUM_BASE  +  5,
+        },
+        [CXL_06] = {
+            .test_entry_id    = E045_ENTRY,
+            .module_id        = CXL,
+            .rule_desc        = "CXL host sink for incoming MEFN VDM",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_CXL_TEST_NUM_BASE  +  6,
+        },
+        [CXL_09] = {
+            .test_entry_id    = E043_ENTRY,
+            .module_id        = CXL,
+            .rule_desc        = "CXL.mem write transaction",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_CXL_TEST_NUM_BASE  +  9,
+        },
+        [CXL_10] = {
+            .test_entry_id    = CXL010_ENTRY,
+            .module_id        = CXL,
+            .rule_desc        = "Check PCMO for CXL persistent memory",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_CXL_TEST_NUM_BASE  +  10,
+        },
+        [CXL_11] = {
+            .test_entry_id    = CXL_11_ENTRY,
+            .module_id        = CXL,
+            .rule_desc        = "Check CXL.mem writeback and AER status",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_CXL_TEST_NUM_BASE  +  11,
+        },
+        [CXL_12] = {
+            .test_entry_id    = CXL_12_ENTRY,
+            .module_id        = CXL,
+            .rule_desc        = "Check CXL.cache coherency with exerciser",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_CXL_TEST_NUM_BASE  +  12,
+        },
+        [CXL_13] = {
+            .test_entry_id    = CXL013_ENTRY,
+            .module_id        = CXL,
+            .rule_desc        = "Check CXL Type-3 mandatory atomic features",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_CXL_TEST_NUM_BASE  +  13,
+        },
     };
 
 /* Following structure maps test entry enums with entry function pointers
@@ -2609,6 +3031,7 @@ test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL] = {
 
 /* TARGET_UEFI */
 #if defined(TARGET_UEFI)
+#ifndef PFDI_DT_BUILD
     [D001_ENTRY] = d001_entry,
     [D002_ENTRY] = d002_entry,
     [D003_ENTRY] = d003_entry,
@@ -2648,6 +3071,11 @@ test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL] = {
     [E036_ENTRY] = e036_entry,
     [E038_ENTRY] = e038_entry,
     [E039_ENTRY] = e039_entry, // used in wrapper.
+    [E040_ENTRY] = e040_entry, // used in wrapper.
+    [E041_ENTRY] = e041_entry, // used in wrapper.
+    [E043_ENTRY] = e043_entry, // used for CXL_09.
+    [E044_ENTRY] = e044_entry, // used for CXL_05.
+    [E045_ENTRY] = e045_entry, // used for CXL_06.
     [ETE001_ENTRY] = ete001_entry,
     [ETE002_ENTRY] = ete002_entry,
     [ETE003_ENTRY] = ete003_entry,
@@ -2697,6 +3125,10 @@ test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL] = {
     [RE_REG_1_ENTRY]   = re_reg_1_entry,
     [V_L1PE_02_ENTRY]  = v_l1pe_02_entry,
     [RI_SMU_1_ENTRY]   = ri_smu_1_entry,
+    [CXL_02_ENTRY]     = cxl_02_entry,
+    [CXL_11_ENTRY]     = cxl_11_entry,
+    [CXL_12_ENTRY]     = cxl_12_entry,
+    [CXL_13_ENTRY]     = cxl013_entry,
     [G013_ENTRY] = g013_entry,
     [G014_ENTRY] = g014_entry,
     [G015_ENTRY] = g015_entry,
@@ -2778,14 +3210,12 @@ test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL] = {
     [P031_ENTRY] = p031_entry, // used in wrapper.
     [P032_ENTRY] = p032_entry, // used in wrapper.
     [P033_ENTRY] = p033_entry, // used in wrapper.
-    [P034_ENTRY] = p034_entry,
     [P035_ENTRY] = p035_entry,
     [P036_ENTRY] = p036_entry, // used in wrapper.
     [P037_ENTRY] = p037_entry,
     [P038_ENTRY] = p038_entry,
     [P039_ENTRY] = p039_entry,
     [P042_ENTRY] = p042_entry,
-    [P046_ENTRY] = p046_entry,
     [P047_ENTRY] = p047_entry,
     [P048_ENTRY] = p048_entry, // used in wrapper.
     [P049_ENTRY] = p049_entry, // used in wrapper.
@@ -2826,6 +3256,7 @@ test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL] = {
     [P090_ENTRY] = p090_entry,
     [P092_ENTRY] = p092_entry,
     [P093_ENTRY] = p093_entry,
+    [P096_ENTRY] = p096_entry,
     [P098_ENTRY] = p098_entry, // used in wrapper.
     [P099_ENTRY] = p099_entry, // used in wrapper.
     [P100_ENTRY] = p100_entry,
@@ -2892,6 +3323,13 @@ test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL] = {
     [PE066_ENTRY] = pe066_entry,
     [PE067_ENTRY] = pe067_entry,
     [PE068_ENTRY] = pe068_entry,
+    [CXL001_ENTRY] = cxl001_entry,
+    [CXL002_ENTRY] = cxl002_entry,
+    [CXL003_ENTRY] = cxl003_entry,
+    [CXL004_ENTRY] = cxl004_entry,
+    [CXL010_ENTRY] = cxl010_entry,
+    [CXL011_ENTRY] = cxl011_entry,
+    [CXL013_ENTRY] = cxl013_entry,
 /* The following test entries are excluded from compilation for the BSA DT UEFI App, as they are
    not required for the BSA DT build. These tests invoke VAL APIs, which in turn call PAL APIs,
    and PAL_DT lacks a few necessary implementations.*/
@@ -2905,6 +3343,7 @@ test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL] = {
     [PMU005_ENTRY] = pmu005_entry,
     [PMU006_ENTRY] = pmu006_entry,
     [PMU007_ENTRY] = pmu007_entry,
+    [PMU008_ENTRY] = pmu008_entry,
     [PMU009_ENTRY] = pmu009_entry,
     [PMU010_ENTRY] = pmu010_entry,
     [PMU011_ENTRY] = pmu011_entry,
@@ -2918,12 +3357,13 @@ test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL] = {
     [RAS008_ENTRY] = ras008_entry,
     [RAS009_ENTRY] = ras009_entry,
     [RAS010_ENTRY] = ras010_entry,
-    [RAS011_ENTRY] = ras011_entry, // used in wrapper.
-    [RAS012_ENTRY] = ras012_entry, // used in wrapper.
+    [RAS011_ENTRY] = ras011_entry,
     [RAS013_ENTRY] = ras013_entry,
     [RAS014_ENTRY] = ras014_entry,
     [RAS015_ENTRY] = ras015_entry,
-    [SYS_RAS_2_ENTRY]  = sys_ras_2_entry,
+    [RAS016_ENTRY] = ras016_entry,
+    [RAS017_ENTRY] = ras017_entry,
+    [RAS018_ENTRY] = ras018_entry,
     [TPM001_ENTRY] = tpm001_entry,
     [TPM002_ENTRY] = tpm002_entry,
 #endif
@@ -2949,6 +3389,40 @@ test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL] = {
     [W003_ENTRY] = w003_entry,
     [V_L1WK_02_05_ENTRY] = v_l1wk_02_05_entry,
     [V_L1PP_00_ENTRY] = v_l1pp_00_entry,
+#endif /* PFDI_DT_BUILD */
+#if defined(PFDI_DT_BUILD)
+    [PFDI001_ENTRY] = pfdi001_entry,
+    [PFDI002_ENTRY] = pfdi002_entry,
+    [PFDI003_ENTRY] = pfdi003_entry,
+    [PFDI004_ENTRY] = pfdi004_entry,
+    [PFDI005_ENTRY] = pfdi005_entry,
+    [PFDI006_ENTRY] = pfdi006_entry,
+    [PFDI007_ENTRY] = pfdi007_entry,
+    [PFDI008_ENTRY] = pfdi008_entry,
+    [PFDI009_ENTRY] = pfdi009_entry,
+    [PFDI010_ENTRY] = pfdi010_entry,
+    [PFDI011_ENTRY] = pfdi011_entry,
+    [PFDI012_ENTRY] = pfdi012_entry,
+    [PFDI013_ENTRY] = pfdi013_entry,
+    [PFDI014_ENTRY] = pfdi014_entry,
+    [PFDI015_ENTRY] = pfdi015_entry,
+    [PFDI016_ENTRY] = pfdi016_entry,
+    [PFDI017_ENTRY] = pfdi017_entry,
+    [PFDI018_ENTRY] = pfdi018_entry,
+    [PFDI019_ENTRY] = pfdi019_entry,
+    [PFDI020_ENTRY] = pfdi020_entry,
+    [PFDI021_ENTRY] = pfdi021_entry,
+    [PFDI022_ENTRY] = pfdi022_entry,
+    [PFDI023_ENTRY] = pfdi023_entry,
+    [PFDI024_ENTRY] = pfdi024_entry,
+    [PFDI025_ENTRY] = pfdi025_entry,
+    [PFDI026_ENTRY] = pfdi026_entry,
+    [PFDI027_ENTRY] = pfdi027_entry,
+    [PFDI028_ENTRY] = pfdi028_entry,
+    [PFDI029_ENTRY] = pfdi029_entry,
+    [PFDI030_ENTRY] = pfdi030_entry,
+    [PFDI031_ENTRY] = pfdi031_entry,
+#endif /* PFDI_DT_BUILD */
 #endif /* TARGET_UEFI */
 
 /* TARGET_BAREMETAL */
@@ -3170,13 +3644,13 @@ test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL] = {
     [RAS009_ENTRY] = ras009_entry,
     [RAS002_ENTRY] = ras002_entry,
     [RAS004_ENTRY] = ras004_entry,
-    [RAS011_ENTRY] = ras011_entry, // used in wrapper.
+    [RAS011_ENTRY] = ras011_entry,
     [RAS015_ENTRY] = ras015_entry,
     [RAS006_ENTRY] = ras006_entry,
-    [RAS012_ENTRY] = ras012_entry, // used in wrapper.
     [RAS008_ENTRY] = ras008_entry,
     [RAS014_ENTRY] = ras014_entry,
     [RAS005_ENTRY] = ras005_entry,
+    [RAS018_ENTRY] = ras018_entry,
     [E027_ENTRY] = e027_entry,
     [E026_ENTRY] = e026_entry,
     [E032_ENTRY] = e032_entry,
@@ -3186,6 +3660,8 @@ test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL] = {
     [E028_ENTRY] = e028_entry,
     [E022_ENTRY] = e022_entry,
     [E023_ENTRY] = e023_entry,
+    [E040_ENTRY] = e040_entry, // used in wrapper.
+    [E041_ENTRY] = e041_entry, // used in wrapper.
     [MPAM006_ENTRY] = mpam006_entry, // used in wrapper.
     [MPAM005_ENTRY] = mpam005_entry,
     [MPAM001_ENTRY] = mpam001_entry,
@@ -3219,6 +3695,7 @@ test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL] = {
     [P086_ENTRY] = p086_entry,
     [P046_ENTRY] = p046_entry,
     [PMU003_ENTRY] = pmu003_entry,
+    [PMU008_ENTRY] = pmu008_entry,
     [PMU009_ENTRY] = pmu009_entry,
     [PMU006_ENTRY] = pmu006_entry,
     [PMU004_ENTRY] = pmu004_entry,
@@ -3228,6 +3705,17 @@ test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL] = {
     [PMU010_ENTRY] = pmu010_entry,
     [PMU011_ENTRY] = pmu011_entry,
     [PMU001_ENTRY] = pmu001_entry,
+    [CXL001_ENTRY] = cxl001_entry,
+    [CXL002_ENTRY] = cxl002_entry,
+    [CXL003_ENTRY] = cxl003_entry,
+    [CXL004_ENTRY] = cxl004_entry,
+    [GPU_04_ENTRY] = gpu_04_entry,
+    [CXL010_ENTRY] = cxl010_entry,
+    [CXL011_ENTRY] = cxl011_entry,
+    [CXL013_ENTRY] = cxl013_entry,
+    [E043_ENTRY] = e043_entry, // used for CXL_09.
+    [E044_ENTRY] = e044_entry, // used for CXL_05.
+    [E045_ENTRY] = e045_entry, // used for CXL_06.
 #endif /* BAREMETAL_BSA_BUILD */
     [PE037_ENTRY] = pe037_entry,
     [PE043_ENTRY] = pe043_entry,
@@ -3251,7 +3739,6 @@ test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL] = {
     [P015_ENTRY] = p015_entry,
     [P016_ENTRY] = p016_entry,
     [P027_ENTRY] = p027_entry, // used in wrapper.
-    [P034_ENTRY] = p034_entry,
     [P047_ENTRY] = p047_entry,
     [P048_ENTRY] = p048_entry, // used in wrapper.
     [P049_ENTRY] = p049_entry, // used in wrapper.
@@ -3302,7 +3789,6 @@ test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL] = {
     [B_PPI_00_ENTRY]   = b_ppi_00_entry,
     [B_WAK_03_07_ENTRY] = b_wak_03_07_entry,
     [S_L7MP_03_ENTRY]  = s_l7mp_03_entry,
-    [SYS_RAS_2_ENTRY]  = sys_ras_2_entry,
     [APPENDIX_I_6_ENTRY] = appendix_i_6_entry,
     [IE_REG_1_ENTRY]   = ie_reg_1_entry,
     [IE_REG_2_ENTRY]   = ie_reg_2_entry,
@@ -3325,6 +3811,9 @@ test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL] = {
     [RE_REC_1_ENTRY]   = re_rec_1_entry,
     [RE_REG_1_ENTRY]   = re_reg_1_entry,
     [RI_SMU_1_ENTRY]   = ri_smu_1_entry,
+    [CXL_02_ENTRY]     = cxl_02_entry,
+    [CXL_11_ENTRY]     = cxl_11_entry,
+    [CXL_12_ENTRY]     = cxl_12_entry,
     [G002_ENTRY] = g002_entry,
     [ITS002_ENTRY] = its002_entry,
     [ITS005_ENTRY] = its005_entry,
@@ -3532,7 +4021,7 @@ RULE_ID_e bsa_l1_rule_list[] = {
         PCI_IEP_1,
         /* E.11 - Peer-to-Peer */
         PCI_PP_01, PCI_PP_02, PCI_PP_03,
-        PCI_PP_04, PCI_PP_05, PCI_PP_06,
+        PCI_PP_04, PCI_PP_05,
         /* E.12 - PASID Support */
         PCI_PAS_1,
         /* E.13 - PCIe Precision Time Measurement */
@@ -3586,7 +4075,7 @@ RULE_ID_e b_rep_1_rule_list[] = {
         PCI_IEP_1,
         /* E.11 - Peer-to-Peer */
         PCI_PP_01, PCI_PP_02, PCI_PP_03,
-        PCI_PP_04, PCI_PP_05, PCI_PP_06,
+        PCI_PP_04, PCI_PP_05,
         /* E.12 - PASID Support */
         PCI_PAS_1,
         /* E.13 - PCIe Precision Time Measurement */
@@ -3646,7 +4135,7 @@ RULE_ID_e b_iep_1_rule_list[] = {
         PCI_IEP_1,
         /* E.11 - Peer-to-Peer */
         PCI_PP_01, PCI_PP_02, PCI_PP_03,
-        PCI_PP_04, PCI_PP_05, PCI_PP_06,
+        PCI_PP_04, PCI_PP_05,
         /* E.12 - PASID Support */
         PCI_PAS_1,
         /* E.13 - PCIe Precision Time Measurement */
@@ -3694,7 +4183,7 @@ RULE_ID_e b_per_08_rule_list[] = {
     PCI_IEP_1,
     /* E.11 - Peer-to-Peer */
     PCI_PP_01, PCI_PP_02, PCI_PP_03,
-    PCI_PP_04, PCI_PP_05, PCI_PP_06,
+    PCI_PP_04, PCI_PP_05,
     /* E.12 - PASID Support */
     PCI_PAS_1,
     /* E.13 - PCIe Precision Time Measurement */
@@ -3709,6 +4198,9 @@ RULE_ID_e s_l3pr_01_rule_list[]   = {B_PER_05, RULE_ID_SENTINEL};
 /* S_L3WD_01 */
 RULE_ID_e s_l3wd_01_rule_list[]   = {B_WD_01, B_WD_02, B_WD_03, B_WD_04, B_WD_05,
                                      RULE_ID_SENTINEL};
+/* SBSA l8 GPU rules*/
+RULE_ID_e xdgkz_rule_list[] = {GPU_03, GPU_01, GPU_02, GPU_04, RULE_ID_SENTINEL};
+
 /* S_L6PCI_1 */
 RULE_ID_e s_l6pci_1_rule_list[] = {
     /* S_L6PCI_1 refers B_REP_1 */
@@ -3753,7 +4245,7 @@ RULE_ID_e s_l6pci_1_rule_list[] = {
             PCI_IEP_1,
             /* E.11 - Peer-to-Peer */
             PCI_PP_01, PCI_PP_02, PCI_PP_03,
-            PCI_PP_04, PCI_PP_05, PCI_PP_06,
+            PCI_PP_04, PCI_PP_05,
             /* E.12 - PASID Support */
             PCI_PAS_1,
             /* E.13 - PCIe Precision Time Measurement */
@@ -3799,6 +4291,44 @@ RULE_ID_e sys_ras_rule_list[] = {
     /* SBSA Section B Server RAS */
     RAS_01, RAS_02, RAS_03, RAS_04, RAS_05, RAS_06, RAS_07,
     RAS_08, RAS_10, RAS_11, RAS_12,
+
+    RULE_ID_SENTINEL
+};
+
+/* S_PCIe_10 */
+RULE_ID_e s_pcie_10_rule_list[]   = {B_PCIe_10, B_PCIe_11, RULE_ID_SENTINEL};
+RULE_ID_e s_l7pmu_rule_list[]   = {
+                                    PMU_PE_01, PMU_PE_02, PMU_PE_03, PMU_SYS_1,
+                                    PMU_SYS_2, PMU_SYS_5, PMU_SYS_6, PMU_MEM_1,
+                                    PMU_BM_1, PMU_BM_2,  PMU_EV_11, PMU_SPE,
+                                    /* Not covered or Not implemented*/
+                                    PMU_PE_01, PMU_EV_01, PMU_EV_02, PMU_EV_03,
+                                    PMU_EV_04, PMU_EV_05, PMU_EV_06, PMU_EV_07,
+                                    PMU_EV_08, PMU_EV_09, PMU_EV_10, PMU_BM_3,
+                                    PMU_BM_4, PMU_SYS_7, PMU_SEC_1,
+                                    /********/
+                                    RULE_ID_SENTINEL};
+
+RULE_ID_e s_l8shd_1_rule_list[]   = {
+                                    ETE_01, ETE_02, ETE_03, ETE_04, ETE_05,
+                                    ETE_06, ETE_07, ETE_08, ETE_09, ETE_10,
+                                    RULE_ID_SENTINEL
+};
+
+/* S_L8CXL_1 */
+RULE_ID_e s_l8cxl_rule_list[] = {
+    /* SBSA CXL Rules */
+    CXL_01,
+    CXL_02,
+    CXL_03,
+    CXL_04,
+    CXL_05,
+    CXL_06,
+    CXL_09,
+    CXL_10,
+    CXL_11,
+    CXL_12,
+    CXL_13,
 
     RULE_ID_SENTINEL
 };
@@ -3863,7 +4393,7 @@ RULE_ID_e v_l1pr_02_rule_list[]   = {
 
                                      /* E.11 - Peer-to-Peer */
                                      PCI_PP_01, PCI_PP_02, PCI_PP_03,
-                                     PCI_PP_04, PCI_PP_05, PCI_PP_06,
+                                     PCI_PP_04, PCI_PP_05,
 
                                      /* E.12 - PASID Support */
                                      PCI_PAS_1,
@@ -3874,7 +4404,7 @@ RULE_ID_e v_l1pr_02_rule_list[]   = {
                                      RULE_ID_SENTINEL};
 
 // TODO update all alias rules in xbsa specs
-alias_rule_map_t alias_rule_map[] = {
+const alias_rule_map_t alias_rule_map[] = {
     /* BSA alias rules */
     {B_WD_00,   b_wd_00_rule_list},
     {B_PER_08,  b_per_08_rule_list},
@@ -3888,8 +4418,13 @@ alias_rule_map_t alias_rule_map[] = {
     {S_L3WD_01, s_l3wd_01_rule_list},
     {S_L6PCI_1, s_l6pci_1_rule_list},
     {S_L6PE_01, s_l6pe_01_rule_list},
+    {S_PCIe_10, s_pcie_10_rule_list},
+    {S_L7PMU,   s_l7pmu_rule_list},
+    {S_L8SHD_1, s_l8shd_1_rule_list},
     {SYS_RAS,   sys_ras_rule_list},
     {LVQBC,     lvqbc_rule_list},
+    {S_L8CXL_1, s_l8cxl_rule_list},
+    {XDGKZ,     xdgkz_rule_list},
 
     /* PCBSA alias rules */
     {P_L1_01,   bsa_l1_rule_list},
@@ -3906,4 +4441,4 @@ alias_rule_map_t alias_rule_map[] = {
 
 };
 
-uint32_t alias_rule_map_count = sizeof(alias_rule_map) / sizeof(alias_rule_map[0]);
+const uint32_t alias_rule_map_count = sizeof(alias_rule_map) / sizeof(alias_rule_map[0]);

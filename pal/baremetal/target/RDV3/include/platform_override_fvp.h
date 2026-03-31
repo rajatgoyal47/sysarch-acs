@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -291,9 +291,18 @@
 #define PLATFORM_BM_OVERRIDE_PCIE_MAX_BUS      0x9    /* Max bus walked by bare-metal tests      */
 #define PLATFORM_BM_OVERRIDE_PCIE_MAX_DEV      32     /* Max device per bus checked              */
 #define PLATFORM_BM_OVERRIDE_PCIE_MAX_FUNC     8      /* Max function per device checked         */
+
+// This value is arbitrary and may have to be adjusted
 #define PLATFORM_BM_OVERRIDE_MAX_IRQ_CNT       0xFFFF /* Max IRQs any device may raise           */
 
-#define PLATFORM_OVERRIDE_TIMEOUT              0      /* Override default wakeup timeout         */
+/* TIMEOUT should be in Microsecond 5us to 2 sec */
+#define PLATFORM_OVERRIDE_TIMEOUT              1000   /* time out for DUT */
+
+/* FAIL safe timeout (> PLATFORM_OVERRIDE_TIMEOUT) */
+#define PLATFORM_OVERRIDE_FAILSAFE_TIMEOUT     (PLATFORM_OVERRIDE_TIMEOUT * 2)
+
+/*Max timeout set for systimer*/
+#define PLATFORM_OVERRIDE_SYS_TIMEOUT_MAX      0xFFFFFFFF
 
 /* Generic timeout helpers for bare-metal tests */
 #define PLATFORM_BM_OVERRIDE_TIMEOUT_LARGE         0x10000
@@ -605,6 +614,22 @@
 #define CTRL_OFFSET    0x08                       /* Used in PAL APIs. Modify acc to the API impl */
 #define STATUS_OFFSET  0x10                       /* Used in PAL APIs. Modify acc to the API impl */
 
+/* -----------------------------  CXL info  ----------------------------- */
+/* CXL platform config parameters */
+#define PLATFORM_OVERRIDE_NUM_CXL_HB                 0    /* No. of CXL Host bridges */
+
+#define PLATFORM_OVERRIDE_CXL_COUNT                  0    /* No. of CXL devices */
+#define PLATFORM_OVERRIDE_CXL0_UID                   0x0  /* CXL HB Unique ID */
+#define PLATFORM_OVERRIDE_CXL0_COMPONENT_REG_TYPE    0x0  /* Type of CEDT Structure */
+#define PLATFORM_OVERRIDE_CXL0_COMPONENT_REG_BASE    0x0  /* Base address of the CHBCR */
+#define PLATFORM_OVERRIDE_CXL0_COMPONENT_REG_LENGTH  0x0  /* Length of the range */
+#define PLATFORM_OVERRIDE_CXL0_CXL_VERSION           0x0  /* CXL Version */
+#define PLATFORM_OVERRIDE_CXL0_CXL_STRUCT_TYPE       0x0  /* Type of CXL Structure [CHBS/CFMWS] */
+#define PLATFORM_OVERRIDE_CXL0_WINDOW_COUNT          0x0  /* CXL Window count */
+#define PLATFORM_OVERRIDE_CXL0_WINDOW_BASE           0x0  /* CFMWS Base*/
+#define PLATFORM_OVERRIDE_CXL0_WINDOW_SIZE           0x0  /* CFMWS Length*/
+#define PLATFORM_OVERRIDE_CXL0_WINDOW_RESTRICTIONS   0x0  /* CFMWS Window restrictions*/
+
 /* -----------------------------  Peripheral info  ----------------------------- */
 #define PLATFORM_OVERRIDE_PERIPHERAL_COUNT 2  //UART + USB + SATA
 
@@ -622,6 +647,8 @@
 #define UART_PCI_FUNC_NUMBER             0x0
 #define UART_PCI_FLAGS                   0x0
 #define UART_PCI_SEGMENT                 0x0
+
+#define SATA_GLOBAL_SYSTEM_INTERRUPT     0x100       /* SATA GSIV                                 */
 
 /* IOVIRT platform config parameters */
 #define IOVIRT_ADDRESS                0xF98DEB18  /* Non-zero if IORT is present                 */
@@ -761,7 +788,7 @@
 
 #define DVSEC_CTRL      0x08
 #define PASID           0x1B
-#define PCI_E           0x01
+#define PCIE_REG        0x01
 #define DVSEC           0x23
 
 /* PCI/PCIe express extended capability structure's
@@ -1381,6 +1408,7 @@
 #define PLATFORM_MPAM_MSC0_ADDR_LEN           0x1008      // MPAM MSC MMIO address length
 #define PLATFORM_MPAM_MSC0_MAX_NRDY           0           // Max time (in ms) NRDY signal asserts
 #define PLATFORM_MPAM_MSC0_RSRC_COUNT         0x1         // Resources described by MSC0
+#define PLATFORM_MPAM_MSC0_NAME               "MSC0"
 #define PLATFORM_MPAM_MSC0_RSRC0_RIS_INDEX    0x0         // RIS0: Index
 #define PLATFORM_MPAM_MSC0_RSRC0_LOCATOR_TYPE 0x0         // RIS0: Locator type
 #define PLATFORM_MPAM_MSC0_RSRC0_DESCRIPTOR1  0x0         // RIS0: Resource specific field #1

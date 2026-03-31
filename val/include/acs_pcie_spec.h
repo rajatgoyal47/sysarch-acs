@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,7 +35,7 @@
 #define TYPE01_CCR_SHIFT    8
 #define TYPE01_CCR_MASK     0xffffff
 #define TYPE01_CPR_SHIFT    0
-#define TYPE01_CPR_MASK     0xff
+#define TYPE01_CPR_MASK     0xfc
 #define TYPE01_HTR_SHIFT    16
 #define TYPE01_HTR_MASK     0xff
 #define TYPE01_IPR_SHIFT    8
@@ -48,12 +48,14 @@
 
 #define TYPE0_HEADER 0
 #define TYPE1_HEADER 1
+#define UNCLAS_CC    0x0
 #define MAS_CC       0x1
 #define CNTRL_CC     0x2
 #define DP_CNTRL_CC  0x3
 #define RES_CC       0x13
 
 /* Command register shifts */
+#define CR_IO_SE_SHIFT 0
 #define CR_MSE_SHIFT   1
 #define CR_BME_SHIFT   2
 #define CR_SCE_SHIFT   3
@@ -135,6 +137,8 @@
 #define BAR_P_TYPE                0x1
 #define BAR_64_BIT                0x1
 #define BAR_32_BIT                0x0
+#define BAR_VALUE_PREFETCH_MASK   0x8
+#define BAR_VALUE_IO_MASK         0x1
 #define BAR_REG(bar_reg_value)    ((bar_reg_value >> 2) & 0x1)
 
 #define TYPE0_MAX_BARS  6
@@ -181,7 +185,7 @@
 #define PCIE_CIDR_MASK      0xff
 #define PCIE_NCPR_MASK      0xff
 #define PCIE_ECAP_CIDR_MASK  0xffff
-#define PCIE_ECAP_NCPR_MASK  0xfff
+#define PCIE_ECAP_NCPR_MASK  0xffc
 
 #define PCIE_CAP_START   0x40
 #define PCIE_CAP_END     0xFC
@@ -226,6 +230,11 @@
 #define DS_UNCORR_MASK 0x6
 #define DS_CORR_MASK   0x1
 #define ACSCTRL_SHIFT  0x0F
+
+/* PM Capability struct offsets and shifts */
+#define PMCSR_OFFSET                       0x4
+#define PMCSR_POWER_STATE_MASK             0x3
+#define PM_STATE_D3HOT                     0x3
 
 /* SR-IOV Capability struct offsets and shifts*/
 #define SRIOV_VF_COUNT         0x0C

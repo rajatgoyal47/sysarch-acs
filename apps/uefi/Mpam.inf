@@ -1,5 +1,5 @@
 ## @file
-#  Copyright (c) 2025, ARM Limited or its affiliates. All rights reserved.
+#  Copyright (c) 2025-2026, ARM Limited or its affiliates. All rights reserved.
 #  SPDX-License-Identifier : Apache-2.0
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +23,9 @@
   MODULE_TYPE                    = UEFI_APPLICATION
   VERSION_STRING                 = 0.5
   ENTRY_POINT                    = ShellCEntryLib
+  DEFINE ACS_CORE_INCLUDE_FLAGS  = -I${ACS_PATH}/ -I${ACS_PATH}/val -I${ACS_PATH}/val/include -I${ACS_PATH}/pal/include
+  DEFINE ACS_GIC_INCLUDE_FLAGS   = -I${ACS_PATH}/val/driver/gic -I${ACS_PATH}/val/driver/gic/its -I${ACS_PATH}/val/driver/gic/v2 -I${ACS_PATH}/val/driver/gic/v3
+  DEFINE ACS_PCIE_INCLUDE_FLAGS  = -I${ACS_PATH}/val/driver/pcie
 
 #
 #  VALID_ARCHITECTURES           = AARCH64
@@ -36,6 +39,9 @@
   ../../test_pool/mpam/reg001.c
   ../../test_pool/mpam/reg002.c
   ../../test_pool/mpam/reg003.c
+  ../../test_pool/mpam/reg004.c
+  ../../test_pool/mpam/reg005.c
+  ../../test_pool/mpam/reg006.c
   ../../test_pool/mpam/error001.c
   ../../test_pool/mpam/error002.c
   ../../test_pool/mpam/error003.c
@@ -47,19 +53,33 @@
   ../../test_pool/mpam/error009.c
   ../../test_pool/mpam/error010.c
   ../../test_pool/mpam/error011.c
+  ../../test_pool/mpam/error012.c
+  ../../test_pool/mpam/error013.c
+  ../../test_pool/mpam/error014.c
   ../../test_pool/mpam/intr001.c
   ../../test_pool/mpam/intr002.c
   ../../test_pool/mpam/intr003.c
+  ../../test_pool/mpam/intr004.c
+  ../../test_pool/mpam/intr005.c
+  ../../test_pool/mpam/intr006.c
   ../../test_pool/mpam/partition001.c
   ../../test_pool/mpam/partition002.c
   ../../test_pool/mpam/partition003.c
+  ../../test_pool/mpam/partition004.c
+  ../../test_pool/mpam/partition005.c
+  ../../test_pool/mpam/partition006.c
   ../../test_pool/mpam/monitor001.c
   ../../test_pool/mpam/monitor002.c
   ../../test_pool/mpam/monitor003.c
   ../../test_pool/mpam/monitor004.c
+  ../../test_pool/mpam/monitor005.c
+  ../../test_pool/mpam/monitor006.c
+  ../../test_pool/mpam/monitor007.c
+  ../../test_pool/mpam/monitor008.c
   ../../test_pool/mpam/mem001.c
   ../../test_pool/mpam/mem002.c
   ../../test_pool/mpam/mem003.c
+  ../../test_pool/mpam/feat001.c
 
 [Packages]
   EmbeddedPkg/EmbeddedPkg.dec
@@ -91,4 +111,4 @@
 
 [BuildOptions]
   GCC:*_*_*_ASM_FLAGS  =  -march=armv8.1-a
-  GCC:*_*_*_CC_FLAGS   =  -O0 -I${ACS_PATH}/ -DTARGET_UEFI -I${ACS_PATH}/val
+  GCC:*_*_*_CC_FLAGS   = -O0 $(ACS_CORE_INCLUDE_FLAGS) $(ACS_GIC_INCLUDE_FLAGS) $(ACS_PCIE_INCLUDE_FLAGS) -DTARGET_UEFI

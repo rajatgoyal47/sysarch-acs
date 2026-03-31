@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, 2022-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2022-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,10 +15,10 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/acs_pcie.h"
-#include "val/include/acs_pe.h"
-#include "val/include/acs_memory.h"
+#include "acs_val.h"
+#include "acs_pcie.h"
+#include "acs_pe.h"
+#include "acs_memory.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 38)
 #define TEST_DESC  "Check all RP in HB is in same ECAM    "
@@ -67,9 +67,9 @@ next_bdf:
           val_pcie_read_cfg(bdf, TYPE01_VIDR, &reg_value);
           device_id = (reg_value >> TYPE01_DIDR_SHIFT) & TYPE01_DIDR_MASK;
           vendor_id = (reg_value >> TYPE01_VIDR_SHIFT) & TYPE01_VIDR_MASK;
-          val_print(ACS_PRINT_DEBUG, "\n       BDF: 0x%x ", bdf);
-          val_print(ACS_PRINT_DEBUG, "Dev ID: 0x%x ", device_id);
-          val_print(ACS_PRINT_DEBUG, "Vendor ID: 0x%x", vendor_id);
+          val_print(ACS_PRINT_DEBUG, "\n       BDF 0x%x ", bdf);
+          val_print(ACS_PRINT_DEBUG, "Dev ID 0x%x ", device_id);
+          val_print(ACS_PRINT_DEBUG, "Vendor ID 0x%x", vendor_id);
 
           rp_ecam_base = val_pcie_get_ecam_base(bdf);
           rp_segment = PCIE_EXTRACT_BDF_SEG(bdf);

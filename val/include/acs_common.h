@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,6 +45,8 @@
 #define ACS_ETE_TEST_NUM_BASE        1400
 #define ACS_EXERCISER_TEST_NUM_BASE  1500
 #define ACS_TPM2_TEST_NUM_BASE       1600
+#define ACS_GPU_TEST_NUM_BASE        1700
+#define ACS_CXL_TEST_NUM_BASE        1800
 
 /* Module specific print APIs */
 
@@ -65,7 +67,8 @@ typedef enum {
     NIST_MODULE,
     ETE_MODULE,
     EXERCISER_MODULE,
-    TPM2_MODULE
+    TPM2_MODULE,
+    CXL_MODULE
 } MODULE_ID_e;
 
 #define STATE_BIT   28

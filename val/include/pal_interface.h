@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,17 +54,17 @@
     #define TCR_TG0             VAL_TG0_64K
   #endif
 
-  #define MAX_SID          PLATFORM_OVERRIDE_MAX_SID
-  #define MMU_PGT_IAS      PLATFORM_OVERRIDE_MMU_PGT_IAS
-  #define MMU_PGT_OAS      PLATFORM_OVERRIDE_MMU_PGT_OAS
-  #define MAX_IRQ_CNT      PLATFORM_BM_OVERRIDE_MAX_IRQ_CNT
-  #define PCIE_MAX_BUS     PLATFORM_BM_OVERRIDE_PCIE_MAX_BUS
-  #define PCIE_MAX_DEV     PLATFORM_BM_OVERRIDE_PCIE_MAX_DEV
-  #define PCIE_MAX_FUNC    PLATFORM_BM_OVERRIDE_PCIE_MAX_FUNC
-  #define TIMEOUT_LARGE    PLATFORM_BM_OVERRIDE_TIMEOUT_LARGE
-  #define TIMEOUT_MEDIUM   PLATFORM_BM_OVERRIDE_TIMEOUT_MEDIUM
-  #define TIMEOUT_SMALL    PLATFORM_BM_OVERRIDE_TIMEOUT_SMALL
-
+  #define MAX_SID                     PLATFORM_OVERRIDE_MAX_SID
+  #define MMU_PGT_IAS                 PLATFORM_OVERRIDE_MMU_PGT_IAS
+  #define MMU_PGT_OAS                 PLATFORM_OVERRIDE_MMU_PGT_OAS
+  #define MAX_IRQ_CNT                 PLATFORM_BM_OVERRIDE_MAX_IRQ_CNT
+  #define PCIE_MAX_BUS                PLATFORM_BM_OVERRIDE_PCIE_MAX_BUS
+  #define PCIE_MAX_DEV                PLATFORM_BM_OVERRIDE_PCIE_MAX_DEV
+  #define PCIE_MAX_FUNC               PLATFORM_BM_OVERRIDE_PCIE_MAX_FUNC
+  #define TIMEOUT_LARGE               PLATFORM_BM_OVERRIDE_TIMEOUT_LARGE
+  #define TIMEOUT_MEDIUM              PLATFORM_BM_OVERRIDE_TIMEOUT_MEDIUM
+  #define TIMEOUT_SMALL               PLATFORM_BM_OVERRIDE_TIMEOUT_SMALL
+  #define WAKEUP_WD_SYS_TIMEOUT_MAX   PLATFORM_OVERRIDE_SYS_TIMEOUT_MAX
 #endif // TARGET_BAREMETAL
 
 #ifdef TARGET_LINUX
@@ -85,10 +85,12 @@
   #define MAX_SID        32
   #define MMU_PGT_IAS    48
   #define MMU_PGT_OAS    48
+
+  #define WAKEUP_WD_SYS_TIMEOUT_MAX   0XFFFFFFFF
 #endif //TARGET_LINUX
 
 #ifdef TARGET_UEFI
-  #include "../../pal/include/platform_override.h"
+  #include "platform_override.h"
   typedef INT8    int8_t;
   typedef INT32   int32_t;
   typedef INT64   int64_t;
@@ -111,14 +113,16 @@
   #define MMU_PGT_IAS    48
   #define MMU_PGT_OAS    48
 
-  #define SMMU_MAP_SIZE   PLATFORM_OVERRIDE_SMMU_MAP_SIZE /* Size of memory to map from SMMU base */
-  #define TIMEOUT_LARGE   PLATFORM_OVERRIDE_TIMEOUT_LARGE
-  #define TIMEOUT_MEDIUM  PLATFORM_OVERRIDE_TIMEOUT_MEDIUM
-  #define TIMEOUT_SMALL   PLATFORM_OVERRIDE_TIMEOUT_SMALL
-  #define PCIE_MAX_BUS    PLATFORM_OVERRIDE_PCIE_MAX_BUS
-  #define PCIE_MAX_DEV    PLATFORM_OVERRIDE_PCIE_MAX_DEV
-  #define PCIE_MAX_FUNC   PLATFORM_OVERRIDE_PCIE_MAX_FUNC
-  #define MAX_IRQ_CNT     PLATFORM_OVERRIDE_MAX_IRQ_CNT
+  /* Size of memory to map from SMMU base */
+  #define SMMU_MAP_SIZE               PLATFORM_OVERRIDE_SMMU_MAP_SIZE
+  #define TIMEOUT_LARGE               PLATFORM_OVERRIDE_TIMEOUT_LARGE
+  #define TIMEOUT_MEDIUM              PLATFORM_OVERRIDE_TIMEOUT_MEDIUM
+  #define TIMEOUT_SMALL               PLATFORM_OVERRIDE_TIMEOUT_SMALL
+  #define PCIE_MAX_BUS                PLATFORM_OVERRIDE_PCIE_MAX_BUS
+  #define PCIE_MAX_DEV                PLATFORM_OVERRIDE_PCIE_MAX_DEV
+  #define PCIE_MAX_FUNC               PLATFORM_OVERRIDE_PCIE_MAX_FUNC
+  #define MAX_IRQ_CNT                 PLATFORM_OVERRIDE_MAX_IRQ_CNT
+  #define WAKEUP_WD_SYS_TIMEOUT_MAX   PLATFORM_OVERRIDE_SYS_TIMEOUT_MAX
 #endif  // TARGET_UEFI
 
 /* The following are common across all platform unless guarded explicitly */
@@ -184,7 +188,23 @@ typedef struct {
   uint32_t tg_size_log2:5;
 }PE_TCR_BF;
 
+/**
+  @brief  MMU configuration structure for secondary PE initialization
+          This structure holds the primary PE's MMU configuration which
+          is used to enable MMU/caches on secondary PEs.
+**/
+typedef struct {
+  uint64_t ttbr0;      ///< Translation Table Base Register 0
+  uint64_t ttbr1;      ///< Translation Table Base Register 1
+  uint64_t tcr;        ///< Translation Control Register
+  uint64_t mair;       ///< Memory Attribute Indirection Register
+  uint64_t sctlr;      ///< System Control Register
+  uint32_t current_el; ///< Current Exception Level (1 or 2)
+  uint32_t reserved;   ///< Reserved for alignment
+} PE_MMU_CONFIG;
+
 void pal_pe_create_info_table(PE_INFO_TABLE *pe_info_table);
+uint64_t PalGetMmuConfigAddr(void);
 
 /**
   @brief  Structure to Pass SMC arguments. Return data is also filled into
@@ -301,9 +321,7 @@ typedef struct {
 void     pal_gic_create_info_table(GIC_INFO_TABLE *gic_info_table);
 uint32_t pal_gic_install_isr(uint32_t int_id, void (*isr)(void));
 void pal_gic_end_of_interrupt(uint32_t int_id);
-uint32_t pal_gic_request_irq(unsigned int irq_num, unsigned int mapped_irq_num, void *isr);
 void pal_gic_free_irq(unsigned int irq_num, unsigned int mapped_irq_num);
-uint32_t pal_gic_set_intr_trigger(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e trigger_type);
 uint32_t pal_target_is_bm(void);
 uint32_t pal_get_num_nongic_ctrl(void);
 
@@ -441,6 +459,33 @@ uint32_t pal_pcie_get_rp_transaction_frwd_support(uint32_t seg, uint32_t bus,
 uint32_t pal_pcie_dsm_ste_tags(void);
 uint32_t pal_pcie_check_bus_valid(uint32_t bus_index);
 
+#define CXL_MAX_CFMWS_WINDOWS  2
+/*
+ * CXL info table definitions capture host bridge component register windows
+ * and capability metadata discovered via CEDT or overrides.
+ */
+typedef struct {
+  uint32_t cxl_struct_type;      ///< Type of CXL Structure [CHBS/CFMWS and so on]
+  uint32_t uid;                  ///< CXL HB Unique ID
+  uint32_t component_reg_type;   ///< Type of CEDT Structure
+  uint64_t component_reg_base;   ///< Base address of the CHBCR/RCH DP RCRB
+  uint64_t component_reg_length; ///< Length of the range
+  uint32_t cxl_version;          ///< CXL Version
+  uint32_t hdm_decoder_count;    ///< No. of HDM decoders
+  uint32_t cfmws_count;
+  uint64_t cfmws_base[CXL_MAX_CFMWS_WINDOWS];
+  uint64_t cfmws_length[CXL_MAX_CFMWS_WINDOWS];
+  uint32_t cfmws_window[CXL_MAX_CFMWS_WINDOWS];
+} CXL_INFO_BLOCK;
+
+typedef struct {
+  uint32_t       num_entries;
+  CXL_INFO_BLOCK device[];
+} CXL_INFO_TABLE;
+
+void     pal_cxl_create_info_table(CXL_INFO_TABLE *CxlTable);
+uint32_t pal_cxl_get_host_bridge_uid(uint32_t bdf, uint32_t *uid);
+
 /**
   @brief  Instance of SMMU INFO block
 **/
@@ -571,9 +616,7 @@ void     pal_smmu_create_info_table(SMMU_INFO_TABLE *smmu_info_table);
 uint32_t pal_smmu_check_device_iova(void *port, uint64_t dma_addr);
 void     pal_smmu_device_start_monitor_iova(void *port);
 void     pal_smmu_device_stop_monitor_iova(void *port);
-uint32_t pal_smmu_create_pasid_entry(uint64_t smmu_base, uint32_t pasid);
-uint32_t pal_smmu_disable(uint64_t smmu_base);
-uint64_t pal_smmu_pa2iova(uint64_t smmu_base, uint64_t pa);
+uint64_t pal_smmu_pa2iova(uint64_t smmu_base, uint64_t pa, uint64_t *dram_buf_iova);
 
 
 /** Peripheral Tests related definitions **/
@@ -623,7 +666,7 @@ typedef struct {
 **/
 typedef struct {
   PERIPHERAL_INFO_HDR     header;
-  PERIPHERAL_INFO_BLOCK   info[]; ///< Array of Information blocks - instantiated for each peripheral
+  PERIPHERAL_INFO_BLOCK   info[]; ///< Array of Information blocks instantiated for each peripheral
 }PERIPHERAL_INFO_TABLE;
 
 void  pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *per_info_table);
@@ -649,7 +692,8 @@ typedef struct PERIPHERAL_VECTOR_LIST_STRUCT
   struct PERIPHERAL_VECTOR_LIST_STRUCT *next;
 }PERIPHERAL_VECTOR_LIST;
 
-uint32_t pal_get_msi_vectors (uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn, PERIPHERAL_VECTOR_LIST **mvector);
+uint32_t pal_get_msi_vectors (uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn,
+                              PERIPHERAL_VECTOR_LIST **mvector);
 
 #define LEGACY_PCI_IRQ_CNT 4  // Legacy PCI IRQ A, B, C. and D
 
@@ -664,7 +708,8 @@ typedef struct {
 
 #define DEVCTL_SNOOP_BIT 11        // Device control register no snoop bit
 
-uint32_t pal_pcie_get_legacy_irq_map(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn, PERIPHERAL_IRQ_MAP *irq_map);
+uint32_t pal_pcie_get_legacy_irq_map(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn,
+                                     PERIPHERAL_IRQ_MAP *irq_map);
 uint32_t pal_pcie_get_root_port_bdf(uint32_t *seg, uint32_t *bus, uint32_t *dev, uint32_t *func);
 uint32_t pal_pcie_get_snoop_bit(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
 uint32_t pal_pcie_get_dma_support(uint32_t seg, uint32_t bus, uint32_t dev, uint32_t fn);
@@ -697,16 +742,14 @@ typedef struct {
 }DMA_INFO_TABLE;
 
 void pal_dma_create_info_table(DMA_INFO_TABLE *dma_info_table);
-uint32_t pal_dma_start_from_device(void *dma_target_buf, uint32_t length,
-                          void *host, void *dev);
 uint64_t
-pal_dma_mem_alloc(void **buffer, uint32_t length, void *dev, uint32_t flags);
+pal_dma_mem_alloc(void **buffer, uint32_t length, void *dev, uint32_t flags, addr_t *dma_addr);
 
 void
 pal_dma_mem_free(void *buffer, addr_t mem_dma, unsigned int length, void *port, unsigned int flags);
 int pal_dma_mem_get_attrs(void *buf, uint32_t *attr, uint32_t *sh);
 void pal_dma_scsi_get_dma_addr(void *port, void *dma_addr, uint32_t *dma_len);
-
+uint32_t pal_exit_acs(void);
 
 
 /* Memory INFO table */
@@ -733,8 +776,16 @@ typedef struct {
   MEM_INFO_BLOCK  info[];
 } MEMORY_INFO_TABLE;
 
+typedef struct IOREMMAP_LIST{
+    uint64_t phy_addr;
+    uint64_t vir_addr;
+    uint64_t size;
+    uint64_t attr;
+    struct IOREMMAP_LIST *next;
+} IOREMMAP_LIST;
+
 void  pal_memory_create_info_table(MEMORY_INFO_TABLE *memoryInfoTable);
-uint64_t pal_memory_ioremap(void *addr, uint32_t size, uint32_t attr);
+uint32_t pal_memory_ioremap(void *addr, uint32_t size, uint32_t attr, void **baseptr);
 void pal_memory_unmap(void *addr);
 uint64_t pal_memory_get_unpopulated_addr(uint64_t *addr, uint32_t instance);
 uint32_t pal_mem_set_wb_executable(void *addr, uint32_t size);
@@ -788,6 +839,7 @@ void     pal_pe_data_cache_ops_by_va(uint64_t addr, uint32_t type);
 #define CLEAN_AND_INVALIDATE  0x1
 #define CLEAN                 0x2
 #define INVALIDATE            0x3
+#define CLEAN_POC             0x4
 
 /* Exerciser definitions */
 #define MAX_ARRAY_SIZE 32
@@ -833,7 +885,10 @@ typedef enum {
     ENABLE_POISON_MODE = 0xE,
     ENABLE_RAS_CTRL = 0xF,
     DISABLE_POISON_MODE = 0x10,
-    CLEAR_TXN = 0x11
+    CLEAR_TXN = 0x11,
+    ENABLE_CACHE_TXN = 0x12,
+    GENERATE_PMREQ_VDM = 0x13,
+    GENERATE_MEFN_VDM = 0x14
 } EXERCISER_PARAM_TYPE;
 
 typedef enum {
@@ -926,7 +981,6 @@ uint32_t pal_exerciser_set_param(EXERCISER_PARAM_TYPE type, uint64_t value1, uin
                                                                              uint32_t bdf);
 uint32_t pal_exerciser_get_param(EXERCISER_PARAM_TYPE type, uint64_t *value1, uint64_t *value2,
                                                                               uint32_t bdf);
-uint32_t pal_exerciser_set_state(EXERCISER_STATE state, uint64_t *value, uint32_t bdf);
 uint32_t pal_exerciser_get_state(EXERCISER_STATE *state, uint32_t bdf);
 uint32_t pal_exerciser_ops(EXERCISER_OPS ops, uint64_t param, uint32_t instance);
 uint32_t pal_exerciser_get_data(EXERCISER_DATA_TYPE type, exerciser_data_t *data, uint32_t bdf,
@@ -936,6 +990,7 @@ uint32_t pal_exerciser_check_poison_data_forwarding_support(void);
 uint32_t pal_exerciser_get_pcie_ras_compliant_err_node(uint32_t bdf, uint32_t rp_bdf);
 uint64_t pal_exerciser_get_ras_status(uint32_t ras_node, uint32_t e_bdf, uint32_t erp_bdf);
 uint32_t pal_exerciser_set_bar_response(uint32_t bdf);
+uint32_t pal_exerciser_check_firmware_handle_support(void);
 
 /* NIST related APIs */
 uint32_t pal_nist_generate_rng(uint32_t *rng_buffer);
@@ -1047,7 +1102,8 @@ typedef enum {
   @return  None
 **/
 void pal_pmu_create_info_table(PMU_INFO_TABLE *PmuTable);
-uint32_t pal_pmu_get_event_info(PMU_EVENT_TYPE_e event_type, PMU_NODE_INFO_TYPE node_type);
+uint32_t pal_pmu_get_event_info(uint32_t node_index, PMU_EVENT_TYPE_e event_type,
+                                PMU_NODE_INFO_TYPE node_type);
 uint32_t pal_pmu_get_multi_traffic_support_interface(uint64_t *interface_acpiid,
                                                        uint32_t *num_traffic_type_support);
 uint32_t pal_generate_traffic(uint64_t interface_acpiid, uint32_t pmu_node_index,
@@ -1068,6 +1124,7 @@ typedef struct {
   uint32_t size_property_valid;
   uint32_t cache_type_valid;
   uint32_t cache_id_valid;
+  uint8_t  associativity_valid;
 } CACHE_FLAGS;
 
 /* Since most of platform doesn't support cache id field (ACPI 6.4+), ACS uses PPTT offset as key
@@ -1081,6 +1138,7 @@ typedef struct {
   uint32_t cache_id;          /* Unique, non-zero identifier for this cache */
   uint32_t is_private;        /* Field indicate whether cache is private */
   uint8_t  cache_type;        /* Cache type */
+  uint8_t  associativity;     /* N-way cache associativity */
 } CACHE_INFO_ENTRY;
 
 typedef struct {
@@ -1121,6 +1179,7 @@ typedef struct {
     uint32_t           err_intr_flags;/* Error interrupt flags */
     uint32_t           max_nrdy;      /* max time in microseconds that MSC not ready
                                          after config change */
+    char               device_obj_name[MAX_NAMED_COMP_LENGTH]; /* Device object name */
     uint32_t           rsrc_count;    /* number of resource nodes */
     MPAM_RESOURCE_NODE rsrc_node[];   /* Details of resource node */
 } MPAM_MSC_NODE;
@@ -1143,6 +1202,7 @@ typedef struct {
 } MPAM_INFO_TABLE;
 
 void pal_mpam_create_info_table(MPAM_INFO_TABLE *MpamTable);
+uint32_t pal_mpam_parse_dsdt_info(MPAM_INFO_TABLE *MpamTable);
 void *pal_mem_alloc_at_address(uint64_t mem_base, uint64_t size);
 void pal_mem_free_at_address(uint64_t mem_base, uint64_t size);
 

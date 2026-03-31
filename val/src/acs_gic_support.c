@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2021, 2023-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021, 2023-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,16 +15,16 @@
  * limitations under the License.
  **/
 
-#include "include/acs_val.h"
-#include "include/acs_gic.h"
-#include "include/acs_gic_support.h"
-#include "include/acs_common.h"
-#include "include/acs_pcie.h"
-#include "include/acs_iovirt.h"
-#include "driver/gic/acs_exception.h"
-#include "driver/gic/its/acs_gic_its.h"
-#include "driver/gic/gic.h"
-#include "include/pal_interface.h"
+#include "acs_val.h"
+#include "acs_gic.h"
+#include "acs_gic_support.h"
+#include "acs_common.h"
+#include "acs_pcie.h"
+#include "acs_iovirt.h"
+#include "acs_exception.h"
+#include "acs_gic_its.h"
+#include "gic.h"
+#include "pal_interface.h"
 
 extern GIC_INFO_TABLE  *g_gic_info_table;
 extern uint32_t  g_its_init;
@@ -159,18 +159,6 @@ val_gic_install_isr(uint32_t int_id, void (*isr)(void))
   }
 
   return ret_val;
-}
-
-/**
- * @brief   This function registers the specified interrupt
- * @param   irq_num         hardware irq number
- * @param   mapped_irq_num  Mapped irq number
- * @param   isr             Interrupt service routine
- * @return  status
- */
-uint32_t val_gic_request_irq(uint32_t irq_num, uint32_t mapped_irq_num, void *isr)
-{
-  return pal_gic_request_irq(irq_num, mapped_irq_num, isr);
 }
 
 /**

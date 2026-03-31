@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +15,11 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/val_interface.h"
-#include "val/include/acs_pcie.h"
-#include "val/include/acs_pe.h"
-#include "val/include/acs_memory.h"
+#include "acs_val.h"
+#include "val_interface.h"
+#include "acs_pcie.h"
+#include "acs_pe.h"
+#include "acs_memory.h"
 
 static const
 test_config_t test_entries[] = {
@@ -71,6 +71,7 @@ payload(void *arg)
   uint32_t aer_cap_fail = 0;
   uint32_t acs_data;
   uint32_t data;
+  uint32_t status;
   uint8_t p2p_support_flag = 0;
   pcie_device_bdf_table *bdf_tbl_ptr;
   test_data_t *test_data = (test_data_t *)arg;
@@ -78,11 +79,8 @@ payload(void *arg)
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   /* Check If PCIe Hierarchy supports P2P */
-  if (val_pcie_p2p_support() == NOT_IMPLEMENTED) {
-    val_print(ACS_PRINT_DEBUG, "\n       The test is applicable only if the system supports", 0);
-    val_print(ACS_PRINT_DEBUG, "\n       P2P traffic. If the system supports P2P, pass the", 0);
-    val_print(ACS_PRINT_DEBUG, "\n       command line option '-p2p' while running the binary", 0);
-    val_set_status(pe_index, RESULT_SKIP(test_data->test_num, 01));
+  if (val_pcie_p2p_support() == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
+    val_set_status(pe_index, RESULT_WARN(test_data->test_num, 01));
     return;
   }
 
@@ -106,7 +104,12 @@ payload(void *arg)
               continue;
 
           /* Check If Endpoint supports P2P with other Functions. */
-          if (val_pcie_dev_p2p_support(bdf))
+          status = val_pcie_dev_p2p_support(bdf);
+          if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
+              val_set_status(pe_index, RESULT_WARN(test_data->test_num, 01));
+              return;
+          }
+          if (status)
               continue;
 
           /* If test runs for atleast an endpoint */
@@ -167,7 +170,7 @@ payload(void *arg)
   if (test_skip == 1) {
       val_print(ACS_PRINT_DEBUG,
       "\n       No target device type with Multifunction and P2P support.Skipping test", 0);
-      val_set_status(pe_index, RESULT_SKIP(test_data->test_num, 02));
+      val_set_status(pe_index, RESULT_SKIP(test_data->test_num, 01));
   }
   else if (test_fails + aer_cap_fail)
       val_set_status(pe_index, RESULT_FAIL(test_data->test_num, test_fails));

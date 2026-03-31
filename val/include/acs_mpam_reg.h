@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2024-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2024-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,7 +34,7 @@
 /* Macro can be used write a particular bitfield with name##_MASK and name##_SHIFT
    already defined or declared  for it without affecting other fields*/
 #define BITFIELD_WRITE(reg_val, name, val) \
-        ((reg_val & ~(name##_MASK << name##_SHIFT)) | val << name##_SHIFT)
+        ((reg_val & ~(name##_MASK << name##_SHIFT)) | (val << name##_SHIFT))
 
 /*******************************************************************************
  * MPAM memory mapped register offsets
@@ -57,8 +57,11 @@
 
 #define REG_MPAMCFG_PART_SEL        0x0100
 #define REG_MPAMCFG_CMAX            0x0108
+#define REG_MPAMCFG_CMIN            0x0110
+#define REG_MPAMCFG_CASSOC          0x0118
 #define REG_MPAMCFG_MBW_MIN         0x0200
 #define REG_MPAMCFG_EN              0x0300
+#define REG_MPAMCFG_DIS             0x0310
 #define REG_MPAMCFG_MBW_MAX         0x0208
 #define REG_MPAMCFG_INTPARTID       0x0600
 #define REG_MPAMCFG_CPBM            0x1000
@@ -77,6 +80,18 @@
 #define REG_MSMON_MBWU_CAPTURE      0x0868
 #define REG_MSMON_MBWU_L            0x0880
 #define REG_MSMON_MBWU_L_CAPTURE    0x0890
+#define REG_MSMON_MBWU_OFSR         0x0898
+#define REG_MSMON_OFLOW_MSI_MPAM    0x08DC
+#define REG_MSMON_OFLOW_MSI_ADDR_L  0x08E0
+#define REG_MSMON_OFLOW_MSI_ADDR_H  0x08E4
+#define REG_MSMON_OFLOW_MSI_DATA    0x08E8
+#define REG_MSMON_OFLOW_MSI_ATTR    0x08EC
+#define REG_MPAMF_ERR_MSI_MPAM      0x00DC
+#define REG_MPAMF_ERR_MSI_ADDR_L    0x00E0
+#define REG_MPAMF_ERR_MSI_ADDR_H    0x00E4
+#define REG_MPAMF_ERR_MSI_DATA      0x00E8
+#define REG_MPAMF_ERR_MSI_ATTR      0x00EC
+#define REG_MSMON_OFLOW_SR          0x08F0
 
 /* MPAMF_IDR bit definitions */
 BITFIELD_DECL(uint64_t, IDR_PARTID_MAX, 15, 0)
@@ -104,6 +119,7 @@ BITFIELD_DECL(uint32_t, AIDR_VERSION, 7, 0)
 
 /* MPAMF_CCAP_IDR bit definitions */
 BITFIELD_DECL(uint32_t, CMAX_WD, 5, 0)
+BITFIELD_DECL(uint32_t, CASSOC_WD, 12, 8)
 BITFIELD_DECL(uint32_t, CCAP_IDR_HAS_CASSOC, 28, 28)
 BITFIELD_DECL(uint32_t, CCAP_IDR_HAS_CMIN, 29, 29)
 BITFIELD_DECL(uint32_t, CCAP_IDR_NO_CMAX, 30, 30)
@@ -134,10 +150,23 @@ BITFIELD_DECL(uint32_t, MSMON_IDR_NO_OFLW_INTR, 30, 30)
 #define ECR_ENABLE_INTEN_BIT        (1 << ECR_ENABLE_INTEN_SHIFT)
 
 /* MPAM Error Status Register Bit Shift and Mask */
-#define ESR_ERRCODE_SHIFT           0x0018
+#define ESR_ERRCODE_SHIFT           24
 #define ESR_ERRCODE_MASK            0x000F
+#define ESR_OVRWR_SHIFT             31
+#define ESR_OVRWR_MASK              0x1
+#define ESR_RIS_SHIFT               32
+#define ESR_RIS_MASK                0xF
+
+/* MPAMCFG_EN Register Bit Decl */
+BITFIELD_DECL(uint32_t, MPAMCFG_EN_PARTID, 15, 0)
+
+/* MPAMCFG_DIS Register Bit Decl */
+BITFIELD_DECL(uint32_t, MPAMCFG_DIS_PARTID, 15, 0)
+BITFIELD_DECL(uint32_t, MPAMCFG_DIS_NFU, 31, 31)
 
 /* MPAMCFG_CMAX Register Bit Shift */
+#define MPAMCFG_CMAX_DISABLE_SOFTLIM        0
+#define MPAMCFG_CMAX_ENABLE_SOFTLIM         1
 #define MPAMCFG_CMAX_SOFTLIM_SHIFT          31
 
 /* MPAMCFG_MBW_MAX Register Bit Shift */
@@ -147,8 +176,6 @@ BITFIELD_DECL(uint32_t, MSMON_IDR_NO_OFLW_INTR, 30, 30)
 #define MPAMCFG_INTPARTID_INTPARTID_INTERNAL_SHIFT   16
 
 /* MSMON_CFG_MBWU_CTL bit definitions */
-#define MBWU_CTL_OFLOW_INTR_L_SHIFT         14
-#define MBWU_CTL_OFLOW_STATUS_L_SHIFT       15
 #define MBWU_CTL_ENABLE_MATCH_PARTID_SHIFT  16
 #define MBWU_CTL_ENABLE_MATCH_PMG_SHIFT     17
 #define MBWU_CTL_SELECT_SUBTYPE_SHIFT       20
@@ -205,6 +232,8 @@ BITFIELD_DECL(uint32_t, MBWU_FLT_RWBW, 31, 30)
 
 /* MSMON_CFG_MBWU_CTL bit definitions */
 BITFIELD_DECL(uint32_t, MBWU_CTL_TYPE, 7, 0)
+BITFIELD_DECL(uint32_t, MBWU_CTL_OFLOW_INTR_L, 14, 14)
+BITFIELD_DECL(uint32_t, MBWU_CTL_OFLOW_STATUS_L, 15, 15)
 BITFIELD_DECL(uint32_t, MBWU_CTL_MATCH_PARTID, 16, 16)
 BITFIELD_DECL(uint32_t, MBWU_CTL_MATCH_PMG, 17, 17)
 BITFIELD_DECL(uint32_t, MBWU_CTL_SUBTYPE, 23, 20)
@@ -242,6 +271,30 @@ BITFIELD_DECL(uint32_t, PART_SEL_PARTID_SEL, 15, 0)
 BITFIELD_DECL(uint32_t, PART_SEL_INTERNAL, 16, 16)
 BITFIELD_DECL(uint32_t, PART_SEL_RIS, 27, 24)
 
+/* MSMON_OFLOW_MSI_ADDR_H bit definitions */
+BITFIELD_DECL(uint32_t, OFLOW_MSI_ADDR_H, 19, 0)
+
+/* MPAMF_ERR_MSI_ADDR_H bit definitions */
+BITFIELD_DECL(uint32_t, ERR_MSI_ADDR_H, 19, 0)
+
+/* MSMON_OFLOW_MSI_ATTR bit definitions */
+BITFIELD_DECL(uint32_t, OFLOW_MSI_ATTR_SH, 29, 28)
+BITFIELD_DECL(uint32_t, OFLOW_MSI_ATTR_MEMATTR, 27, 24)
+BITFIELD_DECL(uint32_t, OFLOW_MSI_ATTR_MSIEN, 0, 0)
+
+/* MPAMF_ERR_MSI_ATTR bit definitions */
+BITFIELD_DECL(uint32_t, ERR_MSI_ATTR_SH, 29, 28)
+BITFIELD_DECL(uint32_t, ERR_MSI_ATTR_MEMATTR, 27, 24)
+BITFIELD_DECL(uint32_t, ERR_MSI_ATTR_MSIEN, 0, 0)
+
+/* MSMON_OFLOW_MSI_MPAM bit definitions */
+BITFIELD_DECL(uint32_t, OFLOW_MSI_MPAM_PMG, 23, 16)
+BITFIELD_DECL(uint32_t, OFLOW_MSI_MPAM_PARTID, 15, 0)
+
+/* MPAMF_ERR_MSI_MPAM bit definitions */
+BITFIELD_DECL(uint32_t, ERR_MSI_MPAM_PMG, 23, 16)
+BITFIELD_DECL(uint32_t, ERR_MSI_MPAM_PARTID, 15, 0)
+
 /* MPAMF_CSUMON_IDR bit definitions */
 BITFIELD_DECL(uint32_t, CSUMON_IDR_NUM_MON, 15, 0)
 BITFIELD_DECL(uint32_t, CSUMON_IDR_HAS_CEVNT_OFLW, 25, 25)
@@ -272,5 +325,8 @@ BITFIELD_DECL(uint32_t, CSU_FLT_PMG, 23, 16)
 /* MSMON_CSU bit definitions */
 BITFIELD_DECL(uint32_t, MSMON_CSU_VALUE, 30, 0)
 BITFIELD_DECL(uint32_t, MSMON_CSU_NRDY, 31, 31)
+
+/* MPAMF_IDR definitions */
+#define MPAMF_IDR_HAS_MASK          0x00007DC1EF000000
 
 #endif /*__ACS_MPAM_REG_H__ */

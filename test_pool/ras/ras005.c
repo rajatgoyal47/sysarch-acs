@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,12 +15,12 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/acs_common.h"
-#include "val/include/val_interface.h"
-#include "val/include/acs_memory.h"
-#include "val/include/acs_pe.h"
-#include "val/include/acs_ras.h"
+#include "acs_val.h"
+#include "acs_common.h"
+#include "val_interface.h"
+#include "acs_memory.h"
+#include "acs_pe.h"
+#include "acs_ras.h"
 
 #define TEST_NUM   (ACS_RAS_TEST_NUM_BASE + 5)
 #define TEST_RULE  "RAS_06"
@@ -50,7 +50,7 @@ payload()
 {
 
   uint32_t status;
-  uint32_t fail_cnt = 0, test_skip = 1;
+  uint32_t fail_cnt = 0, test_skip = 1, warn_cnt = 0;
   uint64_t num_node;
   uint32_t node_index;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
@@ -61,9 +61,11 @@ payload()
 
   /* Get Number of nodes with RAS Functionality */
   status = val_ras_get_info(RAS_INFO_NUM_NODES, 0, &num_node);
-  if (status) {
-    val_print(ACS_PRINT_ERR, "\n       RAS Nodes not present", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+  if (status || (num_node == 0)) {
+    val_print(ACS_PRINT_DEBUG, "\n       No RAS Nodes found in AEST table.", 0);
+    val_print(ACS_PRINT_DEBUG, "\n       The test must be considered fail if system \
+                                        components supports RAS nodes", 0);
+    val_set_status(index, RESULT_WARN(TEST_NUM, 01));
     return;
   }
 
@@ -125,9 +127,9 @@ payload()
 
       /* Setup an error in an implementation defined way */
       status = val_ras_setup_error(err_in_params, &err_out_params);
-      if (status == NOT_IMPLEMENTED) {
-        val_print(ACS_PRINT_DEBUG, "\n       Skipping Functional Check, node %d", node_index);
-        continue;
+      if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
+        warn_cnt++;
+        break;
       } else if (status) {
         val_print(ACS_PRINT_ERR, "\n       val_ras_setup_error failed, node %d", node_index);
         fail_cnt++;
@@ -136,9 +138,9 @@ payload()
 
       /* Inject error in an implementation defined way */
       status = val_ras_inject_error(err_in_params, &err_out_params);
-      if (status == NOT_IMPLEMENTED) {
-        val_print(ACS_PRINT_DEBUG, "\n       Skipping Functional Check, node %d", node_index);
-        continue;
+      if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
+        warn_cnt++;
+        break;
       } else if (status) {
         val_print(ACS_PRINT_ERR, "\n       val_ras_inject_error failed, node %d", node_index);
         fail_cnt++;
@@ -156,15 +158,16 @@ payload()
     }
   }
 
-  if (fail_cnt) {
+  if (fail_cnt)
     val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
-    return;
-  } else if (test_skip) {
+  else if (warn_cnt)
+    val_set_status(index, RESULT_WARN(TEST_NUM, 01));
+  else if (test_skip)
     val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
-    return;
-  }
+  else
+    val_set_status(index, RESULT_PASS(TEST_NUM, 01));
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+  return;
 }
 
 uint32_t

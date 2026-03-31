@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +21,7 @@
 #include "pal_interface.h"
 #include "acs_drtm.h"
 #include "acs_pfdi.h"
+#include "acs_cxl.h"
 
 /* set G_PRINT_LEVEL to one of the below values in your application entry
   to control the verbosity of the prints */
@@ -38,9 +39,27 @@
 #define ACS_INVALID_INDEX    0xFFFFFFFF
 #define ACS_STATUS_UNKNOWN   0xFFFFFFFF
 
-#define NOT_IMPLEMENTED         0x4B1D  /* Feature or API not implemented */
+#define ACS_STATUS_PAL_NOT_IMPLEMENTED 0x4B1D  /* PAL reports feature/API not implemented */
+#ifndef NOT_IMPLEMENTED
+#define NOT_IMPLEMENTED ACS_STATUS_PAL_NOT_IMPLEMENTED
+#endif
 
 #define VAL_EXTRACT_BITS(data, start, end) ((data >> start) & ((1ul << (end-start+1))-1))
+
+#define WAKEUP_WD_PASS_TIMEOUT_THRESHOLD      500        /*minimum timeout that can be
+                                                         set for wakeup and wd tests*/
+#define WAKEUP_WD_PASS_TIMEOUT_MAX_THRESHOLD  2000000    /*minimum timeout that can be
+                                                         set for wakeup and wd tests*/
+#define WAKEUP_WD_FAILSAFE_TIMEOUT_MULTIPLIER 100        /*fail safe timeout multipler
+                                                         multiplied to timeout of ISR
+                                                         under test*/
+#define WAKEUP_WD_PASS_TIMEOUT_DEFAULT        1000       /*minimum timeout set
+                                                         by default (1ms)*/
+
+/* EL1 skip-trap param defines (-el1skiptrap) */
+#define EL1SKIPTRAP_PMSIDR   (1u << 0)
+#define EL1SKIPTRAP_CNTPCT   (1u << 1)
+#define EL1SKIPTRAP_DEVMEM   (1u << 2)
 
 /* Test status counters visible across ACS */
 typedef struct {
@@ -93,6 +112,7 @@ void *val_memcpy(void *dest_buffer, void *src_buffer, uint32_t len);
 void val_dump_dtb(void);
 void view_print_info(uint32_t view);
 void val_log_context(char8_t *file, char8_t *func, uint32_t line);
+uint32_t val_exit_acs(void);
 
 /* Print consolidated ACS test status summary from global counters */
 void val_print_acs_test_status_summary(void);
@@ -105,7 +125,8 @@ uint64_t val_time_delay_ms(uint64_t time_ms);
 typedef enum {
   PE_FEAT_MPAM,
   PE_FEAT_PMU,
-  PE_FEAT_RAS
+  PE_FEAT_RAS,
+  PE_FEAT_RME
 } PE_FEAT_NAME;
 
 void     val_pe_cache_clean_invalidate_range(uint64_t start_addr, uint64_t length);
@@ -180,7 +201,6 @@ void     val_gic_free_msi(uint32_t bdf, uint32_t device_id, uint32_t its_id,
 uint32_t val_gic_get_info(GIC_INFO_e type);
 uint32_t val_gic_install_isr(uint32_t int_id, void (*isr)(void));
 uint32_t val_gic_end_of_interrupt(uint32_t int_id);
-uint32_t val_gic_request_irq(uint32_t irq_num, uint32_t mapped_irq_num, void *isr);
 uint32_t val_gic_get_intr_trigger_type(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e *trigger_type);
 uint32_t val_gic_its_configure(void);
 uint32_t val_gic_its_get_base(uint32_t its_id, uint64_t *its_base);
@@ -220,18 +240,20 @@ typedef enum {
 #define BSA_TIMER_FLAG_ALWAYS_ON 0x4
 void     val_timer_create_info_table(uint64_t *timer_info_table);
 void     val_timer_free_info_table(void);
-void     val_timer_set_phy_el1(uint64_t timeout);
-void     val_timer_set_vir_el1(uint64_t timeout);
+void     val_timer_set_phy_el1(uint32_t timeout);
+void     val_timer_set_vir_el1(uint32_t timeout);
 void     val_platform_timer_get_entry_index(uint64_t instance, uint32_t *block, uint32_t *index);
 uint64_t val_timer_get_info(TIMER_INFO_e info_type, uint64_t instance);
 uint64_t val_get_phy_el2_timer_count(void);
 uint32_t val_bsa_timer_execute_tests(uint32_t num_pe, uint32_t *g_sw_view);
-void     val_timer_set_phy_el2(uint64_t timeout);
-void     val_timer_set_vir_el2(uint64_t timeout);
+void     val_timer_set_phy_el2(uint32_t timeout);
+void     val_timer_set_vir_el2(uint32_t timeout);
 void     val_timer_set_system_timer(addr_t cnt_base_n, uint32_t timeout);
 void     val_timer_disable_system_timer(addr_t cnt_base_n);
 uint32_t val_timer_skip_if_cntbase_access_not_allowed(uint64_t index);
 uint64_t val_get_phy_el1_timer_count(void);
+uint32_t val_get_safe_timeout_ticks(void);
+uint64_t val_get_timeout_to_ticks(uint32_t timeout_us);
 
 /* Watchdog VAL APIs */
 typedef enum {
@@ -247,7 +269,7 @@ void     val_wd_create_info_table(uint64_t *wd_info_table);
 void     val_wd_free_info_table(void);
 uint64_t val_wd_get_info(uint32_t index, WD_INFO_TYPE_e info_type);
 uint32_t val_bsa_wd_execute_tests(uint32_t num_pe, uint32_t *g_sw_view);
-uint32_t val_wd_set_ws0(uint32_t index, uint32_t timeout);
+uint32_t val_wd_set_ws0(uint32_t index, uint64_t timeout);
 uint64_t val_get_counter_frequency(void);
 
 
@@ -270,6 +292,8 @@ void     val_pcie_enable_msa(uint32_t bdf);
 void     val_pcie_clear_urd(uint32_t bdf);
 void     val_pcie_enable_eru(uint32_t bdf);
 void     val_pcie_disable_eru(uint32_t bdf);
+void     val_pcie_enable_dpc(uint32_t bdf, uint32_t err_type);
+void     val_pcie_disable_dpc(uint32_t bdf);
 void     val_pcie_get_mmio_bar(uint32_t bdf, void *base);
 void     val_pcie_read_acsctrl(uint32_t arr[][1]);
 void     val_pcie_write_acsctrl(uint32_t arr[][1]);
@@ -307,6 +331,12 @@ void val_pcie_disable_ordering(uint32_t bdf);
 uint32_t val_pcie_dsm_ste_tags(void);
 pcie_bdf_list_t *val_pcie_get_pcie_peripheral_bdf_list(void);
 
+
+/* CXL VAL APIs */
+void val_cxl_create_info_table(uint64_t *cxl_info_table);
+void val_cxl_free_info_table(void);
+void val_cxl_print_component_summary(void);
+uint64_t val_cxl_get_info(CXL_INFO_e type, uint32_t index);
 
 /* IO-VIRT APIs */
 
@@ -461,6 +491,7 @@ void     val_mmap_add_region(uint64_t va_base, uint64_t pa_base,
                              uint64_t length, uint64_t attributes);
 uint32_t val_setup_mmu(void);
 uint32_t val_enable_mmu(void);
+void val_setup_mair_register(void);
 
 /* Identify memory type using MAIR attribute, refer to ARM ARM VMSA for details */
 
@@ -468,6 +499,11 @@ uint32_t val_enable_mmu(void);
 #define MEM_NORMAL_NC_IN_OUT(attr) (attr == 0x44)
 #define MEM_DEVICE(attr) ((attr & 0xf0) == 0)
 #define MEM_SH_INNER(sh) (sh == 0x3)
+#define CEIL_TO_MAX_SYS_TIMEOUT(v)                           \
+({                                                           \
+    uint64_t __x = (uint64_t)(v);                            \
+    ((__x >> 32) != 0) ? WAKEUP_WD_SYS_TIMEOUT_MAX : (uint32_t)__x; \
+})
 
 void     val_memory_create_info_table(uint64_t *memory_info_table);
 void     val_memory_free_info_table(void);
@@ -497,7 +533,8 @@ typedef enum {
   CACHE_SIZE,
   CACHE_ID,
   CACHE_NEXT_LEVEL_IDX,
-  CACHE_PRIVATE_FLAG
+  CACHE_PRIVATE_FLAG,
+  CACHE_ASSOCIATIVITY
 } CACHE_INFO_e;
 
 void val_cache_create_info_table(uint64_t *cache_info_table);
@@ -505,6 +542,7 @@ void val_cache_free_info_table(void);
 uint64_t val_cache_get_info(CACHE_INFO_e type, uint32_t cache_index);
 uint32_t val_cache_get_llc_index(void);
 uint32_t val_cache_get_pe_l1_cache_res(uint32_t res_index);
+uint32_t val_cache_get_associativity(uint64_t cache_id);
 uint64_t val_get_primary_mpidr(void);
 
 /* MPAM tests APIs */
@@ -514,6 +552,7 @@ uint64_t val_get_primary_mpidr(void);
 
 void val_mpam_create_info_table(uint64_t *mpam_info_table);
 void val_mpam_free_info_table(void);
+void val_mpam_update_msc_device_names(void);
 
 typedef enum {
   MPAM_RSRC_TYPE_PE_CACHE,
@@ -555,6 +594,7 @@ typedef enum {
 
 uint32_t val_ras_create_info_table(uint64_t *ras_info_table);
 uint32_t val_ras_get_info(uint32_t info_type, uint32_t param1, uint64_t *ret_data);
+void val_ras_free_info_table(void);
 void val_ras2_create_info_table(uint64_t *ras2_info_table);
 void val_ras2_free_info_table(void);
 uint64_t val_ras2_get_mem_info(RAS2_MEM_INFO_e type, uint32_t index);
@@ -682,6 +722,7 @@ uint32_t val_drtm_execute_dl_tests(uint32_t num_pe);
 
 #define ACS_MPAM_REGISTER_TEST_NUM_BASE     0
 #define ACS_MPAM_CACHE_TEST_NUM_BASE        100
+#define ACS_MPAM_MONITOR_TEST_NUM_BASE      150
 #define ACS_MPAM_ERROR_TEST_NUM_BASE        200
 #define ACS_MPAM_MEMORY_TEST_NUM_BASE       300
 
@@ -715,18 +756,31 @@ uint32_t val_mpam_execute_membw_tests(uint32_t num_pe);
 // VAL API prototypes
 uint32_t val_mpam_msc_reset_errcode(uint32_t msc_index);
 uint32_t val_mpam_msc_get_errcode(uint32_t msc_index);
-void     val_mpam_msc_generate_psr_error(uint32_t msc_index);
+bool     val_mpam_msc_get_esr_ovrwr(uint32_t msc_index);
+uint32_t val_mpam_msc_generate_psr_error(uint32_t msc_index);
 void     val_mpam_msc_generate_msr_error(uint32_t msc_index, uint16_t mon_count);
 uint32_t val_mpam_msc_generate_por_error(uint32_t msc_index);
 uint32_t val_mpam_msc_generate_pmgor_error(uint32_t msc_index);
 void     val_mpam_msc_generate_msmon_config_error(uint32_t msc_index, uint16_t mon_count);
 void     val_mpam_msc_generate_msmon_oflow_error(uint32_t msc_index, uint16_t mon_count);
 void     val_mpam_msc_trigger_intr(uint32_t msc_index);
+uint32_t val_mpam_msc_request_msi(uint32_t msc_index, uint32_t device_id, uint32_t its_id,
+                                  uint32_t int_id, uint32_t is_oflow_msi);
+uint32_t val_mpam_msc_enable_msi(uint32_t msc_index, uint32_t is_oflow_msi);
+uint32_t val_mpam_mbwu_write_counter(uint32_t msc_index, uint64_t value, uint32_t is_long_check);
+uint64_t val_mpam_mbwu_get_prefill_value(uint32_t msc_index, uint32_t is_long_check);
+uint32_t val_mpam_mbwu_is_overflow_set(uint32_t msc_index);
+uint32_t val_mpam_mbwu_clear_overflow_status(uint32_t msc_index);
+void     val_mpam_mbwu_wait_for_update(uint32_t msc_index);
+uint32_t val_mpam_get_msc_device_info(uint32_t msc_index, uint32_t *device_id, uint32_t *its_id);
 
 // Register tests entry calls
 uint32_t reg001_entry(void);
 uint32_t reg002_entry(void);
 uint32_t reg003_entry(void);
+uint32_t reg004_entry(void);
+uint32_t reg005_entry(void);
+uint32_t reg006_entry(void);
 
 // Memory Bandwidth partitioning tests entry calls
 uint32_t mem001_entry(void);
@@ -745,19 +799,34 @@ uint32_t error008_entry(void);
 uint32_t error009_entry(void);
 uint32_t error010_entry(void);
 uint32_t error011_entry(void);
+uint32_t error012_entry(void);
+uint32_t error013_entry(void);
+uint32_t error014_entry(void);
 uint32_t intr001_entry(void);
 uint32_t intr002_entry(void);
 uint32_t intr003_entry(void);
+uint32_t intr004_entry(void);
+uint32_t intr005_entry(void);
+uint32_t intr006_entry(void);
 
 /* Cache Tests */
 uint32_t partition001_entry(void);
 uint32_t partition002_entry(void);
 uint32_t partition003_entry(void);
+uint32_t partition004_entry(void);
+uint32_t partition005_entry(void);
+uint32_t partition006_entry(void);
+
+uint32_t feat001_entry(void);  // MPAM PARTID EN/DIS feature check test
 
 uint32_t monitor001_entry(void);
 uint32_t monitor002_entry(void);
 uint32_t monitor003_entry(void);
 uint32_t monitor004_entry(void);
+uint32_t monitor005_entry(void);
+uint32_t monitor006_entry(void);
+uint32_t monitor007_entry(void);
+uint32_t monitor008_entry(void);
 
 // Accessing system registers from .S -> can be moved to respective .h
 uint64_t arm64_write_sp(uint64_t write_data);
@@ -799,7 +868,7 @@ val_pfdi_verify_regs(ARM_SMC_ARGS *args, int32_t conduit,
               uint64_t post_smc_regs[REG_COUNT_X5_X17]);
 void val_pfdi_invalidate_ret_params(PFDI_RET_PARAMS *args);
 
-uint32_t val_pfdi_execute_pfdi_tests(uint32_t num_pe);
+uint32_t val_pfdi_check_implementation(void);
 
 uint32_t pfdi001_entry(uint32_t num_pe);
 uint32_t pfdi002_entry(uint32_t num_pe);
@@ -818,5 +887,19 @@ uint32_t pfdi014_entry(uint32_t num_pe);
 uint32_t pfdi015_entry(uint32_t num_pe);
 uint32_t pfdi016_entry(uint32_t num_pe);
 uint32_t pfdi017_entry(uint32_t num_pe);
+uint32_t pfdi018_entry(uint32_t num_pe);
+uint32_t pfdi019_entry(uint32_t num_pe);
+uint32_t pfdi020_entry(uint32_t num_pe);
+uint32_t pfdi021_entry(uint32_t num_pe);
+uint32_t pfdi022_entry(uint32_t num_pe);
+uint32_t pfdi023_entry(uint32_t num_pe);
+uint32_t pfdi024_entry(uint32_t num_pe);
+uint32_t pfdi025_entry(uint32_t num_pe);
+uint32_t pfdi026_entry(uint32_t num_pe);
+uint32_t pfdi027_entry(uint32_t num_pe);
+uint32_t pfdi028_entry(uint32_t num_pe);
+uint32_t pfdi029_entry(uint32_t num_pe);
+uint32_t pfdi030_entry(uint32_t num_pe);
+uint32_t pfdi031_entry(uint32_t num_pe);
 
 #endif

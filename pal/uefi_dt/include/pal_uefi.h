@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,8 @@
 #ifndef __PAL_UEFI_H__
 #define __PAL_UEFI_H__
 
+#include "pal_status.h"
+
 extern VOID* g_acs_log_file_handle;
 extern UINT32 g_print_level;
 extern UINT32 g_print_mmio;
@@ -25,6 +27,7 @@ extern UINT32 g_curr_module;
 extern UINT32 g_enable_module;
 extern UINT32 g_pcie_p2p;
 extern UINT32 g_pcie_cache_present;
+VOID pal_warn_not_implemented(const CHAR8 *api_name);
 
 #define ACS_PRINT_ERR   5      /* Only Errors. use this to de-clutter the terminal and focus only on specifics */
 #define ACS_PRINT_WARN  4      /* Only warnings & errors. use this to de-clutter the terminal and focus only on specifics */
@@ -37,7 +40,6 @@ extern UINT32 g_pcie_cache_present;
 #define PCIE_CAP_NOT_FOUND      0x10000010  /* The specified capability was not found */
 #define PCIE_UNKNOWN_RESPONSE   0xFFFFFFFF  /* Function not found or UR response from completer */
 
-#define NOT_IMPLEMENTED         0x4B1D  /* Feature or API by default unimplemented */
 #define MEM_OFFSET_SMALL        0x10    /* Memory Offset from BAR base value that can be accesed*/
 
 #define TYPE0_MAX_BARS  6
@@ -119,6 +121,21 @@ typedef struct {
 }PE_INFO_TABLE;
 
 /**
+  @brief  MMU configuration structure for secondary PE initialization
+          This structure holds the primary PE's MMU configuration which
+          is used to enable MMU/caches on secondary PEs.
+**/
+typedef struct {
+  UINT64 ttbr0;      ///< Translation Table Base Register 0
+  UINT64 ttbr1;      ///< Translation Table Base Register 1
+  UINT64 tcr;        ///< Translation Control Register
+  UINT64 mair;       ///< Memory Attribute Indirection Register
+  UINT64 sctlr;      ///< System Control Register
+  UINT32 current_el; ///< Current Exception Level (1 or 2)
+  UINT32 reserved;   ///< Reserved for alignment
+} PE_MMU_CONFIG;
+
+/**
   @brief  Instance of smbios type 4 processor info
 **/
 typedef struct {
@@ -139,6 +156,7 @@ VOID     pal_pe_data_cache_ops_by_va(UINT64 addr, UINT32 type);
 #define CLEAN_AND_INVALIDATE  0x1
 #define CLEAN                 0x2
 #define INVALIDATE            0x3
+#define CLEAN_POC             0x4
 
 typedef struct {
   UINT32   gic_version;

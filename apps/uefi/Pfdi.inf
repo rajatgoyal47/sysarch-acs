@@ -1,5 +1,5 @@
 ## @file
-#  Copyright (c) 2025, Arm Limited or its affiliates. All rights reserved.
+#  Copyright (c) 2025-2026, Arm Limited or its affiliates. All rights reserved.
 #  SPDX-License-Identifier : Apache-2.0
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +23,9 @@
   MODULE_TYPE                    = UEFI_APPLICATION
   VERSION_STRING                 = 0.1
   ENTRY_POINT                    = ShellCEntryLib
+  DEFINE ACS_CORE_INCLUDE_FLAGS  = -I${ACS_PATH}/ -I${ACS_PATH}/val/ -I${ACS_PATH}/val/include -I${ACS_PATH}/pal/include
+  DEFINE ACS_GIC_INCLUDE_FLAGS   = -I${ACS_PATH}/val/driver/gic -I${ACS_PATH}/val/driver/gic/its -I${ACS_PATH}/val/driver/gic/v2 -I${ACS_PATH}/val/driver/gic/v3
+  DEFINE ACS_PCIE_INCLUDE_FLAGS  = -I${ACS_PATH}/val/driver/pcie
 
 #
 #  VALID_ARCHITECTURES           = AARCH64
@@ -32,6 +35,8 @@
   ../
   ../../
   app.c
+  acs_globals.c
+  acs_helpers.c
   pfdi_main.c
   ../../test_pool/pfdi/pfdi001.c
   ../../test_pool/pfdi/pfdi002.c
@@ -49,6 +54,20 @@
   ../../test_pool/pfdi/pfdi014.c
   ../../test_pool/pfdi/pfdi016.c
   ../../test_pool/pfdi/pfdi017.c
+  ../../test_pool/pfdi/pfdi018.c
+  ../../test_pool/pfdi/pfdi019.c
+  ../../test_pool/pfdi/pfdi020.c
+  ../../test_pool/pfdi/pfdi021.c
+  ../../test_pool/pfdi/pfdi022.c
+  ../../test_pool/pfdi/pfdi023.c
+  ../../test_pool/pfdi/pfdi024.c
+  ../../test_pool/pfdi/pfdi025.c
+  ../../test_pool/pfdi/pfdi026.c
+  ../../test_pool/pfdi/pfdi027.c
+  ../../test_pool/pfdi/pfdi028.c
+  ../../test_pool/pfdi/pfdi029.c
+  ../../test_pool/pfdi/pfdi030.c
+  ../../test_pool/pfdi/pfdi031.c
 
 [Packages]
   StdLib/StdLib.dec
@@ -81,4 +100,4 @@
 
 [BuildOptions]
   GCC:*_*_*_ASM_FLAGS  =  -march=armv8.1-a
-  GCC:*_*_*_CC_FLAGS   = -O0 -DTARGET_UEFI -DEXCLUDE_RBX  -I${ACS_PATH}/val
+  GCC:*_*_*_CC_FLAGS   = -O0 $(ACS_CORE_INCLUDE_FLAGS) $(ACS_GIC_INCLUDE_FLAGS) $(ACS_PCIE_INCLUDE_FLAGS) -DTARGET_UEFI

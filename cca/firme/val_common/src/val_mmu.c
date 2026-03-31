@@ -1,0 +1,187 @@
+/*
+ * Copyright (c) 2026, Arm Limited or its affiliates. All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
+
+#include "val_common/val_mmu.h"
+
+#include "aarch64/sysreg.h"
+
+/*
+ * A very small identity-mapping MMU setup:
+ * - 4KB granule, 39-bit VA space (TTBR0 points at an L1 table).
+ * - L1 entries are 1GiB blocks.
+ *
+ * This is sufficient for early bring-up and simple tests. It is not meant to
+ * replace a full xlat-tables implementation.
+ */
+
+#define PAGE_SIZE 4096UL
+#define L1_ENTRIES 512U
+
+/* Descriptor bits (Block at level 1). */
+#define DESC_TYPE_BLOCK 0x1UL
+#define DESC_AF (1UL << 10)
+
+/* AttrIndx in [4:2]. */
+#define DESC_ATTRINDX_SHIFT 2
+#define DESC_ATTRINDX(n) ((uint64_t)(n) << DESC_ATTRINDX_SHIFT)
+
+/* Shareability bits [9:8]. */
+#define DESC_SH_SHIFT 8
+#define DESC_SH_IS (3UL << DESC_SH_SHIFT)
+
+/* Access permissions bits [7:6]. */
+#define DESC_AP_SHIFT 6
+#define DESC_AP_RW (0UL << DESC_AP_SHIFT) /* RW at ELx */
+
+/* Execute-never bits. */
+#define DESC_PXN (1UL << 53)
+#define DESC_UXN (1UL << 54)
+
+/* MAIR encodings. */
+#define MAIR_ATTR_DEVICE_nGnRE 0x04UL
+#define MAIR_ATTR_NORMAL_WBWA  0xFFUL
+
+static uint64_t __attribute__((aligned(PAGE_SIZE))) g_l1[L1_ENTRIES];
+
+/**
+ *   @brief    - Build a 1GiB block descriptor for an identity mapping.
+ *   @param    - pa   : Physical address (1GiB aligned).
+ *   @param    - attr : AttrIndx/attributes bits for the block.
+ *   @param    - xn   : Non-zero to mark the mapping execute-never.
+ *   @return   - Descriptor value.
+**/
+static inline uint64_t make_block_desc(uint64_t pa, uint64_t attr, int xn)
+{
+    uint64_t d = 0;
+    d |= (pa & ~((1UL << 30) - 1)); /* 1GiB aligned */
+    d |= DESC_TYPE_BLOCK;
+    d |= DESC_AF;
+    d |= DESC_SH_IS;
+    d |= DESC_AP_RW;
+    d |= attr;
+    if (xn) {
+        d |= DESC_PXN | DESC_UXN;
+    }
+    return d;
+}
+
+/**
+ *   @brief    - Program EL2 MMU registers for TTBR0-based translation.
+ *   @return   - void
+**/
+static void program_el2(void)
+{
+    const uint64_t tcr =
+        (25UL << 0) |        /* T0SZ */
+        (1UL << 8) |         /* IRGN0 */
+        (1UL << 10) |        /* ORGN0 */
+        (3UL << 12) |        /* SH0 */
+        (0UL << 14);         /* TG0=4KB */
+
+    /*
+     * MAIR_EL2:
+     *  - Attr0: Device-nGnRE
+     *  - Attr1: Normal WBWA
+     */
+    write_mair_el2((MAIR_ATTR_DEVICE_nGnRE << 0) | (MAIR_ATTR_NORMAL_WBWA << 8));
+
+    /*
+     * TCR_EL2: 4KB granule, 39-bit VA space.
+     *  - T0SZ = 25
+     *  - IRGN0/ORGN0 = WBWA (01)
+     *  - SH0 = Inner Shareable (11)
+     */
+    write_tcr_el2(tcr);
+
+    write_ttbr0_el2((uint64_t)(uintptr_t)g_l1);
+    dsb_sy();
+    isb_sy();
+}
+
+/**
+ *   @brief    - Program EL1 MMU registers for TTBR0-based translation.
+ *   @return   - void
+**/
+static void program_el1(void)
+{
+    const uint64_t tcr =
+        (25UL << 0) |        /* T0SZ */
+        (1UL << 8) |         /* IRGN0 */
+        (1UL << 10) |        /* ORGN0 */
+        (3UL << 12) |        /* SH0 */
+        (0UL << 14);         /* TG0=4KB */
+
+    write_mair_el1((MAIR_ATTR_DEVICE_nGnRE << 0) | (MAIR_ATTR_NORMAL_WBWA << 8));
+
+    write_tcr_el1(tcr);
+
+    write_ttbr0_el1((uint64_t)(uintptr_t)g_l1);
+    dsb_sy();
+    isb_sy();
+}
+
+/**
+ *   @brief    - Create a minimal identity map using 1GiB blocks.
+ *   @param    - el        : EL to program (EL2 or EL1).
+ *   @param    - dram_base : DRAM base address.
+ *   @param    - dram_size : DRAM size in bytes.
+ *   @return   - void
+**/
+void val_mmu_setup_identity_1g(mmu_el_t el, uint64_t dram_base, uint64_t dram_size)
+{
+    const unsigned max_gib = 4;
+    uint64_t dram_end = 0;
+
+    for (unsigned i = 0; i < L1_ENTRIES; i++) {
+        g_l1[i] = 0;
+    }
+
+    /*
+     * Map low 4GiB as Device (safe default for peripherals) and then override
+     * the DRAM window as Normal memory.
+     */
+    for (unsigned i = 0; i < max_gib; i++) {
+        uint64_t pa = (uint64_t)i << 30;
+        g_l1[i] = make_block_desc(pa, DESC_ATTRINDX(0), 1);
+    }
+
+    dram_end = dram_base + dram_size;
+    for (uint64_t pa = (dram_base & ~((1UL << 30) - 1)); pa < dram_end; pa += (1UL << 30)) {
+        unsigned idx = (unsigned)(pa >> 30);
+        g_l1[idx] = make_block_desc(pa, DESC_ATTRINDX(1), 0);
+    }
+
+    if (el == MMU_EL2) {
+        program_el2();
+    } else {
+        program_el1();
+    }
+}
+
+/**
+ *   @brief    - Enable the MMU and caches for the given EL.
+ *   @param    - el : EL to enable MMU for (EL2 or EL1).
+ *   @return   - void
+**/
+void val_mmu_enable(mmu_el_t el)
+{
+    if (el == MMU_EL2) {
+        uint64_t sctlr = read_sctlr_el2();
+        sctlr |= (1UL << 0);  /* M */
+        sctlr |= (1UL << 2);  /* C */
+        sctlr |= (1UL << 12); /* I */
+        write_sctlr_el2(sctlr);
+    } else {
+        uint64_t sctlr = read_sctlr_el1();
+        sctlr |= (1UL << 0);  /* M */
+        sctlr |= (1UL << 2);  /* C */
+        sctlr |= (1UL << 12); /* I */
+        write_sctlr_el1(sctlr);
+    }
+    dsb_sy();
+    isb_sy();
+}

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2024-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2024-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,23 +15,23 @@
  * limitations under the License.
  **/
 
-#include "include/acs_val.h"
-#include "include/acs_smmu.h"
-#include "include/acs_pcie.h"
-#include "include/acs_common.h"
-#include "include/val_interface.h"
-#include "include/acs_smmu.h"
-#include "include/acs_pe.h"
-#include "include/acs_memory.h"
-#include "include/acs_gic.h"
-#include "include/acs_wd.h"
-#include "include/acs_exerciser.h"
-#include "include/acs_mpam.h"
-#include "include/acs_pmu.h"
-#include "include/acs_ras.h"
-#include "include/acs_nist.h"
-#include "include/acs_ete.h"
-#include "include/acs_timer.h"
+#include "acs_val.h"
+#include "acs_smmu.h"
+#include "acs_pcie.h"
+#include "acs_common.h"
+#include "val_interface.h"
+#include "acs_smmu.h"
+#include "acs_pe.h"
+#include "acs_memory.h"
+#include "acs_gic.h"
+#include "acs_wd.h"
+#include "acs_exerciser.h"
+#include "acs_mpam.h"
+#include "acs_pmu.h"
+#include "acs_ras.h"
+#include "acs_nist.h"
+#include "acs_ete.h"
+#include "acs_timer.h"
 
 extern uint32_t pcie_bdf_table_list_flag;
 extern pcie_device_bdf_table *g_pcie_bdf_table;
@@ -390,7 +390,6 @@ val_sbsa_pcie_execute_tests(uint32_t level, uint32_t num_pe)
       status |= p015_entry(num_pe);
       status |= p016_entry(num_pe); /* Depends on p015; run it prior to this test */
       status |= p027_entry(num_pe);
-      status |= p034_entry(num_pe);
       status |= p037_entry(num_pe);
       status |= p038_entry(num_pe);
       status |= p047_entry(num_pe);
@@ -879,7 +878,6 @@ val_sbsa_ras_execute_tests(uint32_t level, uint32_t num_pe)
       status |= ras009_entry(num_pe);
       status |= ras010_entry(num_pe);
       status |= ras011_entry(num_pe);
-      status |= ras012_entry(num_pe);
       status |= ras015_entry(num_pe);
   }
 

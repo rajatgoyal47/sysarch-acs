@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -90,11 +90,6 @@ typedef enum {
     S_L7PE_07,
     S_L7PE_08,
     S_L7PE_09,
-    S_L7TME_1,
-    S_L7TME_2,
-    S_L7TME_3,
-    S_L7TME_4,
-    S_L7TME_5,
     S_L8PE_01,
     S_L8PE_02,
     S_L8PE_03,
@@ -104,7 +99,6 @@ typedef enum {
     S_L8PE_07,
     S_L8PE_08,
     WNPXD,
-    S_L8RME_1,
     S_L8SHD_1,
 
     /* PE PCBSA rules */
@@ -129,6 +123,7 @@ typedef enum {
     ITS_DEV_7,
     ITS_DEV_8,
     S_L3GI_01,
+    S_L3GI_02,
     B_PPI_00,
     S_L3PP_01,
     S_L5GI_01,
@@ -152,7 +147,6 @@ typedef enum {
     S_L3PR_01,
     B_PER_06,
     B_PER_07,
-    B_PER_08,
     B_PER_09,
     B_PER_10,
     B_PER_11,
@@ -172,6 +166,21 @@ typedef enum {
     P_L1MM_01,
 
     /* PMU rules */
+    PMU_EV_01,
+    PMU_EV_02,
+    PMU_EV_03,
+    PMU_EV_04,
+    PMU_EV_05,
+    PMU_EV_06,
+    PMU_EV_07,
+    PMU_EV_08,
+    PMU_EV_09,
+    PMU_EV_10,
+    PMU_BM_3,
+    PMU_BM_4,
+    PMU_SYS_7,
+    PMU_SEC_1,
+    PMU_PE_01,
     PMU_PE_02,
     PMU_PE_03,
     PMU_SYS_1,
@@ -197,10 +206,10 @@ typedef enum {
     RAS_10,
     RAS_11,
     RAS_12,
-    S_L7RAS_1,
-    S_L7RAS_2,
     S_RAS_01,
     S_RAS_03,
+    S_L7RAS_1,
+    S_L7RAS_2,
     SYS_RAS,
     SYS_RAS_1,
     SYS_RAS_2,
@@ -234,12 +243,10 @@ typedef enum {
     B_SMMU_23,
     B_SMMU_24,
     B_SMMU_25,
-    GPU_04,
     SMMU_01,
     SMMU_02,
-    S_L3SM_01,
-
     S_L4SM_01,
+    S_L3SM_01,
     S_L4SM_02,
     S_L4SM_03,
     S_L5SM_01,
@@ -272,8 +279,8 @@ typedef enum {
     B_TIME_08,
     B_TIME_09,
     B_TIME_10,
-    S_L5TI_01,
     S_L8TI_01,
+    S_L5TI_01,
 
     /* WATCHDOG rules */
     B_WD_00,
@@ -299,6 +306,7 @@ typedef enum {
     S_L7MP_08,
 
     /* ETE */
+    ETE_01,
     ETE_02,
     ETE_03,
     ETE_04,
@@ -310,9 +318,9 @@ typedef enum {
     ETE_10,
 
     /* Power wakeup */
+    B_WAK_03,
     B_WAK_01,
     B_WAK_02,
-    B_WAK_03,
     B_WAK_04,
     B_WAK_05,
     B_WAK_06,
@@ -336,14 +344,10 @@ typedef enum {
     P_L1TP_04,
 
     /*PCIe*/
+    B_PER_08,
     B_PER_12,  // revisit peripheral rule in pcie module
     B_PCIe_10,
     B_PCIe_11,
-    S_PCIe_10,
-    XDGKZ,
-    GPU_01,
-    GPU_02,
-    GPU_03,
     B_REP_1,
     B_IEP_1,
     BJLPB,
@@ -353,7 +357,6 @@ typedef enum {
     IE_BAR_1,
     IE_BAR_3,
     IE_ORD_4,
-    IE_PWR_1,
     IE_PWR_2,
     IE_PWR_3,
     IE_REG_1,
@@ -455,7 +458,6 @@ typedef enum {
     RE_ORD_4,
     RE_PCI_1,
     RE_PCI_2,
-    RE_PWR_1,
     RE_PWR_2,
     RE_PWR_3,
     RE_REC_1,
@@ -479,8 +481,8 @@ typedef enum {
     RI_PWR_1,
     JKZMT,
     HVZJY,
-    S_L4PCI_1,
     S_L4PCI_2,
+    S_L4PCI_1,
     S_L6PCI_1,
     S_PCIe_01,
     S_PCIe_02,
@@ -491,11 +493,24 @@ typedef enum {
     S_PCIe_09,
     S_PCIe_07,
     S_PCIe_08,
+    S_PCIe_10,
     S_L8CXL_1,
-    S_L3GI_02, /* GIC rule is in part of PCIe module */
+    S_L8RME_1,
 
     P_L1PCI_1,
     P_L1PCI_2,
+    S_L7TME_1,
+    S_L7TME_2,
+    S_L7TME_3,
+    S_L7TME_4,
+    S_L7TME_5,
+
+    /* GPU rules */
+    XDGKZ,
+    GPU_03,
+    GPU_01,
+    GPU_02,
+    GPU_04,
 
     /* VBSA rules */
     V_L1PE_01,
@@ -525,6 +540,51 @@ typedef enum {
     V_L2PE_01,
     V_L2PE_02,
     V_L2WD_01,
+
+    /* PFDI rules */
+    R0040,
+    R0053,
+    R0060,
+    R0066,
+    R0071,
+    R0076,
+    R0082,
+    R0089,
+    R0099,
+    R0100,
+    R0102,
+    R0104,
+    R0154,
+    R0155,
+    R0156,
+    R0157,
+    R0158,
+    R0160,
+    R0163,
+    R0164,
+    R0165,
+    R0166,
+    R0167,
+    R0168,
+    R0172,
+    R0173,
+    R0176,
+    R0179,
+    R0180,
+    R0193,
+    R0194,
+    /* CXL rules */
+    CXL_01,
+    CXL_02,
+    CXL_03,
+    CXL_04,
+    CXL_05,
+    CXL_06,
+    CXL_09,
+    CXL_10,
+    CXL_11,
+    CXL_12,
+    CXL_13,
 
     /* Sentinel must remain last */
     RULE_ID_SENTINEL
@@ -644,6 +704,7 @@ typedef enum {
     PMU002_ENTRY,
     PMU004_ENTRY,
     PMU005_ENTRY,
+    PMU008_ENTRY,
     PMU009_ENTRY,
     PMU007_ENTRY,
     PMU010_ENTRY,
@@ -662,10 +723,11 @@ typedef enum {
     RAS014_ENTRY,
     RAS010_ENTRY,
     RAS011_ENTRY,
-    RAS012_ENTRY,
-    SYS_RAS_2_ENTRY,
     RAS015_ENTRY,
     RAS013_ENTRY,
+    RAS016_ENTRY,
+    RAS017_ENTRY,
+    RAS018_ENTRY,
     I001_ENTRY,
     I007_ENTRY,
     I002_ENTRY,
@@ -829,6 +891,10 @@ typedef enum {
     P052_ENTRY,
     P063_ENTRY,
     RI_SMU_1_ENTRY,
+    CXL_02_ENTRY,
+    CXL_11_ENTRY,
+    CXL_12_ENTRY,
+    CXL_13_ENTRY,
     E036_ENTRY,
     P086_ENTRY,
     E022_ENTRY,
@@ -881,12 +947,55 @@ typedef enum {
     E020_ENTRY,
     E033_ENTRY,
     E039_ENTRY,
+    E040_ENTRY,
+    E041_ENTRY,
+    E043_ENTRY,
+    E044_ENTRY,
+    E045_ENTRY,
     P094_ENTRY,
     P096_ENTRY,
     P097_ENTRY,
     P100_ENTRY,
     P104_ENTRY,
     GPU_04_ENTRY,
+    PFDI001_ENTRY,
+    PFDI002_ENTRY,
+    PFDI003_ENTRY,
+    PFDI004_ENTRY,
+    PFDI005_ENTRY,
+    PFDI006_ENTRY,
+    PFDI007_ENTRY,
+    PFDI008_ENTRY,
+    PFDI009_ENTRY,
+    PFDI010_ENTRY,
+    PFDI011_ENTRY,
+    PFDI012_ENTRY,
+    PFDI013_ENTRY,
+    PFDI014_ENTRY,
+    PFDI015_ENTRY,
+    PFDI016_ENTRY,
+    PFDI017_ENTRY,
+    PFDI018_ENTRY,
+    PFDI019_ENTRY,
+    PFDI020_ENTRY,
+    PFDI021_ENTRY,
+    PFDI022_ENTRY,
+    PFDI023_ENTRY,
+    PFDI024_ENTRY,
+    PFDI025_ENTRY,
+    PFDI026_ENTRY,
+    PFDI027_ENTRY,
+    PFDI028_ENTRY,
+    PFDI029_ENTRY,
+    PFDI030_ENTRY,
+    PFDI031_ENTRY,
+    CXL001_ENTRY,
+    CXL002_ENTRY,
+    CXL003_ENTRY,
+    CXL004_ENTRY,
+    CXL010_ENTRY,
+    CXL011_ENTRY,
+    CXL013_ENTRY,
     TEST_ENTRY_SENTINEL
 } TEST_ENTRY_ID_e;
 
@@ -909,6 +1018,10 @@ typedef enum {
     ETE,
     TPM,
     POWER_WAKEUP,
+    PFDI,
+    CXL,
+    RME,
+    GPU,
     MODULE_ID_SENTINEL /* need to be in last */
 } MODULE_NAME_e;
 
@@ -952,6 +1065,12 @@ typedef enum {
     VBSA_LEVEL_SENTINEL /* Keep last */
 } VBSA_LEVEL_e;
 
+/* PFDI levels enum */
+typedef enum {
+    PFDI_LEVEL_1 = 1,
+    PFDI_LEVEL_SENTINEL /* Keep last */
+} PFDI_LEVEL_e;
+
 /* Software views enum for BSA */
 typedef enum {
     SW_OS,
@@ -966,13 +1085,14 @@ typedef enum {
     PLATFORM_LINUX     = 1 << 2   // 0x04
 } PLATFORM_e;
 
-/* Architecture selection for rule expansion via -a */
+/* Architecture selection for rule expansion */
 typedef enum {
     ARCH_NONE = 0,
     ARCH_BSA,
     ARCH_SBSA,
     ARCH_PCBSA,
-    ARCH_VBSA
+    ARCH_VBSA,
+    ARCH_PFDI
 } ARCH_SEL_e;
 
 /* Level filter mode for CLI selection */

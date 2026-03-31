@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,10 +15,10 @@
  * limitations under the License.
  **/
 
-#include "include/acs_val.h"
-#include "include/acs_timer_support.h"
-#include "include/acs_wd.h"
-#include "include/acs_common.h"
+#include "acs_val.h"
+#include "acs_timer_support.h"
+#include "acs_wd.h"
+#include "acs_common.h"
 
 
 WD_INFO_TABLE  *g_wd_info_table;
@@ -136,9 +136,8 @@ val_wd_disable(uint32_t index)
   @return  Success/Failure
  **/
 uint32_t
-val_wd_set_ws0(uint32_t index, uint32_t timeout)
+val_wd_set_ws0(uint32_t index, uint64_t timeout)
 {
-  uint64_t counter_freq;
   uint32_t wor_l;
   uint32_t wor_h = 0;
   uint64_t ctrl_base;
@@ -154,20 +153,8 @@ val_wd_set_ws0(uint32_t index, uint32_t timeout)
   /* W_IIDR.Architecture Revision [19:16] = 0x1 for Watchdog Rev 1 */
   data = VAL_EXTRACT_BITS(val_mmio_read(ctrl_base + WD_IIDR_OFFSET), 16, 19);
 
-  counter_freq = val_get_counter_frequency();
-
-  /* Check if the timeout value exceeds */
-  if (data == 0)
-  {
-      if ((counter_freq * timeout) >> 32)
-      {
-          val_print(ACS_PRINT_ERR, "\nCounter frequency value exceeded", 0);
-          return 1;
-      }
-  }
-
-  wor_l = (uint32_t)(counter_freq * timeout);
-  wor_h = (uint32_t)((counter_freq * timeout) >> 32);
+  wor_l = (uint32_t)(timeout);
+  wor_h = (uint32_t)((timeout) >> 32);
 
   val_mmio_write((g_wd_info_table->wd_info[index].wd_ctrl_base + 8), wor_l);
 

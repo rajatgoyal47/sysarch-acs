@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +15,11 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/val_interface.h"
-#include "val/include/acs_pcie.h"
-#include "val/include/acs_pe.h"
-#include "val/include/acs_memory.h"
+#include "acs_val.h"
+#include "val_interface.h"
+#include "acs_pcie.h"
+#include "acs_pe.h"
+#include "acs_memory.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 80)
 #define TEST_RULE  "RI_SMU_1"
@@ -36,7 +36,9 @@ payload(void)
   uint32_t dp_type;
   uint32_t cap_base;
   bool     test_skip;
+  uint32_t warn_cnt;
   uint32_t test_fails;
+  uint32_t status;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
@@ -44,6 +46,7 @@ payload(void)
 
   test_fails = 0;
   test_skip = 1;
+  warn_cnt = 0;
 
   /* Check for all the function present in bdf table */
   for (tbl_index = 0; tbl_index < bdf_tbl_ptr->num_entries; tbl_index++)
@@ -61,9 +64,15 @@ payload(void)
          val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
          /* Check if Address Translation Cache is Present in this device. */
          /* If ATC Not present or capabilty not filled, skip the test.*/
-         if ((val_pcie_is_cache_present(bdf) == NOT_IMPLEMENTED) ||
-             (val_pcie_is_cache_present(bdf) == 0))
-             continue;
+         status = val_pcie_is_cache_present(bdf);
+
+         if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
+            warn_cnt++;
+            break;
+         }
+
+         if (status == 0)
+           continue;
 
          test_skip = 0;
 
@@ -76,7 +85,9 @@ payload(void)
       }
   }
 
-  if (test_skip) {
+  if (warn_cnt)
+      val_set_status(pe_index, RESULT_WARN(TEST_NUM, warn_cnt));
+  else if (test_skip) {
       val_print(ACS_PRINT_DEBUG,
               "\n       No target device type found with ATC available. Skipping test", 0);
       val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));

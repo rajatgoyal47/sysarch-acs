@@ -1,6 +1,6 @@
 ## BSA ACS Testcase checklist
 
-The BSA ACS test checklist is based on **BSA 1.2 specification** and **BSA ACS 1.2.0** tag.
+The BSA ACS test checklist is based on **BSA 1.2 specification** and **BSA ACS 1.2.1** tag.
 
 The checklist provides information about:
 
@@ -912,11 +912,11 @@ The checklist provides information about:
     </tr>
     <tr>
       <td>B_WD_02</td>
-      <td>Not Covered</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>701</td>
+      <td>Non Secure Watchdog Access</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
       <td></td>
     </tr>
     <tr>
@@ -1016,12 +1016,12 @@ The checklist provides information about:
       <td>L1</td>
       <td>B_PER_07</td>
       <td>B_PER_07</td>
-      <td>Not Covered</td>
+      <td>Rule is covered as part of B_PER_06 test</td>
       <td></td>
       <td></td>
       <td></td>
       <td></td>
-      <td></td>
+      <td>A direct test will be added in future</td>
     </tr>
     <tr>
       <td rowspan="68">L1</td>
@@ -1371,7 +1371,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td></td>
+      <td>MSI/MSI-X support required</td>
     </tr>
     <tr>
       <td rowspan="2">PCI_MSI_2</td>
@@ -1380,7 +1380,7 @@ The checklist provides information about:
       <td>No</td>
       <td>Yes</td>
       <td>Yes</td>
-      <td></td>
+      <td>MSI/MSI-X support required</td>
     </tr>
     <tr>
       <td>1533</td>
@@ -1567,7 +1567,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td></td>
+      <td>PCIe Hierarchy P2P support required</td>
     </tr>
     <tr>
       <td rowspan="3">PCI_PP_04</td>
@@ -1576,7 +1576,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td></td>
+      <td>PCIe Hierarchy and Device P2P support required</td>
     </tr>
     <tr>
       <td>1501</td>
@@ -1601,7 +1601,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td></td>
+      <td>PCIe Hierarchy and Device P2P support required</td>
     </tr>
     <tr>
       <td>PCI_PAS_1</td>
@@ -1610,7 +1610,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td></td>
+      <td>PASID support required</td>
     </tr>
     <tr>
       <td>PCI_PTM_1</td>
@@ -1886,8 +1886,8 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td rowspan="99">FR</td>
-      <td rowspan="99">B_REP_1</td>
+      <td rowspan="87">FR</td>
+      <td rowspan="87">B_REP_1</td>
       <td>RI_CRS_1</td>
       <td>Not Covered</td>
       <td></td>
@@ -1930,7 +1930,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td></td>
+      <td>MSI/MSI-X support required</td>
     </tr>
     <tr>
       <td>RI_ORD_1</td>
@@ -1966,7 +1966,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td>Exerciser VIP required</td>
+      <td>Exerciser VIP required; ATC cache required</td>
     </tr>
     <tr>
       <td>RI_SMU_2</td>
@@ -2150,12 +2150,12 @@ The checklist provides information about:
     </tr>
     <tr>
       <td>RI_PWR_1</td>
-      <td>Not Covered</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>870</td>
+      <td>Check Power Mgmt rules: RCiEP/iEP/RP</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>RCiEP, iEP RP, iEP EP</td>
     </tr>
     <tr>
       <td>PCI_IN_01</td>
@@ -2185,93 +2185,12 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>PCI_IN_04</td>
-      <td>803</td>
-      <td>All EP/Sw under RP in same ECAM Region</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>PCI_IN_05</td>
-      <td>820</td>
-      <td>Type 0/1 common config rule</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>PCI_IN_06</td>
-      <td>Not Covered</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
       <td>PCI_IN_07</td>
       <td>Not Covered</td>
       <td></td>
       <td></td>
       <td></td>
       <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>PCI_IN_08</td>
-      <td>Not Covered</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>PCI_IN_09</td>
-      <td>Not Covered</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>PCI_IN_10</td>
-      <td>Not Covered</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>PCI_IN_11</td>
-      <td>1510</td>
-      <td>Check RP Sec Bus transaction are TYPE0</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td>Exerciser VIP required</td>
-    </tr>
-    <tr>
-      <td>PCI_IN_12</td>
-      <td>837</td>
-      <td>Check Config Txn for RP in HB</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>PCI_IN_13</td>
-      <td>804</td>
-      <td>Check RootPort NP Memory Access</td>
-      <td>No</td>
-      <td>Yes</td>
-      <td>No</td>
       <td></td>
     </tr>
     <tr>
@@ -2296,33 +2215,6 @@ The checklist provides information about:
       <td>PCI_IN_16</td>
       <td>808</td>
       <td>Check all 1's for out of range</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>PCI_IN_17</td>
-      <td>1515</td>
-      <td>Check ARI forwarding enable rule</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td>Exerciser VIP required</td>
-    </tr>
-    <tr>
-      <td>PCI_IN_18</td>
-      <td>811</td>
-      <td>Check RP Byte Enable Rules</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>PCI_IN_19</td>
-      <td>830</td>
-      <td>Check Cmd Reg memory space enable</td>
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
@@ -2407,7 +2299,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td></td>
+      <td>MSI/MSI-X support required</td>
     </tr>
     <tr>
       <td>PCI_MSI_2</td>
@@ -2416,7 +2308,7 @@ The checklist provides information about:
       <td>No</td>
       <td>Yes</td>
       <td>Yes</td>
-      <td></td>
+      <td>MSI/MSI-X support required</td>
     </tr>
     <tr>
       <td>PCI_LI_01</td>
@@ -2587,7 +2479,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td></td>
+      <td>PCIe Hierarchy P2P support required</td>
     </tr>
     <tr>
       <td>PCI_PP_04</td>
@@ -2596,7 +2488,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td></td>
+      <td>PCIe Hierarchy and Device P2P support required</td>
     </tr>
     <tr>
       <td>PCI_PP_05</td>
@@ -2605,7 +2497,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td></td>
+      <td>PCIe Hierarchy and Device P2P support required</td>
     </tr>
     <tr>
       <td>PCI_PP_06</td>
@@ -2623,7 +2515,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td></td>
+      <td>PASID support required</td>
     </tr>
     <tr>
       <td>PCI_PTM_1</td>
@@ -2713,7 +2605,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td></td>
+      <td>PCIe Hierarchy and Device P2P support required</td>
     </tr>
     <tr>
       <td>RE_ACS_2</td>
@@ -2722,7 +2614,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td></td>
+      <td>PCIe Hierarchy and Device P2P support required</td>
     </tr>
     <tr>
       <td>RE_ACS_3</td>
@@ -2823,7 +2715,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td></td>
+      <td>MSI/MSI-X support required</td>
     </tr>
     <tr>
       <td>RI_ORD_1</td>
@@ -2859,7 +2751,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td>Exerciser VIP required</td>
+      <td>Exerciser VIP required; ATC cache required</td>
     </tr>
     <tr>
       <td>RI_SMU_2</td>
@@ -3043,12 +2935,12 @@ The checklist provides information about:
     </tr>
     <tr>
       <td>RI_PWR_1</td>
-      <td>Not Covered</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>870</td>
+      <td>Check Power Mgmt rules: RCiEP/iEP/RP</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>RCiEP, iEP RP, iEP EP</td>
     </tr>
     <tr>
       <td>PCI_IN_01</td>
@@ -3300,7 +3192,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td></td>
+      <td>MSI/MSI-X support required</td>
     </tr>
     <tr>
       <td>PCI_MSI_2</td>
@@ -3309,7 +3201,7 @@ The checklist provides information about:
       <td>No</td>
       <td>Yes</td>
       <td>Yes</td>
-      <td></td>
+      <td>MSI/MSI-X support required</td>
     </tr>
     <tr>
       <td>PCI_LI_01</td>
@@ -3480,7 +3372,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td></td>
+      <td>PCIe Hierarchy P2P support required</td>
     </tr>
     <tr>
       <td>PCI_PP_04</td>
@@ -3489,7 +3381,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td></td>
+      <td>PCIe Hierarchy and Device P2P support required</td>
     </tr>
     <tr>
       <td>PCI_PP_05</td>
@@ -3498,7 +3390,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td></td>
+      <td>PCIe Hierarchy and Device P2P support required</td>
     </tr>
     <tr>
       <td>PCI_PP_06</td>
@@ -3516,7 +3408,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td></td>
+      <td>PASID support required</td>
     </tr>
     <tr>
       <td>PCI_PTM_1</td>
@@ -3606,7 +3498,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td></td>
+      <td>PCIe Hierarchy and Device P2P support required</td>
     </tr>
     <tr>
       <td>IE_ACS_2</td>
@@ -3615,7 +3507,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td></td>
+      <td>PCIe Hierarchy and Device P2P support required</td>
     </tr>
     <tr>
       <td>IE_REG_1</td>
@@ -3707,7 +3599,7 @@ The checklist provides information about:
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
-      <td></td>
+      <td>MSI/MSI-X support required</td>
     </tr>
     <tr>
       <td>FR</td>
@@ -3735,6 +3627,11 @@ The checklist provides information about:
 </table>
 
 ## Latest Checklist Changes
+- **RI_ Added:** RI_PWR_1
+- Updated B_WD_02.
+- Updated checklist to be consistent with I-VGLFZ.
+
+### v25.12_BSA_1.2.0
 - Updated Rule Checklist as per BSA 1.2 Specification
 - **B_ Added:** B_SEC_01–05, B_IEP_1, B_REP_1
 - **B_ Removed:** B_MEM_04, B_PE_15, B_WAK_09

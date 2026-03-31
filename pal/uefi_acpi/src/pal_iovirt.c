@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, 2021-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, 2021-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,9 +25,9 @@
 
 #include "Include/IndustryStandard/Acpi61.h"
 
-#include "include/pal_uefi.h"
-#include "../include/platform_override.h"
-#include "include/pal_iovirt.h"
+#include "pal_uefi.h"
+#include "platform_override.h"
+#include "pal_iovirt.h"
 
 #define ADD_PTR(t, p, l) ((t*)((UINT8*)p + l))
 
@@ -371,12 +371,13 @@ iort_add_block(IORT_TABLE *iort, IORT_NODE *iort_node, IOVIRT_INFO_TABLE *IoVirt
        * Else save NULL pointer.
        */
       temp_block = ADD_PTR(IOVIRT_BLOCK, IoVirtTable, offset);
-      (*data).rc.smmu_base = 0;
-      if (((*block)->type == IOVIRT_NODE_PCI_ROOT_COMPLEX) &&
-           ((temp_block->type == IOVIRT_NODE_SMMU) ||
-            (temp_block->type == IOVIRT_NODE_SMMU_V3))) {
-        temp_data = &(temp_block->data);
-        (*data).rc.smmu_base = (*temp_data).smmu.base;
+      if ((*block)->type == IOVIRT_NODE_PCI_ROOT_COMPLEX) {
+        (*data).rc.smmu_base = 0;
+        if ((temp_block->type == IOVIRT_NODE_SMMU) ||
+            (temp_block->type == IOVIRT_NODE_SMMU_V3)) {
+          temp_data = &(temp_block->data);
+          (*data).rc.smmu_base = (*temp_data).smmu.base;
+        }
       }
 
       /* If this node is a named component, Check whether it is behind a SMMU

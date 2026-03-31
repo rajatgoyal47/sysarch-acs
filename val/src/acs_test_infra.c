@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,12 +15,12 @@
  * limitations under the License.
  **/
 
-#include "include/acs_val.h"
-#include "include/acs_pe.h"
-#include "include/acs_common.h"
-#include "driver/gic/acs_exception.h"
-#include "include/pal_interface.h"
-#include "include/val_interface.h"
+#include "acs_val.h"
+#include "acs_pe.h"
+#include "acs_common.h"
+#include "acs_exception.h"
+#include "pal_interface.h"
+#include "val_interface.h"
 
 uint32_t g_override_skip;
 
@@ -79,12 +79,12 @@ val_log_context(char8_t *file, char8_t *func, uint32_t line)
       marker++;
   }
 
-  val_print(ACS_PRINT_TEST, "\n    ", 0);
-  val_print(ACS_PRINT_TEST, trimmed_file, 0);
-  val_print(ACS_PRINT_TEST, ":", 0);
-  val_print(ACS_PRINT_TEST, "%d", line);
-  val_print(ACS_PRINT_TEST, " ", 0);
-  val_print(ACS_PRINT_TEST, func, 0);
+  val_print(ACS_PRINT_DEBUG, "\n    ", 0);
+  val_print(ACS_PRINT_DEBUG, trimmed_file, 0);
+  val_print(ACS_PRINT_DEBUG, ":", 0);
+  val_print(ACS_PRINT_DEBUG, "%d", line);
+  val_print(ACS_PRINT_DEBUG, " ", 0);
+  val_print(ACS_PRINT_DEBUG, func, 0);
 }
 
 /**
@@ -774,9 +774,9 @@ val_check_for_error(uint32_t test_num, uint32_t num_pe, char8_t *ruleid)
       }
   }
   if (overall_status == TEST_FAIL) {
-      val_print(ACS_PRINT_ERR, "\n        Failed at checkpoint - %2d", checkpoint);
+      val_print(ACS_PRINT_ERR, "\n       Failed at checkpoint - %2d", checkpoint);
   } else if (overall_status == TEST_SKIP) {
-      val_print(ACS_PRINT_ERR, "\n        Skipped at checkpoint - %2d", checkpoint);
+      val_print(ACS_PRINT_ERR, "\n       Skipped at checkpoint - %2d", checkpoint);
   }
 
   return overall_status;
@@ -949,4 +949,19 @@ val_check_for_prerequisite(uint32_t num_pe, uint32_t prereq_status,
     }
 
     return ACS_STATUS_PASS;
+}
+
+/**
+  @brief  Exit execution of ACS gracefully majorly used in
+          pre-si environment
+        1. Caller       - Application Layer
+
+  @param  None
+
+  @result None
+**/
+uint32_t
+val_exit_acs(void)
+{
+  return pal_exit_acs();
 }

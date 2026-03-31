@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +24,7 @@
 #include "rule_based_execution_enum.h"
 
 #define RULE_STRING_SIZE 10
-#define RULE_DESC_SIZE   44
+#define RULE_DESC_SIZE   49
 #define INVALID_IDX 0xFFFFFFFF
 
 /* ----------------------------  Struct  Definations --------------------------------------------*/
@@ -36,10 +36,10 @@ typedef uint32_t (*module_init_entry_t)(uint32_t);
 typedef struct {
     TEST_ENTRY_ID_e  test_entry_id;
     MODULE_NAME_e    module_id;     /* Module to which this test belongs */
-    char8_t          rule_desc[RULE_DESC_SIZE];
-    char8_t          platform_bitmask;
     RULE_FLAG_e      flag;
     uint32_t         test_num;
+    char8_t          platform_bitmask;
+    char8_t          rule_desc[RULE_DESC_SIZE];
 } rule_test_map_t;
 
 /* Alias rules to Base rule mapping definition
@@ -77,6 +77,11 @@ typedef struct {
     VBSA_LEVEL_e level;
 } vbsa_rule_entry_t;
 
+typedef struct {
+    RULE_ID_e rule_id;
+    PFDI_LEVEL_e level;
+} pfdi_rule_entry_t;
+
 /* ---------------------------- Helper functions declarations ---------------------------------- */
 void     quick_sort_rule_list(RULE_ID_e *rule_list, uint32_t list_size);
 uint32_t check_module_init(MODULE_NAME_e module_id);
@@ -85,6 +90,7 @@ void     print_rule_test_start(uint32_t rule_enum, uint32_t indent);
 void     print_rule_test_status(uint32_t rule_enum, uint32_t indent, uint32_t status);
 void     rule_status_map_reset(void);
 bool     rule_in_list(RULE_ID_e rid, const RULE_ID_e *list, uint32_t count);
+void     print_pal_validation_info(uint32_t rule_enum, uint32_t indent);
 
 /* ---------------------------- Externs ---------------------------- */
 extern uint32_t rule_status_map[RULE_ID_SENTINEL];
@@ -97,6 +103,7 @@ extern const bsa_rule_entry_t bsa_rule_list[];
 extern const sbsa_rule_entry_t sbsa_rule_list[];
 extern const pcbsa_rule_entry_t pcbsa_rule_list[];
 extern const vbsa_rule_entry_t vbsa_rule_list[];
+extern const pfdi_rule_entry_t pfdi_rule_list[];
 
 /* Global selections configured by the app */
 extern uint32_t g_level_filter_mode;  /* LEVEL_FILTER_MODE_e */

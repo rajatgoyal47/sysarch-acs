@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,7 @@
  * limitations under the License.
 **/
 
-#include "include/rule_based_execution_enum.h"
+#include "rule_based_execution_enum.h"
 
 /* Following array provided rule string to rule enum map */
 char *rule_id_string[RULE_ID_SENTINEL] = {
@@ -148,6 +148,21 @@ char *rule_id_string[RULE_ID_SENTINEL] = {
     [S_L3MM_02]   = "S_L3MM_02",
 
     /* PMU rules */
+    [PMU_EV_01]   = "PMU_EV_01",
+    [PMU_EV_02]   = "PMU_EV_02",
+    [PMU_EV_03]   = "PMU_EV_03",
+    [PMU_EV_04]   = "PMU_EV_04",
+    [PMU_EV_05]   = "PMU_EV_05",
+    [PMU_EV_06]   = "PMU_EV_06",
+    [PMU_EV_07]   = "PMU_EV_07",
+    [PMU_EV_08]   = "PMU_EV_08",
+    [PMU_EV_09]   = "PMU_EV_09",
+    [PMU_EV_10]   = "PMU_EV_10",
+    [PMU_BM_3]    = "PMU_BM_3",
+    [PMU_BM_4]    = "PMU_BM_4",
+    [PMU_SYS_7]   = "PMU_SYS_7",
+    [PMU_SEC_1]   = "PMU_SEC_1",
+    [PMU_PE_01]   = "PMU_PE_01",
     [PMU_PE_02]   = "PMU_PE_02",
     [PMU_PE_03]   = "PMU_PE_03",
     [PMU_SYS_1]   = "PMU_SYS_1",
@@ -210,7 +225,6 @@ char *rule_id_string[RULE_ID_SENTINEL] = {
     [B_SMMU_23]   = "B_SMMU_23",
     [B_SMMU_24]   = "B_SMMU_24",
     [B_SMMU_25]   = "B_SMMU_25",
-    [GPU_04]      = "GPU_04",
     [SMMU_01]     = "SMMU_01",
     [SMMU_02]     = "SMMU_02",
     [S_L3SM_01]   = "S_L3SM_01",
@@ -267,6 +281,7 @@ char *rule_id_string[RULE_ID_SENTINEL] = {
     [S_L7MP_08]   = "S_L7MP_08",
 
     /* ETE */
+    [ETE_01]      = "ETE_01",
     [ETE_02]      = "ETE_02",
     [ETE_03]      = "ETE_03",
     [ETE_04]      = "ETE_04",
@@ -295,14 +310,9 @@ char *rule_id_string[RULE_ID_SENTINEL] = {
     [B_PCIe_10]   = "B_PCIe_10",
     [B_PCIe_11]   = "B_PCIe_11",
     [S_PCIe_10]   = "S_PCIe_10",
-    [XDGKZ]       = "XDGKZ",
-    [GPU_01]      = "GPU_01",
-    [GPU_02]      = "GPU_02",
-    [GPU_03]      = "GPU_03",
     [IE_ACS_1]    = "IE_ACS_1",
     [IE_ACS_2]    = "IE_ACS_2",
     [IE_ORD_4]    = "IE_ORD_4",
-    [IE_PWR_1]    = "IE_PWR_1",
     [IE_PWR_2]    = "IE_PWR_2",
     [IE_PWR_3]    = "IE_PWR_3",
     [IE_REG_1]    = "IE_REG_1",
@@ -408,7 +418,6 @@ char *rule_id_string[RULE_ID_SENTINEL] = {
     [RE_ORD_4]    = "RE_ORD_4",
     [RE_PCI_1]    = "RE_PCI_1",
     [RE_PCI_2]    = "RE_PCI_2",
-    [RE_PWR_1]    = "RE_PWR_1",
     [RE_PWR_2]    = "RE_PWR_2",
     [RE_PWR_3]    = "RE_PWR_3",
     [RE_REC_1]    = "RE_REC_1",
@@ -445,7 +454,25 @@ char *rule_id_string[RULE_ID_SENTINEL] = {
     [S_L4PCI_2]   = "S_L4PCI_2",
     [S_L6PCI_1]   = "S_L6PCI_1",
     [S_L8CXL_1]   = "S_L8CXL_1",
+    [CXL_01]      = "CXL_01",
+    [CXL_02]      = "CXL_02",
+    [CXL_03]      = "CXL_03",
+    [CXL_04]      = "CXL_04",
+    [CXL_05]      = "CXL_05",
+    [CXL_06]      = "CXL_06",
+    [CXL_09]      = "CXL_09",
+    [CXL_10]      = "CXL_10",
+    [CXL_11]      = "CXL_11",
+    [CXL_12]      = "CXL_12",
+    [CXL_13]      = "CXL_13",
     [S_L3GI_02]   = "S_L3GI_02",
+
+    /* GPU rules */
+    [XDGKZ]       = "XDGKZ",
+    [GPU_01]      = "GPU_01",
+    [GPU_02]      = "GPU_02",
+    [GPU_03]      = "GPU_03",
+    [GPU_04]      = "GPU_04",
 
     /* PC-BSA identifiers */
     [P_L1_01]     = "P_L1_01",
@@ -508,6 +535,40 @@ char *rule_id_string[RULE_ID_SENTINEL] = {
     [V_L2PE_01]  = "V_L2PE_01",
     [V_L2PE_02]  = "V_L2PE_02",
     [V_L2WD_01]  = "V_L2WD_01",
+
+    /* PFDI rules */
+    [R0040]       = "R0040",
+    [R0053]       = "R0053",
+    [R0060]       = "R0060",
+    [R0066]       = "R0066",
+    [R0071]       = "R0071",
+    [R0076]       = "R0076",
+    [R0082]       = "R0082",
+    [R0089]       = "R0089",
+    [R0099]       = "R0099",
+    [R0100]       = "R0100",
+    [R0102]       = "R0102",
+    [R0104]       = "R0104",
+    [R0154]       = "R0154",
+    [R0155]       = "R0155",
+    [R0156]       = "R0156",
+    [R0157]       = "R0157",
+    [R0158]       = "R0158",
+    [R0160]       = "R0160",
+    [R0163]       = "R0163",
+    [R0164]       = "R0164",
+    [R0165]       = "R0165",
+    [R0166]       = "R0166",
+    [R0167]       = "R0167",
+    [R0168]       = "R0168",
+    [R0172]       = "R0172",
+    [R0173]       = "R0173",
+    [R0176]       = "R0176",
+    [R0179]       = "R0179",
+    [R0180]       = "R0180",
+    [R0193]       = "R0193",
+    [R0194]       = "R0194",
+
 };
 
 /* Module name strings mapping to MODULE_NAME_e */
@@ -528,4 +589,8 @@ char *module_name_string[MODULE_ID_SENTINEL] = {
     [ETE]          = "ETE",
     [TPM]          = "TPM",
     [POWER_WAKEUP] = "POWER_WAKEUP",
+    [PFDI]         = "PFDI",
+    [CXL]          = "CXL",
+    [RME]          = "RME",
+    [GPU]          = "GPU",
 };

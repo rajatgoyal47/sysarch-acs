@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2024-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2024-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +15,13 @@
  * limitations under the License.
  **/
 
-#include "include/val_interface.h"
-#include "include/acs_val.h"
-#include "include/acs_pe.h"
-#include "include/acs_common.h"
-#include "include/acs_pmu.h"
-#include "include/acs_mmu.h"
-#include "include/acs_pmu_reg.h"
+#include "val_interface.h"
+#include "acs_val.h"
+#include "acs_pe.h"
+#include "acs_common.h"
+#include "acs_pmu.h"
+#include "acs_mmu.h"
+#include "acs_pmu_reg.h"
 
 PMU_INFO_TABLE  *g_pmu_info_table;
 
@@ -182,7 +182,7 @@ val_pmu_create_info_table(uint64_t *pmu_info_table)
   for (node_index = 0; node_index < g_pmu_info_table->pmu_count; node_index++) {
       val_print(ACS_PRINT_INFO, " PMU node index: %4d\n", node_index);
       base = val_pmu_get_info(PMU_NODE_BASE0, node_index);
-      val_mmu_update_entry(base, 0x1000);
+      val_mmu_update_entry(base, 0x1000, DEVICE_nGnRnE);
       val_print(ACS_PRINT_INFO, " PMU node mapped \n", 0);
       reg_value = BITFIELD_READ(PMDEVARCH_ARCHITECT, val_mmio_read(base + REG_PMDEVARCH));
       /* 0x23B is value for Arm Limited */
@@ -431,7 +431,7 @@ val_pmu_configure_monitor(uint32_t node_index, PMU_EVENT_TYPE_e event_type, uint
 
     node_type = val_pmu_get_info(PMU_NODE_TYPE, node_index);
     /* Get event id details based on Implementation */
-    data = pal_pmu_get_event_info(event_type, node_type);
+    data = pal_pmu_get_event_info(node_index, event_type, node_type);
 
     if (data == PMU_EVENT_INVALID) {
         return 1;
@@ -686,7 +686,7 @@ test_status_t is_coresight_pmu_present(void)
                                 " if system has CoreSight PMU", 0);
         val_print(ACS_PRINT_TEST, "\n       For non CoreSight PMU, manually verify A.4 PMU rules "
                                 "in the SBSA specification", 0);
-        return TEST_SKIP;
+        return TEST_WARN;
     }
 
     /* The test uses PMU CoreSight arch register map, skip if pmu node is not cs */
@@ -697,7 +697,7 @@ test_status_t is_coresight_pmu_present(void)
         val_print(ACS_PRINT_TEST, "\n       No CoreSight PMU nodes found", 0);
         val_print(ACS_PRINT_TEST, "\n       For non CoreSight PMU, manually verify A.4 PMU rules "
                                 "in the SBSA specification", 0);
-        return TEST_SKIP;
+        return TEST_WARN;
     }
 
     return TEST_PASS;

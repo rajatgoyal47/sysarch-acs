@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018,2021, 2023-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018,2021, 2023-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,11 +16,11 @@
  **/
 
 
-#include "val/include/acs_val.h"
-#include "val/include/acs_gic.h"
-#include "val/driver/gic/v3/gic_v3.h"
-#include "val/include/acs_wd.h"
-#include "val/include/val_interface.h"
+#include "acs_val.h"
+#include "acs_gic.h"
+#include "gic_v3.h"
+#include "acs_wd.h"
+#include "val_interface.h"
 
 #define TEST_NUM   (ACS_WD_TEST_NUM_BASE + 2)
 #ifdef PC_BSA
@@ -34,19 +34,20 @@ static uint32_t int_id;
 static uint64_t wd_num;
 static volatile uint32_t g_failsafe_int_received;
 static volatile uint32_t g_wd_int_received;
-
-extern uint32_t g_wakeup_timeout;
+extern uint32_t g_timeout_pass;
+extern uint32_t g_timeout_fail;
 
 static
 void
 isr()
 {
-
     val_wd_set_ws0(wd_num, 0);
     g_wd_int_received = 1;
     val_print(ACS_PRINT_DEBUG, "\n       Received WS0 interrupt                ", 0);
-
     val_gic_end_of_interrupt(int_id);
+
+    val_timer_set_phy_el1(0);
+    val_print(ACS_PRINT_DEBUG, "       Clear Failsafe interrupt\n", 0);
 }
 
 static
@@ -59,7 +60,14 @@ isr_failsafe()
   val_timer_set_phy_el1(0);
   val_print(ACS_PRINT_ERR, "       Received Failsafe interrupt\n", 0);
   g_failsafe_int_received = 1;
-  val_set_status(index, RESULT_FAIL(TEST_NUM, 7));
+
+  /* On some system the failsafe is rcvd just after test interrupt and resulting
+     in incorrect fail, to avoid this ensure set test as fail only when failsafe
+     is hit and test interrupt is not rcvd
+  */
+  if (g_wd_int_received == 0) {
+      val_set_status(index, RESULT_FAIL(TEST_NUM, 7));
+  }
   intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
   val_gic_end_of_interrupt(intid);
 }
@@ -69,7 +77,7 @@ void
 wakeup_set_failsafe()
 {
   uint32_t intid;
-  uint64_t timer_expire_val = (val_get_counter_frequency() * 3 * g_wakeup_timeout) / 2;
+  uint32_t timer_expire_val = CEIL_TO_MAX_SYS_TIMEOUT(val_get_timeout_to_ticks(g_timeout_fail));
 
   intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
   val_gic_install_isr(intid, isr_failsafe);
@@ -90,7 +98,7 @@ payload()
 
     uint32_t status, ns_wdg = 0;
     uint64_t timeout;
-    uint64_t timer_expire_ticks = 1 * g_wakeup_timeout;
+    uint64_t timer_expire_ticks = val_get_timeout_to_ticks(g_timeout_pass);
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
     wd_num = val_wd_get_info(0, WD_INFO_COUNT);
 
@@ -146,24 +154,24 @@ payload()
         }
         wakeup_set_failsafe();
 
-        timeout = val_get_counter_frequency() * 2 * g_wakeup_timeout;
+        timeout = val_get_timeout_to_ticks(g_timeout_fail);
         while (timeout && (g_wd_int_received == 0) && (g_failsafe_int_received == 0)) {
           val_data_cache_ops_by_va((addr_t)&g_wd_int_received, INVALIDATE);
           val_data_cache_ops_by_va((addr_t)&g_failsafe_int_received, INVALIDATE);
           timeout--;
         }
-        wakeup_clear_failsafe();
 
+        wakeup_clear_failsafe();
         val_wd_set_ws0(wd_num, 0);
 
-        if (g_failsafe_int_received) {
+        if (g_failsafe_int_received && (g_wd_int_received == 0)) {
           val_print(ACS_PRINT_ERR, "\n       Failsafe interrupt received, no WS0 interrupt", 0);
           val_set_status(index, RESULT_FAIL(TEST_NUM, 7));
           return;
         }
 
-        if (timeout == 0) {
-            val_print(ACS_PRINT_ERR, "\n       WS0 Interrupt not received on %d   ", int_id);
+        if ((timeout == 0) && (g_wd_int_received == 0)) {
+            val_print(ACS_PRINT_ERR, "\n       WS0 Interrupt not rcvd within timeout %d", int_id);
             val_set_status(index, RESULT_FAIL(TEST_NUM, 5));
             return;
         }

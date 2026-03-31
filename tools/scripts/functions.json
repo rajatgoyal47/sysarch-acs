@@ -46,11 +46,6 @@
       "parameters": ["uint32_t int_id"]
     },
     {
-      "return_type": "uint32_t",
-      "function_name": "pal_gic_request_irq",
-      "parameters": ["uint32_t IrqNum", "uint32_t MappedIrqNum", "void *Isr"]
-    },
-    {
       "return_type": "void",
       "function_name": "pal_gic_free_irq",
       "parameters": ["uint32_t IrqNum", "uint32_t MappedIrqNum"]
@@ -71,19 +66,9 @@
       "parameters": []
     },
     {
-      "return_type": "uint32_t",
-      "function_name": "pal_smmu_create_pasid_entry",
-      "parameters": ["uint64_t SmmuBase", "uint32_t PasId"]
-    },
-    {
-      "return_type": "uint32_t",
-      "function_name": "pal_smmu_disable",
-      "parameters": ["uint64_t SmmuBase"]
-    },
-    {
       "return_type": "uint64_t",
       "function_name": "pal_smmu_pa2iova",
-      "parameters": ["uint64_t SmmuBase", "uint64_t Pa"]
+      "parameters": ["uint64_t SmmuBase", "uint64_t Pa", "uint64_t *dram_buf_iova"]
     },
     {
       "return_type": "uint32_t",
@@ -129,56 +114,6 @@
       "return_type": "uint32_t",
       "function_name": "pal_pcie_mem_get_offset",
       "parameters": ["uint32_t bdf", "PCIE_MEM_TYPE_INFO_e mem_type"]
-    },
-    {
-      "return_type": "uint32_t",
-      "function_name": "pal_is_bdf_exerciser",
-      "parameters": ["uint32_t bdf"]
-    },
-    {
-      "return_type": "uint32_t",
-      "function_name": "pal_exerciser_set_param",
-      "parameters": ["EXERCISER_PARAM_TYPE Type", "uint64_t Value1", "uint64_t Value2", "uint32_t Bdf"]
-    },
-    {
-      "return_type": "uint32_t",
-      "function_name": "pal_exerciser_get_param",
-      "parameters": ["EXERCISER_PARAM_TYPE Type", "uint64_t *Value1", "uint64_t *Value2", "uint32_t Bdf"]
-    },
-    {
-      "return_type": "uint32_t",
-      "function_name": "pal_exerciser_start_dma_direction",
-      "parameters": ["uint64_t Base", "EXERCISER_DMA_ATTR Direction"]
-    },
-    {
-      "return_type": "uint32_t",
-      "function_name": "pal_exerciser_get_state",
-      "parameters": ["EXERCISER_STATE *State", "uint32_t Bdf"]
-    },
-    {
-      "return_type": "uint32_t",
-      "function_name": "pal_exerciser_set_state",
-      "parameters": ["EXERCISER_STATE State", "uint64_t *Value", "uint32_t Instance"]
-    },
-    {
-      "return_type": "uint32_t",
-      "function_name": "pal_exerciser_get_data",
-      "parameters": ["EXERCISER_DATA_TYPE Type" , "exerciser_data_t *Data" , "uint32_t Bdf", "uint64_t Ecam"]
-    },
-    {
-      "return_type": "uint32_t",
-      "function_name": "pal_exerciser_ops",
-      "parameters": ["EXERCISER_OPS Ops", "uint64_t Param", "uint32_t Bdf"]
-    },
-    {
-      "return_type": "uint64_t",
-      "function_name": "pal_memory_ioremap",
-      "parameters": ["void *ptr", "uint32_t size", "uint32_t attr"]
-    },
-    {
-      "return_type": "void",
-      "function_name": "pal_memory_unmap",
-      "parameters": ["void *ptr"]
     },
     {
       "return_type": "void",
@@ -249,23 +184,61 @@
       "return_type": "void",
       "function_name": "mem_free",
       "parameters": ["void *ptr"]
+    },
+    {
+      "return_type": "uint32_t",
+      "function_name": "pal_exit_acs",
+      "parameters": []
+    }
+  ],
+  "common_exerciser": [
+     {
+      "return_type": "uint32_t",
+      "function_name": "pal_is_bdf_exerciser",
+      "parameters": ["uint32_t bdf"]
+    },
+    {
+      "return_type": "uint32_t",
+      "function_name": "pal_exerciser_set_param",
+      "parameters": ["EXERCISER_PARAM_TYPE Type", "uint64_t Value1", "uint64_t Value2", "uint32_t Bdf"]
+    },
+    {
+      "return_type": "uint32_t",
+      "function_name": "pal_exerciser_get_param",
+      "parameters": ["EXERCISER_PARAM_TYPE Type", "uint64_t *Value1", "uint64_t *Value2", "uint32_t Bdf"]
+    },
+    {
+      "return_type": "uint32_t",
+      "function_name": "pal_exerciser_start_dma_direction",
+      "parameters": ["uint64_t Base", "EXERCISER_DMA_ATTR Direction"]
+    },
+    {
+      "return_type": "uint32_t",
+      "function_name": "pal_exerciser_get_state",
+      "parameters": ["EXERCISER_STATE *State", "uint32_t Bdf"]
+    },
+    {
+      "return_type": "uint32_t",
+      "function_name": "pal_exerciser_get_data",
+      "parameters": ["EXERCISER_DATA_TYPE Type" , "exerciser_data_t *Data" , "uint32_t Bdf", "uint64_t Ecam"]
+    },
+    {
+      "return_type": "uint32_t",
+      "function_name": "pal_exerciser_ops",
+      "parameters": ["EXERCISER_OPS Ops", "uint64_t Param", "uint32_t Bdf"]
     }
   ],
   "bsa": [
     {
       "return_type": "uint64_t",
       "function_name": "pal_dma_mem_alloc",
-      "parameters": ["void **buffer", "uint32_t length", "void *dev", "uint32_t flag"]
+      "parameters": ["void **buffer", "uint32_t length", "void *dev", "uint32_t flag", 
+                     "addr_t *dma_addr"]
     },
     {
       "return_type": "void",
       "function_name": "pal_dma_mem_free",
       "parameters": ["void *buffer", "uint64_t mem_dma", "unsigned int length", "void *port", "unsigned int flags"]
-    },
-    {
-      "return_type": "unsigned int",
-      "function_name": "pal_dma_start_from_device",
-      "parameters": ["void *dma_target_buf", "unsigned int length", "void *host", "void *dev"]
     },
     {
       "return_type": "void",
@@ -300,31 +273,6 @@
       "parameters": []
     },
     {
-      "return_type": "void",
-      "function_name": "pal_exerciser_disable_rp_pio_register",
-      "parameters": ["uint32_t bdf"]
-    },
-    {
-      "return_type": "uint32_t",
-      "function_name": "pal_exerciser_check_poison_data_forwarding_support",
-      "parameters": []
-    },
-    {
-      "return_type": "uint32_t",
-      "function_name": "pal_exerciser_get_pcie_ras_compliant_err_node",
-      "parameters": ["uint32_t bdf", "uint32_t rp_bdf"]
-    },
-    {
-      "return_type": "uint64_t",
-      "function_name": "pal_exerciser_get_ras_status",
-      "parameters": ["uint32_t ras_node", "uint32_t bdf", "uint32_t rp_bdf"]
-    },
-    {
-      "return_type": "uint32_t",
-      "function_name": "pal_exerciser_set_bar_response",
-      "parameters": ["uint32_t bdf"]
-    },
-    {
       "return_type": "uint32_t",
       "function_name": "pal_pmu_check_monitor_count_value",
       "parameters": ["uint64_t interface_acpiid", "uint32_t count_value", "uint32_t eventid"]
@@ -354,6 +302,37 @@
       "function_name": "pal_ras_inject_error",
       "parameters": ["RAS_ERR_IN_t in_param", "RAS_ERR_OUT_t *out_param"]
     }
+  ],
+  "sbsa_exerciser": [
+    {
+      "return_type": "void",
+      "function_name": "pal_exerciser_disable_rp_pio_register",
+      "parameters": ["uint32_t bdf"]
+    },
+    {
+      "return_type": "uint32_t",
+      "function_name": "pal_exerciser_check_poison_data_forwarding_support",
+      "parameters": []
+    },
+    {
+      "return_type": "uint32_t",
+      "function_name": "pal_exerciser_get_pcie_ras_compliant_err_node",
+      "parameters": ["uint32_t bdf", "uint32_t rp_bdf"]
+    },
+    {
+      "return_type": "uint64_t",
+      "function_name": "pal_exerciser_get_ras_status",
+      "parameters": ["uint32_t ras_node", "uint32_t bdf", "uint32_t rp_bdf"]
+    },
+    {
+      "return_type": "uint32_t",
+      "function_name": "pal_exerciser_set_bar_response",
+      "parameters": ["uint32_t bdf"]
+    },
+    {
+      "return_type": "uint32_t",
+      "function_name": "pal_exerciser_check_firmware_handle_support",
+      "parameters": []
+    }
   ]
 }
-

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020, 2023-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2023-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,9 +20,9 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "val/include/acs_val.h"
-#include "val/include/val_interface.h"
-#include "val/include/acs_nist.h"
+#include "acs_val.h"
+#include "val_interface.h"
+#include "acs_nist.h"
 
 #define TEST_NUM   (ACS_NIST_TEST_NUM_BASE + 1)
 #define TEST_RULE "S_L7ENT_1"

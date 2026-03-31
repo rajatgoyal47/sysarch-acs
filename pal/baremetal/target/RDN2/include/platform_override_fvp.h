@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2024-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2024-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -261,7 +261,15 @@
 
 #define PLATFORM_OVERRIDE_MAX_SID              24
 
-#define PLATFORM_OVERRIDE_TIMEOUT              0
+/* TIMEOUT should be in Microsecond 5us to 2 sec */
+#define PLATFORM_OVERRIDE_TIMEOUT              1000   /* time out for DUT */
+
+/* FAIL safe timeout (> PLATFORM_OVERRIDE_TIMEOUT) */
+#define PLATFORM_OVERRIDE_FAILSAFE_TIMEOUT     (PLATFORM_OVERRIDE_TIMEOUT * 2)
+
+/*Max timeout set for systimer*/
+#define PLATFORM_OVERRIDE_SYS_TIMEOUT_MAX      0xFFFFFFFF
+
 /* Define the Timeout values to be used */
 #define PLATFORM_BM_OVERRIDE_TIMEOUT_LARGE         0x10000
 #define PLATFORM_BM_OVERRIDE_TIMEOUT_MEDIUM        0x1000
@@ -573,6 +581,21 @@
 #define PLATFORM_PCIE_DEV20_BEHIND_SMMU  1
 #define PLATFORM_PCIE_DEV20_ATC_SUPPORT  0
 
+/* CXL platform config parameters */
+#define PLATFORM_OVERRIDE_NUM_CXL_HB                 0    /* No. of CXL Host bridges */
+
+#define PLATFORM_OVERRIDE_CXL_COUNT                  0    /* No. of CXL devices */
+#define PLATFORM_OVERRIDE_CXL0_UID                   0x0  /* CXL HB Unique ID */
+#define PLATFORM_OVERRIDE_CXL0_COMPONENT_REG_TYPE    0x0  /* Type of CEDT Structure */
+#define PLATFORM_OVERRIDE_CXL0_COMPONENT_REG_BASE    0x0  /* Base address of the CHBCR */
+#define PLATFORM_OVERRIDE_CXL0_COMPONENT_REG_LENGTH  0x0  /* Length of the range */
+#define PLATFORM_OVERRIDE_CXL0_CXL_VERSION           0x0  /* CXL Version */
+#define PLATFORM_OVERRIDE_CXL0_CXL_STRUCT_TYPE       0x0  /* Type of CXL Structure [CHBS/CFMWS] */
+#define PLATFORM_OVERRIDE_CXL0_WINDOW_COUNT          0x0  /* CXL Window count */
+#define PLATFORM_OVERRIDE_CXL0_WINDOW_BASE           0x0  /* CFMWS Base*/
+#define PLATFORM_OVERRIDE_CXL0_WINDOW_SIZE           0x0  /* CFMWS Length*/
+#define PLATFORM_OVERRIDE_CXL0_WINDOW_RESTRICTIONS   0x0  /* CFMWS Window restrictions*/
+
 /* PERIPHERAL platform config parameters */
 #define PLATFORM_OVERRIDE_PERIPHERAL_COUNT 3  //UART + USB + SATA
 
@@ -595,6 +618,8 @@
 #define UART_PCI_FUNC_NUMBER             0x0
 #define UART_PCI_FLAGS                   0x0
 #define UART_PCI_SEGMENT                 0x0
+
+#define SATA_GLOBAL_SYSTEM_INTERRUPT     0x100       /* SATA GSIV                                */
 
 /* IOVIRT platform config parameters */
 #define IOVIRT_ADDRESS                0xF98DEB18
@@ -811,7 +836,7 @@
 #define DVSEC_CTRL      0x8
 #define PCI_EXT_CAP_ID  0x10
 #define PASID           0x1B
-#define PCI_E           0x1
+#define PCIE_REG        0x1
 #define PCI             0x0
 #define DVSEC           0x0023
 #define AER             0x0001
@@ -1533,6 +1558,7 @@
 #define PLATFORM_MPAM_MSC0_ADDR_LEN           0x2004
 #define PLATFORM_MPAM_MSC0_MAX_NRDY           10000000
 #define PLATFORM_MPAM_MSC0_RSRC_COUNT         0x1
+#define PLATFORM_MPAM_MSC0_NAME               "MSC0"
 
 #define PLATFORM_MPAM_MSC0_RSRC0_RIS_INDEX    0x0
 #define PLATFORM_MPAM_MSC0_RSRC0_LOCATOR_TYPE 0x1
@@ -1564,4 +1590,5 @@
 #define PLATFORM_TPM_VERSION              0x0     /* 2 = TPM 2.0, adjust if different */
 #define PLATFORM_TPM_BASE_ADDR            0x0     /* FIFO locality 0 base address */
 #define PLATFORM_TPM_INTERFACE_TYPE       0x0     /* StartMethod (6=TIS, 7=CRB, etc.) */
+
 /** End config **/

@@ -1,6 +1,6 @@
 
 /** @file
- * Copyright (c) 2016-2018, 2021, 2024-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021, 2024-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,6 +38,9 @@
 #define CNTP_TVAL        0x28
 #define CNTP_CTL         0x2C
 #define COUNTER_ID       0xFD0
+
+#define MICRO_SECONDS    1000000
+#define MAX_WAKEUP_TIMEOUT 5
 
 uint32_t t001_entry(uint32_t num_pe);
 uint32_t t002_entry(uint32_t num_pe);

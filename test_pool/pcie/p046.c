@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,9 +15,9 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/acs_pcie.h"
-#include "val/include/acs_memory.h"
+#include "acs_val.h"
+#include "acs_pcie.h"
+#include "acs_memory.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 46)
 #define TEST_DESC  "Check all MSI(X) vectors are LPIs     "
@@ -84,6 +84,7 @@ payload (void)
   PERIPHERAL_VECTOR_LIST *dev_mvec, *mvec;
   uint64_t dev_bdf;
   uint32_t test_skip = 1;
+  uint32_t ret;
 
   if(!count) {
      val_set_status (index, RESULT_SKIP (TEST_NUM, 2));
@@ -104,7 +105,14 @@ payload (void)
       if (dev_bdf) {
         val_print (ACS_PRINT_INFO, "       Checking PCI device with BDF %4X\n", dev_bdf);
         /* Read MSI(X) vectors */
-        if (val_get_msi_vectors (dev_bdf, &dev_mvec)) {
+        ret = val_get_msi_vectors (dev_bdf, &dev_mvec);
+
+        if (ret == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
+          clean_msi_list (dev_mvec);
+          goto test_warn_unimplemented;
+        }
+
+        if (ret) {
           test_skip = 0;
           mvec = dev_mvec;
           while(mvec) {
@@ -134,6 +142,10 @@ payload (void)
   } else if (!status) {
     val_set_status (index, RESULT_PASS(TEST_NUM, 0));
   }
+  return;
+
+test_warn_unimplemented:
+  val_set_status(index, RESULT_WARN(TEST_NUM, 1));
 }
 
 uint32_t

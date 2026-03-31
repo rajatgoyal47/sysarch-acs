@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -231,6 +231,23 @@ pal_print_raw(uint64_t addr, char *string, uint64_t data)
         } else
             *(volatile uint8_t *)addr = *string;
     }
+}
+
+/**
+  @brief  Emit a warning indicating the given PAL API is not implemented.
+  @param  api_name  Name of the unimplemented API (typically __func__).
+**/
+void
+pal_warn_not_implemented(const char *api_name)
+{
+    if (api_name == NULL)
+        return;
+
+    print(ACS_PRINT_WARN,
+          "\n       %s is not implemented."
+          "\n       Please implement the PAL function in test suite or"
+          "\n       conduct an offline review for this rule.",
+          api_name);
 }
 
 /**

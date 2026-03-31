@@ -1,6 +1,6 @@
 
 /** @file
- * Copyright (c) 2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,14 +23,14 @@
 #include "pal_common_support.h"
 #include "pal_pcie_enum.h"
 
-extern PLATFORM_OVERRIDE_GIC_INFO_TABLE     platform_gic_cfg;
-extern PLATFORM_OVERRIDE_TIMER_INFO_TABLE   platform_timer_cfg;
-extern PLATFORM_OVERRIDE_IOVIRT_INFO_TABLE  platform_iovirt_cfg;
-extern PLATFORM_OVERRIDE_NODE_DATA          platform_node_type;
-extern PLATFORM_OVERRIDE_UART_INFO_TABLE    platform_uart_cfg;
-extern PLATFORM_OVERRIDE_MEMORY_INFO_TABLE  platform_mem_cfg;
-extern PCIE_INFO_TABLE                      platform_pcie_cfg;
-extern WD_INFO_TABLE                        platform_wd_cfg;
+extern const PLATFORM_OVERRIDE_GIC_INFO_TABLE     platform_gic_cfg;
+extern const PLATFORM_OVERRIDE_TIMER_INFO_TABLE   platform_timer_cfg;
+extern const PLATFORM_OVERRIDE_IOVIRT_INFO_TABLE  platform_iovirt_cfg;
+extern const PLATFORM_OVERRIDE_NODE_DATA          platform_node_type;
+extern const PLATFORM_OVERRIDE_UART_INFO_TABLE    platform_uart_cfg;
+extern const PLATFORM_OVERRIDE_MEMORY_INFO_TABLE  platform_mem_cfg;
+extern const PCIE_INFO_TABLE                      platform_pcie_cfg;
+extern const WD_INFO_TABLE                        platform_wd_cfg;
 
 /** SMMU API's **/
 /**
@@ -38,14 +38,15 @@ extern WD_INFO_TABLE                        platform_wd_cfg;
 
   @param  etr_path  full path of ETR device
 
-  @return 0 - Success, NOT_IMPLEMENTED - API not implemented, Other values - Failure
+  @return 0 - Success, PAL_STATUS_NOT_IMPLEMENTED - API not implemented, Other values - Failure
 **/
 uint32_t
 pal_smmu_is_etr_behind_catu(char *etr_path)
 {
   (void) etr_path;
 
-  return NOT_IMPLEMENTED;
+  pal_warn_not_implemented(__func__);
+  return PAL_STATUS_NOT_IMPLEMENTED;
 }
 
 /**
@@ -53,12 +54,13 @@ pal_smmu_is_etr_behind_catu(char *etr_path)
 
   @param  None
 
-  @return 0 - Failure, NOT_IMPLEMENTED - DSM Method not implemented, Other values - PASS
+  @return 0 - Failure, PAL_STATUS_NOT_IMPLEMENTED - DSM Method not implemented, Other values - PASS
 **/
 uint32_t pal_pcie_dsm_ste_tags(void)
 {
 
-    return NOT_IMPLEMENTED;
+    pal_warn_not_implemented(__func__);
+    return PAL_STATUS_NOT_IMPLEMENTED;
 }
 
 /**
@@ -76,7 +78,8 @@ pal_pmu_check_monitor_count_value(uint64_t interface_acpiid, uint32_t count_valu
   (void) count_value;
   (void) eventid;
 
-  return NOT_IMPLEMENTED;
+  pal_warn_not_implemented(__func__);
+  return PAL_STATUS_NOT_IMPLEMENTED;
 }
 
 /**
@@ -97,7 +100,8 @@ pal_generate_traffic(uint64_t interface_acpiid, uint32_t pmu_node_index,
   (void) mon_index;
   (void) eventid;
 
-  return NOT_IMPLEMENTED;
+  pal_warn_not_implemented(__func__);
+  return PAL_STATUS_NOT_IMPLEMENTED;
 }
 
 /**
@@ -114,7 +118,8 @@ pal_pmu_get_multi_traffic_support_interface(uint64_t *interface_acpiid,
   (void) interface_acpiid;
   (void) num_traffic_type_support;
 
-  return NOT_IMPLEMENTED;
+  pal_warn_not_implemented(__func__);
+  return PAL_STATUS_NOT_IMPLEMENTED;
 }
 
 /**
@@ -137,7 +142,7 @@ pal_ras_check_plat_poison_support()
   @param  in_param  - Error Input Parameters.
   @param  *out_param  - Parameters returned from platform to be used in the test.
 
-  @return  0 - Success, NOT_IMPLEMENTED - API not implemented, Other values - Failure
+  @return  0 - Success, PAL_STATUS_NOT_IMPLEMENTED - API not implemented, Other values - Failure
 **/
 uint32_t
 pal_ras_setup_error(RAS_ERR_IN_t in_param, RAS_ERR_OUT_t *out_param)
@@ -147,7 +152,8 @@ pal_ras_setup_error(RAS_ERR_IN_t in_param, RAS_ERR_OUT_t *out_param)
   (void) in_param;
   (void) out_param;
 
-  return NOT_IMPLEMENTED;
+  pal_warn_not_implemented(__func__);
+  return PAL_STATUS_NOT_IMPLEMENTED;
 }
 
 /**
@@ -156,7 +162,7 @@ pal_ras_setup_error(RAS_ERR_IN_t in_param, RAS_ERR_OUT_t *out_param)
   @param  in_param  - Error Input Parameters.
   @param  *out_param  - Parameters returned from platform to be used in the test.
 
-  @return  0 - Success, NOT_IMPLEMENTED - API not implemented, Other values - Failure
+  @return  0 - Success, PAL_STATUS_NOT_IMPLEMENTED - API not implemented, Other values - Failure
 **/
 uint32_t
 pal_ras_inject_error(RAS_ERR_IN_t in_param, RAS_ERR_OUT_t *out_param)
@@ -164,6 +170,6 @@ pal_ras_inject_error(RAS_ERR_IN_t in_param, RAS_ERR_OUT_t *out_param)
   (void) in_param;
   (void) out_param;
 
-  return NOT_IMPLEMENTED;
+  pal_warn_not_implemented(__func__);
+  return PAL_STATUS_NOT_IMPLEMENTED;
 }
-

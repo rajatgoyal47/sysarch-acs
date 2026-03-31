@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +15,13 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/acs_pcie.h"
-#include "val/include/acs_memory.h"
-#include "val/include/acs_peripherals.h"
-#include "val/include/acs_pe.h"
-#include "val/include/acs_pcie_enumeration.h"
-#include "val/include/acs_exerciser.h"
+#include "acs_val.h"
+#include "acs_pcie.h"
+#include "acs_memory.h"
+#include "acs_peripherals.h"
+#include "acs_pe.h"
+#include "acs_pcie_enumeration.h"
+#include "acs_exerciser.h"
 
 #define TEST_NUM   (ACS_EXERCISER_TEST_NUM_BASE + 16)
 #define TEST_DESC  "PCIe Device Memory access check       "
@@ -97,11 +97,18 @@ payload(void)
     /* Map mmio space to ARM device memory in MMU page tables */
     for (idx = 0; idx < sizeof(ARM_DEVICE_MEM_ARRAY)/sizeof(ARM_DEVICE_MEM_ARRAY[0]); idx++) {
 
-        baseptr = (char *)val_memory_ioremap((void *)e_data.bar_space.base_addr,
+        status = val_memory_ioremap((void *)e_data.bar_space.base_addr,
                                               512,
-                                              ARM_DEVICE_MEM_ARRAY[idx]);
-        if (!baseptr) {
+                                              ARM_DEVICE_MEM_ARRAY[idx], (void **)&baseptr);
+
+        /* Handle unimplemented PAL -> Report WARN */
+        if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
+          goto test_warn_unimplemented;
+        }
+
+        if (status) {
             val_print(ACS_PRINT_ERR, "\n       Failed in BAR ioremap for instance %x", instance);
+            val_print(ACS_PRINT_DEBUG, "   Status :0x%x", status);
             goto test_fail;
         }
 
@@ -128,7 +135,12 @@ exception_return:
     }
   }
 
-  val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+return;
+
+test_warn_unimplemented:
+  val_memory_unmap(baseptr);
+  val_set_status(pe_index, RESULT_WARN(TEST_NUM, 01));
   return;
 
 test_fail:

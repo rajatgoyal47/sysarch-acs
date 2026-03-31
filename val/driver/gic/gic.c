@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2021,2023-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2021,2023-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +15,11 @@
  * limitations under the License.
  **/
 
-#include "include/acs_val.h"
-#include "include/acs_pe.h"
+#include "acs_val.h"
+#include "acs_pe.h"
 #include "gic_v3.h"
 #include "gic_v2.h"
-#include "../gic.h"
+#include "gic.h"
 
 /**
   @brief  Initializes the GIC
@@ -84,7 +84,7 @@ val_gic_acknowledgeInterrupt(void)
 
   gic_version = val_gic_get_info(GIC_INFO_VERSION);
   if ((gic_version == 3) || (gic_version == 4))
-      return v3_AcknowledgeInterrupt();
+      return (uint32_t) v3_AcknowledgeInterrupt();
   else
       return v2_AcknowledgeInterrupt();
 }

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021, 2024-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021, 2024-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,9 +15,9 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/acs_pe.h"
-#include "val/include/acs_memory.h"
+#include "acs_val.h"
+#include "acs_pe.h"
+#include "acs_memory.h"
 
 #define TEST_NUM   (ACS_PE_TEST_NUM_BASE  +  1)
 #define TEST_RULE  "B_PE_01"
@@ -102,6 +102,13 @@ uint64_t
 return_reg_value(uint32_t reg, uint8_t dependency)
 {
   uint64_t temp=0;
+
+  /* Skip specific EL1 register reads if requested via -el1skiptrap */
+  if (reg == PMSIDR_EL1) {
+      if (g_el1skiptrap_mask & EL1SKIPTRAP_PMSIDR) {
+          return 0;
+      }
+  }
 
   if(dependency == 0)
       return val_pe_reg_read(reg);
@@ -251,22 +258,22 @@ payload(uint32_t num_pe)
          val_pe_reg_write(CSSELR_EL1, i << 1);
          cache_list[i] = return_reg_value(reg_list[0].reg_name, reg_list[0].dependency);
          val_data_cache_ops_by_va((addr_t)(cache_list + i), CLEAN_AND_INVALIDATE);
-         val_print(ACS_PRINT_INFO, "\n       Primary PE Index: %d", my_index);
-         val_print(ACS_PRINT_INFO, ", cache index: %d", i);
-         val_print(ACS_PRINT_INFO, ", size read: 0x%016llx", cache_list[i]);
+         val_print(ACS_PRINT_INFO, "\n       Primary PE Index %d", my_index);
+         val_print(ACS_PRINT_INFO, ", cache index %d", i);
+         val_print(ACS_PRINT_INFO, ", size read 0x%016llx", cache_list[i]);
       }
       i++;
   }
 
   for (i = 1; i < NUM_OF_REGISTERS; i++) {
       rd_data_array[i] = return_reg_value(reg_list[i].reg_name, reg_list[i].dependency);
-      val_print(ACS_PRINT_INFO, "\n       Primary PE Index: %d, ", my_index);
+      val_print(ACS_PRINT_INFO, "\n       Primary PE Index %d, ", my_index);
       val_print(ACS_PRINT_INFO, reg_list[i].reg_desc, 0);
 
       if (reg_list[i].dependency == AA32)
-          val_print(ACS_PRINT_INFO, " : 0x%08llx ", rd_data_array[i]);
+          val_print(ACS_PRINT_INFO, "  0x%08llx ", rd_data_array[i]);
       else
-          val_print(ACS_PRINT_INFO, " : 0x%016llx ", rd_data_array[i]);
+          val_print(ACS_PRINT_INFO, "  0x%016llx ", rd_data_array[i]);
 
       val_data_cache_ops_by_va((addr_t)(rd_data_array + i), CLEAN_AND_INVALIDATE);
   }
@@ -295,8 +302,8 @@ payload(uint32_t num_pe)
       }
   }
 
-  val_print(ACS_PRINT_TEST, "\n       Primary PE Index    : %d", my_index);
-  val_print(ACS_PRINT_TEST, "\n       Primary PE MIDR_EL1 : 0x%08llx", rd_data_array[1]);
+  val_print(ACS_PRINT_TEST, "\n       Primary PE Index     %d", my_index);
+  val_print(ACS_PRINT_TEST, "\n       Primary PE MIDR_EL1  0x%08llx", rd_data_array[1]);
 
   for (i = 0; i < num_pe; i++) {
       uint32_t unique = 1;
@@ -311,7 +318,7 @@ payload(uint32_t num_pe)
           }
           if (unique == 1 && rd_data_array[1] != pe_buffer->reg_data[1]) {
               if (t == 0) {
-                  val_print(ACS_PRINT_TEST, "\n       Other Cores         : 0x%08llx      ",
+                  val_print(ACS_PRINT_TEST, "\n       Other Cores          0x%08llx      ",
                                                                         pe_buffer->reg_data[1]);
                   t = 1;
               } else {
@@ -323,7 +330,7 @@ payload(uint32_t num_pe)
   }
 
   if (t == 0) {
-      val_print(ACS_PRINT_TEST, "\n       Other Cores         : Identical       ", 0);
+      val_print(ACS_PRINT_TEST, "\n       Other Cores          Identical       ", 0);
   }
 
   pe_buffer = NULL;
@@ -336,20 +343,20 @@ payload(uint32_t num_pe)
              if (!(pe_buffer->cache_status[cache_index]) &&
                                                     (pe_buffer->pe_cache[cache_index] != 0))
              {
-                 val_print(ACS_PRINT_INFO, "\n        PE Index: %d", i);
-                 val_print(ACS_PRINT_INFO, ", cache index: %d", cache_index);
-                 val_print(ACS_PRINT_INFO, ", size read: 0x%016llx",
+                 val_print(ACS_PRINT_INFO, "\n        PE Index %d", i);
+                 val_print(ACS_PRINT_INFO, ", cache index %d", cache_index);
+                 val_print(ACS_PRINT_INFO, ", size read 0x%016llx",
                                                              pe_buffer->pe_cache[cache_index]);
              }
              else if (pe_buffer->pe_cache[cache_index] != 0)
              {
-                   val_print(ACS_PRINT_ERR, "\n        PE Index: %d", i);
-                   val_print(ACS_PRINT_ERR, ", cache index: %d", cache_index);
-                   val_print(ACS_PRINT_ERR, ", size read: 0x%016llx     FAIL\n",
+                   val_print(ACS_PRINT_ERR, "\n        PE Index %d", i);
+                   val_print(ACS_PRINT_ERR, ", cache index %d", cache_index);
+                   val_print(ACS_PRINT_ERR, ", size read 0x%016llx     FAIL\n",
                                                              pe_buffer->pe_cache[cache_index]);
-                   val_print(ACS_PRINT_ERR, "          Masked Primary PE Value : 0x%016llx \n",
+                   val_print(ACS_PRINT_ERR, "          Masked Primary PE Value  0x%016llx \n",
                                               cache_list[cache_index] & (~reg_list[0].reg_mask));
-                   val_print(ACS_PRINT_ERR, "          Masked Current PE Value : 0x%016llx ",
+                   val_print(ACS_PRINT_ERR, "          Masked Current PE Value  0x%016llx ",
                                       pe_buffer->pe_cache[cache_index] & (~reg_list[0].reg_mask));
                    cache_fail = cache_fail + 1;
              }
@@ -357,28 +364,28 @@ payload(uint32_t num_pe)
 
           for (int reg_index = 1; reg_index < NUM_OF_REGISTERS; reg_index++) {
              if (!(pe_buffer->reg_status[reg_index])) {
-                 val_print(ACS_PRINT_INFO, "\n        PE Index: %d, ", i);
+                 val_print(ACS_PRINT_INFO, "\n        PE Index %d, ", i);
                  val_print(ACS_PRINT_INFO, reg_list[reg_index].reg_desc, 0);
                  if (reg_list[reg_index].dependency == AA32)
-                     val_print(ACS_PRINT_INFO, "  : 0x%08llx", pe_buffer->reg_data[reg_index]);
+                     val_print(ACS_PRINT_INFO, "   0x%08llx", pe_buffer->reg_data[reg_index]);
                  else
-                     val_print(ACS_PRINT_INFO, "  : 0x%016llx", pe_buffer->reg_data[reg_index]);
+                     val_print(ACS_PRINT_INFO, "   0x%016llx", pe_buffer->reg_data[reg_index]);
              } else  {
-                 val_print(ACS_PRINT_ERR, "\n        PE Index: %d, ", i);
+                 val_print(ACS_PRINT_ERR, "\n        PE Index %d, ", i);
                  val_print(ACS_PRINT_ERR, reg_list[reg_index].reg_desc, 0);
                  if (reg_list[reg_index].dependency == AA32) {
-                     val_print(ACS_PRINT_ERR, "   : 0x%08llx    FAIL\n",
+                     val_print(ACS_PRINT_ERR, "    0x%08llx    FAIL\n",
                                                         pe_buffer->reg_data[reg_index]);
-                     val_print(ACS_PRINT_ERR, "          Masked Primary PE Value : 0x%08llx \n",
+                     val_print(ACS_PRINT_ERR, "          Masked Primary PE Value  0x%08llx \n",
                                        rd_data_array[reg_index] & (~reg_list[reg_index].reg_mask));
-                     val_print(ACS_PRINT_ERR, "          Masked Current PE Value : 0x%08llx ",
+                     val_print(ACS_PRINT_ERR, "          Masked Current PE Value  0x%08llx ",
                                  pe_buffer->reg_data[reg_index] & (~reg_list[reg_index].reg_mask));
                  } else {
-                     val_print(ACS_PRINT_ERR, "   : 0x%016llx    FAIL\n",
+                     val_print(ACS_PRINT_ERR, "    0x%016llx    FAIL\n",
                                                         pe_buffer->reg_data[reg_index]);
-                     val_print(ACS_PRINT_ERR, "          Masked Primary PE Value : 0x%016llx \n",
+                     val_print(ACS_PRINT_ERR, "          Masked Primary PE Value  0x%016llx \n",
                                        rd_data_array[reg_index] & (~reg_list[reg_index].reg_mask));
-                     val_print(ACS_PRINT_ERR, "          Masked Current PE Value : 0x%016llx ",
+                     val_print(ACS_PRINT_ERR, "          Masked Current PE Value  0x%016llx ",
                                  pe_buffer->reg_data[reg_index] & (~reg_list[reg_index].reg_mask));
                    }
                  reg_fail = reg_fail + 1;
@@ -391,7 +398,7 @@ payload(uint32_t num_pe)
   }
 
   if (total_fail) {
-      val_print(ACS_PRINT_ERR, "\n\n    Total Register and cache fail for all PE: %d \n",
+      val_print(ACS_PRINT_ERR, "\n\n    Total Register and cache fail for all PE %d \n",
                                                                              total_fail);
       val_set_status(my_index, RESULT_FAIL(TEST_NUM, 4));
   }

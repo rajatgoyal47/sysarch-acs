@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,12 +15,12 @@
  * limitations under the License.
  **/
 
-#include "include/acs_val.h"
-#include "include/acs_exerciser.h"
-#include "include/acs_pcie.h"
-#include "include/acs_smmu.h"
-#include "include/acs_iovirt.h"
-#include "include/acs_memory.h"
+#include "acs_val.h"
+#include "acs_exerciser.h"
+#include "acs_pcie.h"
+#include "acs_smmu.h"
+#include "acs_iovirt.h"
+#include "acs_memory.h"
 
 EXERCISER_INFO_TABLE g_exerciser_info_table;
 
@@ -109,7 +109,7 @@ uint32_t val_exerciser_create_info_table(void)
       }
   }
   g_exerciser_info_table.num_exerciser = num_exerciser_info;
-  val_print(ACS_PRINT_TEST, "\n     PCIE_INFO: Number of exerciser cards : %4d \n",
+  val_print(ACS_PRINT_TEST, "\n     PCIE_INFO: Number of exerciser cards  %4d \n",
                                                              g_exerciser_info_table.num_exerciser);
   return 0;
 }
@@ -365,6 +365,12 @@ uint32_t
 val_exerciser_set_bar_response(uint32_t bdf)
 {
   return pal_exerciser_set_bar_response(bdf);
+}
+
+uint32_t
+val_exerciser_check_firmware_handle_support(void)
+{
+    return pal_exerciser_check_firmware_handle_support();
 }
 
 /**

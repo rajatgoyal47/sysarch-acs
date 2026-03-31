@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2024-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2024-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,12 +18,12 @@
 #include "pal_common_support.h"
 #include "platform_override_struct.h"
 
-extern RAS_INFO_TABLE platform_ras_cfg;
-extern PLATFORM_OVERRIDE_RAS_NODE_DATA_INFO platform_ras_node_data;
-extern PLATFORM_OVERRIDE_RAS_NODE_INTERFACE_INFO platform_ras_node_interface;
-extern PLATFORM_OVERRIDE_RAS_NODE_INTERRUPT_INFO platform_ras_node_interrupt;
+extern const RAS_INFO_TABLE platform_ras_cfg;
+extern const PLATFORM_OVERRIDE_RAS_NODE_DATA_INFO platform_ras_node_data;
+extern const PLATFORM_OVERRIDE_RAS_NODE_INTERFACE_INFO platform_ras_node_interface;
+extern const PLATFORM_OVERRIDE_RAS_NODE_INTERRUPT_INFO platform_ras_node_interrupt;
 
-extern PLATFORM_OVERRIDE_RAS2_INFO_TABLE platform_ras2_cfg;
+extern const PLATFORM_OVERRIDE_RAS2_INFO_TABLE platform_ras2_cfg;
 
 /**
   @brief  Platform Defined way of Timeout/Wait loop
@@ -236,7 +236,8 @@ pal_ras_create_info_table(RAS_INFO_TABLE *RasInfoTable)
       curr_node++;
   }
 
-  pal_ras_dump_info_table(RasInfoTable);
+  if (g_print_level <= ACS_PRINT_INFO)
+      pal_ras_dump_info_table(RasInfoTable);
 }
 
 /**
@@ -331,5 +332,7 @@ pal_ras2_create_info_table(RAS2_INFO_TABLE *RasFeatInfoTable)
 
       RasFeatInfoTable->num_all_block++;
   }
-  pal_ras2_dump_info_table(RasFeatInfoTable);
+
+  if (g_print_level <= ACS_PRINT_INFO)
+      pal_ras2_dump_info_table(RasFeatInfoTable);
 }

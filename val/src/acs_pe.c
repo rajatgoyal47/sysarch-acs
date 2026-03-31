@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,15 +15,15 @@
  * limitations under the License.
  **/
 
-#include "include/acs_val.h"
-#include "include/acs_pe.h"
-#include "include/acs_common.h"
-#include "driver/gic/acs_exception.h"
-#include "include/val_interface.h"
-#include "include/pal_interface.h"
-#include "include/val_interface.h"
-#include "include/acs_std_smc.h"
-#include "include/acs_timer_support.h"
+#include "acs_val.h"
+#include "acs_pe.h"
+#include "acs_common.h"
+#include "acs_exception.h"
+#include "val_interface.h"
+#include "pal_interface.h"
+#include "val_interface.h"
+#include "acs_std_smc.h"
+#include "acs_timer_support.h"
 
 /**
   @brief   Pointer to the memory location of the PE Information table
@@ -64,6 +64,8 @@ val_pe_reg_read(uint32_t reg_id)
           return AA64ReadMmfr1();
       case ID_AA64MMFR2_EL1:
           return AA64ReadMmfr2();
+      case ID_AA64MMFR3_EL1:
+          return AA64ReadMmfr3();
       case CTR_EL0:
           return AA64ReadCtr();
       case ID_AA64ISAR0_EL1:
@@ -538,7 +540,7 @@ uint64_t
 val_cache_get_info(CACHE_INFO_e type, uint32_t cache_index)
 {
   CACHE_INFO_ENTRY *entry;
-  char *cache_info_type[] = {"cache_type", "cache_size", "cache_identifier"};
+  char *cache_info_type[] = {"cache_type", "cache_size", "cache_identifier", "associativity"};
 
   if (cache_index >= g_cache_info_table->num_of_cache) {
       val_print(ACS_PRINT_ERR, "\n       invalid cache index: %d", cache_index);
@@ -557,6 +559,10 @@ val_cache_get_info(CACHE_INFO_e type, uint32_t cache_index)
   case CACHE_ID:
       if (entry->flags.cache_id_valid)
           return entry->cache_id;
+      break;
+  case CACHE_ASSOCIATIVITY:
+      if (entry->flags.associativity_valid)
+          return entry->associativity;
       break;
   case CACHE_NEXT_LEVEL_IDX:
       return entry->next_level_index;
@@ -664,8 +670,32 @@ uint32_t val_pe_feat_check(PE_FEAT_NAME pe_feature)
             return ACS_STATUS_PASS;
         else
             return ACS_STATUS_FAIL;
+    case PE_FEAT_RME:
+        /*  ID_AA64PFR0_EL1 RME bits [55:52] != 0 indicate RME implemented */
+        if ((VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 52, 55)) != 0)
+            return ACS_STATUS_PASS;
+        else
+            return ACS_STATUS_FAIL;
     default:
         val_print(ACS_PRINT_ERR, "\nPE_FEAT_CHECK: Invalid PE feature", 0);
         return ACS_STATUS_FAIL;
     }
+}
+
+/**
+  @brief  This API returns the associativity of the cache for the given cache ID.
+  @param  cache_id - Cache ID whose associativity is requested.
+  @return associativity of the cache if found, else returns 0.
+**/
+uint32_t val_cache_get_associativity(uint64_t cache_id)
+{
+    uint32_t cache_index;
+
+    for (cache_index = 0; cache_index < g_cache_info_table->num_of_cache; cache_index++) {
+        if (val_cache_get_info(CACHE_ID, cache_index) == cache_id)
+            return val_cache_get_info(CACHE_ASSOCIATIVITY, cache_index);
+    }
+
+    val_print(ACS_PRINT_ERR, "\n       Invalid Cache ID: %d", cache_id);
+    return 0;
 }

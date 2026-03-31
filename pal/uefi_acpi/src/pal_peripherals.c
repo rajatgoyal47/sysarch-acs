@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2020-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,9 +27,9 @@
 #include "Include/IndustryStandard/Acpi61.h"
 #include "Include/IndustryStandard/SerialPortConsoleRedirectionTable.h"
 
-#include "include/pal_uefi.h"
-#include "include/pcie_enum.h"
-#include "../include/platform_override.h"
+#include "pal_uefi.h"
+#include "pcie_enum.h"
+#include "platform_override.h"
 
 #define USB_CLASSCODE   0x0C0300
 #define SATA_CLASSCODE  0x010600
@@ -337,37 +337,6 @@ pal_memory_create_info_table(MEMORY_INFO_TABLE *memoryInfoTable)
     memoryInfoTable->info[i].type      = MEMORY_TYPE_LAST_ENTRY;
   }
 
-}
-
-/**
-  @brief Maps the physical memory region into the virtual address space
-
-  @param ptr Pointer to physical memory region
-  @param size Size
-  @param attr Attributes
-
-  @return Pointer to mapped virtual address space
-**/
-UINT64
-pal_memory_ioremap(VOID *ptr, UINT32 size, UINT32 attr)
-{
-
-
-  return (UINT64)ptr;
-}
-
-/**
-  @brief Removes the physical memory to virtual address space mapping
-
-  @param ptr Pointer to mapped space
-
-  @return None
-**/
-VOID
-pal_memory_unmap(VOID *ptr)
-{
-
-  return;
 }
 
 /**

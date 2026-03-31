@@ -1,5 +1,5 @@
 ## @file
-# Copyright (c) 2023-2025, Arm Limited or its affiliates. All rights reserved.
+# Copyright (c) 2023-2026, Arm Limited or its affiliates. All rights reserved.
 # SPDX-License-Identifier : Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,6 +29,12 @@ list(APPEND TEST_INCLUDE
     ${ROOT_DIR}/
     ${ROOT_DIR}/val/include/
     ${ROOT_DIR}/val/src/
+    ${ROOT_DIR}/val/driver/gic/
+    ${ROOT_DIR}/val/driver/gic/v2/
+    ${ROOT_DIR}/val/driver/gic/v3/
+    ${ROOT_DIR}/val/driver/gic/its/
+    ${ROOT_DIR}/val/driver/smmu_v3/
+    ${ROOT_DIR}/val/driver/pcie/
     ${ROOT_DIR}/pal/baremetal/base/include/
     ${ROOT_DIR}/pal/baremetal/base/src/
     ${ROOT_DIR}/pal/baremetal/target/${TARGET}/include/
@@ -92,8 +98,7 @@ endforeach()
  add_library(${TEST_LIB} STATIC ${TEST_SRC})
 
  #Create compile list files
- list(APPEND COMPILE_LIST ${TEST_SRC})
- set(COMPILE_LIST ${COMPILE_LIST} PARENT_SCOPE)
+ acs_append_compile_list(${TEST_SRC})
 
  target_include_directories(${TEST_LIB} PRIVATE ${TEST_INCLUDE}
  )

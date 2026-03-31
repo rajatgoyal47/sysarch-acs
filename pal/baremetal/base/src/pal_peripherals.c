@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2024-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2024-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,9 +19,10 @@
 #include "pal_common_support.h"
 #include "platform_override_struct.h"
 
-extern PLATFORM_OVERRIDE_UART_INFO_TABLE platform_uart_cfg;
-extern PLATFORM_OVERRIDE_MEMORY_INFO_TABLE  platform_mem_cfg;
-extern PCIE_INFO_TABLE platform_pcie_cfg;
+extern const PLATFORM_OVERRIDE_UART_INFO_TABLE platform_uart_cfg;
+extern const PLATFORM_OVERRIDE_SATA_INFO_TABLE platform_sata_cfg;
+extern const PLATFORM_OVERRIDE_MEMORY_INFO_TABLE  platform_mem_cfg;
+extern const PCIE_INFO_TABLE platform_pcie_cfg;
 
 #define USB_CLASSCODE   0x0C0300
 #define SATA_CLASSCODE  0x010600
@@ -104,6 +105,7 @@ pal_peripheral_create_info_table(PERIPHERAL_INFO_TABLE *peripheralInfoTable)
        DeviceBdf = pal_pcie_get_bdf(SATA_CLASSCODE, StartBdf);
        if (DeviceBdf != 0) {
           per_info->type  = PERIPHERAL_TYPE_SATA;
+          per_info->irq   = platform_sata_cfg.GlobalSystemInterrupt;
           for (bar_index = 0; bar_index < TYPE0_MAX_BARS; bar_index++)
           {
               per_info->base0 = pal_pcie_get_base(DeviceBdf, bar_index);

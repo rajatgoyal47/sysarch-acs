@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +15,11 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/acs_common.h"
-#include "val/include/val_interface.h"
-#include "val/include/acs_pe.h"
-#include "val/include/acs_ras.h"
+#include "acs_val.h"
+#include "acs_common.h"
+#include "val_interface.h"
+#include "acs_pe.h"
+#include "acs_ras.h"
 
 #define TEST_NUM   (ACS_RAS_TEST_NUM_BASE + 10)
 #define TEST_RULE  "SYS_RAS_1"
@@ -40,8 +40,8 @@ payload()
   /* get total number of RAS2 memory info blocks */
   num_of_mem_blocks = val_ras2_get_mem_info(RAS2_NUM_MEM_BLOCK, 0);
   if (num_of_mem_blocks == 0) {
-    val_print(ACS_PRINT_ERR, "\n       No RAS2 memory nodes found. Skipping...", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
+    val_print(ACS_PRINT_DEBUG, "\n       No nodes in RAS2 table or RAS2 table not present", 0);
+    val_set_status(index, RESULT_WARN(TEST_NUM, 01));
     return;
   }
 

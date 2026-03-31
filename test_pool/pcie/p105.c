@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +15,11 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/acs_smmu.h"
-#include "val/include/acs_dma.h"
-#include "val/include/acs_pcie.h"
-#include "val/include/val_interface.h"
+#include "acs_val.h"
+#include "acs_smmu.h"
+#include "acs_dma.h"
+#include "acs_pcie.h"
+#include "val_interface.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 105)
 #define TEST_RULE  "PCI_MM_07"
@@ -55,14 +55,20 @@ payload(void)
       if (val_dma_get_info(DMA_HOST_IOMMU_ATTACHED, target_dev_index)) {
           iommu_flag++;
           /* Allocate DMA-able memory region in DDR */
-          dma_addr = val_dma_mem_alloc(&buffer, 512, target_dev_index, DMA_COHERENT);
+          status = val_dma_mem_alloc(&buffer, 512, target_dev_index, DMA_COHERENT, &dma_addr);
+          if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
+            goto test_warn_unimplemented;
+          }
           status = val_smmu_ops(SMMU_CHECK_DEVICE_IOVA, &target_dev_index, &dma_addr);
           if (status) {
-              val_print(ACS_PRINT_ERR, "\n       The DMA addr allocated to device %d ",
-                        target_dev_index);
-              val_print(ACS_PRINT_ERR, "\n       is not present in the SMMU IOVA table\n", 0);
-              val_set_status(index, RESULT_FAIL(TEST_NUM, target_dev_index));
-              return;
+            if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
+                goto test_warn_unimplemented;
+            }
+            val_print(ACS_PRINT_ERR, "\n       The DMA addr allocated to device %d ",
+                    target_dev_index);
+            val_print(ACS_PRINT_ERR, "\n       is not present in the SMMU IOVA table\n", 0);
+            val_set_status(index, RESULT_FAIL(TEST_NUM, target_dev_index));
+            return;
           }
           /* Free the allocated memory here */
           val_dma_mem_free(buffer, dma_addr, 512, target_dev_index, DMA_COHERENT);
@@ -73,6 +79,10 @@ payload(void)
       val_set_status(index, RESULT_PASS(TEST_NUM, 1));
   else
       val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+  return;
+
+test_warn_unimplemented:
+    val_set_status(index, RESULT_WARN(TEST_NUM, 1));
 
 }
 

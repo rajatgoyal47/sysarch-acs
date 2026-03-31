@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,7 +32,8 @@ UINT32  g_num_skip;
 UINT64  g_stack_pointer;
 UINT64  g_exception_ret_addr;
 UINT64  g_ret_addr;
-UINT32  g_wakeup_timeout;
+UINT32  g_timeout_pass;
+UINT32  g_timeout_fail;
 
 /* Following g_build_* is retained to have compatibility with tests which use it, and used pass
    on -a selection hint to tests */
@@ -49,10 +50,9 @@ UINT32  *g_skip_modules;
 UINT32  g_num_skip_modules = 0;
 UINT32  g_sys_last_lvl_cache;
 
-/* VE systems run acs at EL1 and in some systems crash is observed during access
-   of EL1 phy and virt timer, Below command line option is added only for debug
-   purpose to complete BSA run on these systems */
-UINT32  g_el1physkip = FALSE;
+/* Bitmask of EL1 register accesses to skip (workarounds for EL1 traps)
+   Configured via -el1skiptrap CLI option. */
+UINT32  g_el1skiptrap_mask = 0;
 
 /* File handles */
 SHELL_FILE_HANDLE g_acs_log_file_handle;

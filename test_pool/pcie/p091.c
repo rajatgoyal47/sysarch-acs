@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2024-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2024-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,10 +15,10 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/acs_pe.h"
-#include "val/include/acs_pcie.h"
-#include "val/include/val_interface.h"
+#include "acs_val.h"
+#include "acs_pe.h"
+#include "acs_pcie.h"
+#include "val_interface.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 91)
 #define TEST_RULE  "B_PCIe_11"
@@ -36,9 +36,8 @@ payload(void)
   val_print(ACS_PRINT_DEBUG, "\n  STE tag value is %x", status);
 
 
-  if (status == NOT_IMPLEMENTED) {
-      val_print(ACS_PRINT_DEBUG, "\n DSM method for STE not implemented\n", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 0));
+  if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
+      val_set_status(index, RESULT_WARN(TEST_NUM, 0));
   }
   else if (status == 0) {
       val_print(ACS_PRINT_ERR, "\n STE tag value should not be 0\n", 0);

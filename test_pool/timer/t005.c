@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2021, 2023-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2023-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,10 +15,10 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/val_interface.h"
-#include "val/include/acs_timer.h"
-#include "val/include/acs_pe.h"
+#include "acs_val.h"
+#include "val_interface.h"
+#include "acs_timer.h"
+#include "acs_pe.h"
 
 #define TEST_NUM   (ACS_TIMER_TEST_NUM_BASE + 5)
 #define TEST_RULE  "B_TIME_09"
@@ -52,11 +52,26 @@ void
 payload()
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
-  uint64_t sys_timer_ticks = val_get_counter_frequency() * 1;
-  uint64_t pe_timer_ticks = val_get_counter_frequency() * 2;
+  uint32_t sys_timer_ticks;
+  uint32_t pe_timer_ticks;
   uint32_t ns_timer = 0;
   uint64_t timer_num, timer_cnt;
   int32_t status;
+
+  uint64_t freq = val_get_counter_frequency();
+  uint64_t ticks;
+
+  /* System timer */
+  ticks = freq * 1;
+  if (ticks > 0xFFFFFFFF)
+      ticks = 0xFFFFFFFF;
+  sys_timer_ticks = (uint32_t)ticks;
+
+  /* PE timer */
+  ticks = freq * 2;
+  if (ticks > 0xFFFFFFFF)
+      ticks = 0xFFFFFFFF;
+  pe_timer_ticks = (uint32_t)ticks;
 
   timer_num = val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS, 0);
 

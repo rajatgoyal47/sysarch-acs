@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018,2021,2024-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018,2021,2024-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +15,11 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/acs_smmu.h"
-#include "val/include/acs_dma.h"
-#include "val/include/acs_pcie.h"
-#include "val/include/val_interface.h"
+#include "acs_val.h"
+#include "acs_smmu.h"
+#include "acs_dma.h"
+#include "acs_pcie.h"
+#include "val_interface.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 95)
 #define TEST_RULE  "PCI_MM_05"
@@ -63,10 +63,13 @@ payload(void)
           }
           status = val_smmu_ops(SMMU_CHECK_DEVICE_IOVA, &target_dev_index, &dma_addr);
           if (status) {
-              val_print(ACS_PRINT_ERR, "\n       The DMA address %lx used by device ", dma_addr);
-              val_print(ACS_PRINT_ERR, "\n       is not present in the SMMU IOVA table\n", 0);
-              val_set_status(index, RESULT_FAIL(TEST_NUM, target_dev_index));
-              return;
+            if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
+                goto test_warn_unimplemented;
+            }
+            val_print(ACS_PRINT_ERR, "\n       The DMA address %lx used by device ", dma_addr);
+            val_print(ACS_PRINT_ERR, "\n       is not present in the SMMU IOVA table\n", 0);
+            val_set_status(index, RESULT_FAIL(TEST_NUM, target_dev_index));
+            return;
           }
       }
   }
@@ -75,6 +78,10 @@ payload(void)
       val_set_status(index, RESULT_PASS(TEST_NUM, 1));
   else
       val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+  return;
+
+test_warn_unimplemented:
+    val_set_status(index, RESULT_WARN(TEST_NUM, 1));
 }
 
 

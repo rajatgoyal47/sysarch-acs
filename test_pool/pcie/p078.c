@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,12 +15,12 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/val_interface.h"
-#include "val/include/acs_gic.h"
-#include "val/include/acs_pcie.h"
-#include "val/include/acs_pe.h"
-#include "val/include/acs_memory.h"
+#include "acs_val.h"
+#include "val_interface.h"
+#include "acs_gic.h"
+#include "acs_pcie.h"
+#include "acs_pe.h"
+#include "acs_memory.h"
 
 static const
 test_config_t test_entries[] = {
@@ -82,25 +82,18 @@ payload_primary(void)
 
       status = val_pci_get_legacy_irq_map(bdf, intr_map);
       if (status) {
-        /* Skip the test if the Legacy IRQ map does not exist */
-        if (status == NOT_IMPLEMENTED) {
-            val_print (ACS_PRINT_WARN,
-                        "\n       pal_pcie_get_legacy_irq_map unimplemented. Skipping test", 0);
-            val_print(ACS_PRINT_WARN,
-                        "\n       The API is platform specific and to be populated", 0);
-            val_print(ACS_PRINT_WARN,
-                        "\n       by partners with system legacy irq map", 0);
-            val_set_status(pe_index, RESULT_SKIP(test_num, 02));
+        /* Report warn if the Legacy IRQ map does not exist */
+        if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
+            val_set_status(pe_index, RESULT_WARN(test_num, 01));
+            val_memory_free_aligned(intr_map);
+            return;
         }
         else {
             val_print (ACS_PRINT_DEBUG,
                         "\n       PCIe Legacy IRQs unmapped. Skipping BDF %llx", bdf);
-            val_set_status(pe_index, RESULT_SKIP(test_num, 3));
+            val_set_status(pe_index, RESULT_SKIP(test_num, 2));
             continue;
         }
-
-        val_memory_free_aligned(intr_map);
-        return;
       }
 
       /* If test runs for atleast an endpoint */

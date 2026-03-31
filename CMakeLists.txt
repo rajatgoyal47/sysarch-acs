@@ -1,5 +1,5 @@
 ## @file
- # Copyright (c) 2023-2025, Arm Limited or its affiliates. All rights reserved.
+ # Copyright (c) 2023-2026, Arm Limited or its affiliates. All rights reserved.
  # SPDX-License-Identifier : Apache-2.0
  #
  # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +18,7 @@
 # Set the minimum required version of CMake for the project
 cmake_minimum_required(VERSION 3.21)
 
-project(bsa-acs LANGUAGES)
+project(sysarch-acs LANGUAGES)
 
 # cmake_policy
 cmake_policy(SET CMP0001 NEW)
@@ -29,7 +29,6 @@ get_filename_component(ROOT_DIR . ABSOLUTE)
 
 # Set internal build directory variable
 set(BUILD ${CMAKE_CURRENT_BINARY_DIR} CACHE INTERNAL "Setting build directory to ${BUILD}" FORCE)
-file(MAKE_DIRECTORY ${BUILD}/output/)
 
 # Set global compile list variable
 set(COMPILE_LIST "")
@@ -107,12 +106,64 @@ endif()
 # Setup toolchain parameters for compilation and link
 include(${ROOT_DIR}/tools/cmake/toolchain/common.cmake)
 
+# Propagate ACS_ENABLED_MODULE_LIST into compiler definitions for all sources
+if(DEFINED ACS_ENABLED_MODULE_LIST)
+    message(STATUS "[ACS] : ACS_ENABLED_MODULE_LIST (compile defs) = ${ACS_ENABLED_MODULE_LIST}")
+    add_compile_definitions(ACS_ENABLED_MODULE_LIST=${ACS_ENABLED_MODULE_LIST})
+endif()
+
+if(DEFINED ACS_ENABLE_MMU)
+    message(STATUS "[ACS] : ACS_ENABLE_MMU (compile defs) = ${ACS_ENABLE_MMU}")
+    add_compile_definitions(ACS_ENABLE_MMU=${ACS_ENABLE_MMU})
+endif()
+
+# Propagate ACS_VERBOSE_LEVEL into compiler definitions for all sources
+if(DEFINED ACS_VERBOSE_LEVEL)
+    message(STATUS "[ACS] : ACS_VERBOSE_LEVEL (compile defs) = ${ACS_VERBOSE_LEVEL}")
+    add_compile_definitions(ACS_VERBOSE_LEVEL=${ACS_VERBOSE_LEVEL})
+    if("${ACS_VERBOSE_LEVEL}" MATCHES "^[0-9]+$")
+        if(${ACS_VERBOSE_LEVEL} GREATER 5)
+            message(WARNING "[ACS] : ACS_VERBOSE_LEVEL=${ACS_VERBOSE_LEVEL} is above the expected range; would be ceiled to 5")
+        elseif(${ACS_VERBOSE_LEVEL} LESS 1)
+            message(WARNING "[ACS] : ACS_VERBOSE_LEVEL=${ACS_VERBOSE_LEVEL} is below the expected range; would be floored to 1")
+        endif()
+    endif()
+endif()
 
 ### Cmake clean target ###
 list(APPEND CLEAN_LIST
         ${CMAKE_CURRENT_BINARY_DIR}/${OUTPUT_HEADER}
         ${CMAKE_CURRENT_BINARY_DIR}/output
 )
+
+# Optional forwarding of ACS_ENABLED_MODULE_LIST to inner configure
+set(DEFAULT_OVERRIDE_ARGS "")
+if(DEFINED ACS_ENABLED_MODULE_LIST)
+    message(STATUS "[ACS] : ACS_ENABLED_MODULE_LIST (top-level) = ${ACS_ENABLED_MODULE_LIST}")
+    list(APPEND DEFAULT_OVERRIDE_ARGS -DACS_ENABLED_MODULE_LIST=${ACS_ENABLED_MODULE_LIST})
+endif()
+
+if(DEFINED ACS_ENABLE_MMU)
+    message(STATUS "[ACS] : ACS_ENABLE_MMU (compile defs) = ${ACS_ENABLE_MMU}")
+    list(APPEND DEFAULT_OVERRIDE_ARGS -DACS_ENABLE_MMU=${ACS_ENABLE_MMU})
+endif()
+
+#   cmake -DACS_VERBOSE_LEVEL=1 ...
+if(DEFINED ACS_VERBOSE_LEVEL)
+    message(STATUS "[ACS] : ACS_VERBOSE_LEVEL (top-level) = ${ACS_VERBOSE_LEVEL}")
+    list(APPEND DEFAULT_OVERRIDE_ARGS -DACS_VERBOSE_LEVEL=${ACS_VERBOSE_LEVEL})
+endif()
+
+# Enable fast-path optimizations for simulation/emulation builds.
+# Use:
+#   cmake -DTARGET_SIMULATION=ON ...
+option(TARGET_SIMULATION "Enable simulation/emulation optimizations (defines TARGET_SIMULATION)" OFF)
+if(TARGET_SIMULATION)
+    message(STATUS "[ACS] : TARGET_SIMULATION is enabled (defining TARGET_SIMULATION)")
+    add_compile_definitions(TARGET_SIMULATION)
+else()
+    message(STATUS "[ACS] : TARGET_SIMULATION is disabled")
+endif()
 
 # Include the files for make clean
 foreach(clean_item ${CLEAN_LIST})
@@ -132,7 +183,8 @@ endif()
 # Generate per-ACS custom targets and an aggregate target
 foreach(_acs IN LISTS ACS_LIST)
     add_custom_target(${_acs}
-        COMMAND ${CMAKE_COMMAND} -DACS=${_acs} -DTARGET=${TARGET} -DCMAKE_OSX_ARCHITECTURES= ${_acs_toolchain_arg} -S ${CMAKE_SOURCE_DIR} -B ${CMAKE_BINARY_DIR}/${_acs}_build
+        COMMAND ${CMAKE_COMMAND} -DACS=${_acs} -DTARGET=${TARGET} -DTARGET_SIMULATION=${TARGET_SIMULATION} ${DEFAULT_OVERRIDE_ARGS}
+        -DCMAKE_OSX_ARCHITECTURES= ${_acs_toolchain_arg} -S ${CMAKE_SOURCE_DIR} -B ${CMAKE_BINARY_DIR}/${_acs}_build
         COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/${_acs}_build
     )
 endforeach()
@@ -141,7 +193,7 @@ add_custom_target(acs_all
     DEPENDS ${ACS_LIST}
 )
 
-message(STATUS "[ACS] : ACS is set to ${ACS}, and TAREGT to ${TARGET} based on configuration")
+message(STATUS "[ACS] : ACS is set to ${ACS}, and TARGET to ${TARGET} based on configuration")
 message(STATUS "[ACS] : You can change overide target using -DTARGET=<value>")
 message(STATUS "[ACS] : Supported values for TARGET: ${TARGET_LIST}")
 message(STATUS "[ACS] : Example - cmake --preset bsa -DTARGET=RDV3")
@@ -149,12 +201,3 @@ message(STATUS "[ACS] : Check available presets by - `cmake --list-presets`")
 message(STATUS "[ACS] : To build using cmake - `cmake --build --preset bsa`")
 message(STATUS "[ACS] : To build using make - `cmake --preset acs_all; cd build; make bsa` (to build all baremetal acs - `make acs_all`)")
 add_subdirectory(${ROOT_DIR}/tools/cmake/infra)
-
-
-### Throw waring for the files which is not compiled ###
-
-# list(REMOVE_DUPLICATES COMPILE_LIST)
-# execute_process(COMMAND python ${ROOT_DIR}/tools/scripts/compile_check.py "${COMPILE_LIST}" "${ROOT_DIR}" "${TARGET}" OUTPUT_VARIABLE NOT_COMPILED_FILES)
-# if(NOT ${NOT_COMPILED_FILES} MATCHES NULL)
-#     message(WARNING "Following files are not compiled ${NOT_COMPILED_FILES}")
-# endif()

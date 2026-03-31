@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +15,11 @@
  * limitations under the License.
 **/
 
-#include "include/rule_based_execution.h"
-#include "include/acs_common.h"
-#include "include/val_interface.h"
-#include "include/acs_pe.h"
-#include "include/acs_memory.h"
+#include "rule_based_execution.h"
+#include "acs_common.h"
+#include "val_interface.h"
+#include "acs_pe.h"
+#include "acs_memory.h"
 
 extern uint8_t g_current_pal;
 extern rule_test_map_t rule_test_map[RULE_ID_SENTINEL];
@@ -33,6 +33,7 @@ extern uint32_t  *g_execute_modules;
 extern uint32_t   g_num_modules;
 extern uint32_t  *g_skip_modules;
 extern uint32_t   g_num_skip_modules;
+extern RULE_ID_e g_base_rule;
 
 /**
  * @brief Check PAL support for a rule and report if unsupported.
@@ -131,6 +132,7 @@ uint32_t filter_rule_list_by_cli(RULE_ID_e **rule_list, uint32_t list_size)
     const sbsa_rule_entry_t  *sbsa_tbl  = NULL;
     const pcbsa_rule_entry_t *pcbsa_tbl = NULL;
     const vbsa_rule_entry_t  *vbsa_tbl  = NULL;
+    const pfdi_rule_entry_t  *pfdi_tbl  = NULL;
     uint32_t tbl_count = 0;
 
     /* if pointer is NULL, API misuse return */
@@ -158,6 +160,10 @@ uint32_t filter_rule_list_by_cli(RULE_ID_e **rule_list, uint32_t list_size)
             while (vbsa_rule_list[add_count].rule_id != RULE_ID_SENTINEL)
                 add_count++;
             vbsa_tbl = vbsa_rule_list;
+        } else if (g_arch_selection == ARCH_PFDI) {
+            while (pfdi_rule_list[add_count].rule_id != RULE_ID_SENTINEL)
+                add_count++;
+            pfdi_tbl = pfdi_rule_list;
         }
 
         if (add_count > 0) {
@@ -195,6 +201,12 @@ uint32_t filter_rule_list_by_cli(RULE_ID_e **rule_list, uint32_t list_size)
                         if (!rule_in_list(rid, new_list, new_count))
                             new_list[new_count++] = rid;
                     }
+                } else if (pfdi_tbl) {
+                    for (i = 0; i < add_count; i++) {
+                        RULE_ID_e rid = pfdi_tbl[i].rule_id;
+                        if (!rule_in_list(rid, new_list, new_count))
+                            new_list[new_count++] = rid;
+                    }
                 }
 
                 /* Free old buffer (if allocated via VAL) and update pointer */
@@ -219,6 +231,9 @@ uint32_t filter_rule_list_by_cli(RULE_ID_e **rule_list, uint32_t list_size)
             vbsa_tbl = vbsa_rule_list;
             while (vbsa_tbl[tbl_count].rule_id != RULE_ID_SENTINEL) tbl_count++;
         }
+        } else if (g_arch_selection == ARCH_PFDI) {
+            pfdi_tbl = pfdi_rule_list;
+            while (pfdi_tbl[tbl_count].rule_id != RULE_ID_SENTINEL) tbl_count++;
     }
 
     /* if rule list is NULL no filtering required */
@@ -351,6 +366,20 @@ uint32_t filter_rule_list_by_cli(RULE_ID_e **rule_list, uint32_t list_size)
                             break;
                         }
                     }
+                } else if (pfdi_tbl) {
+                    for (uint32_t ti = 0; ti < tbl_count; ti++) {
+                        if (pfdi_tbl[ti].rule_id == rule) {
+                            found_entry = 1;
+                            if (g_level_filter_mode == LVL_FILTER_ONLY) {
+                                if ((uint32_t)pfdi_tbl[ti].level != g_level_value)
+                                    skip = 1;
+                            } else if (g_level_filter_mode == LVL_FILTER_MAX) {
+                                if ((uint32_t)pfdi_tbl[ti].level > g_level_value)
+                                    skip = 1;
+                            }
+                            break;
+                        }
+                    }
                 }
 
                 /* If not found in table, conservatively skip or keep? Keep by default */
@@ -380,6 +409,8 @@ void
 run_tests(RULE_ID_e *rule_list, uint32_t list_size)
 {
     bool test_ns_flag;
+    bool test_pass_flag;
+    bool test_warn_flag;
     uint32_t i, j;
     uint32_t alias_rule_map_index;
     uint32_t rule_test_status;
@@ -429,6 +460,8 @@ run_tests(RULE_ID_e *rule_list, uint32_t list_size)
             goto report_status;
         }
 
+        g_base_rule = rule_list[i];
+
         /* Check if rule id is alias, if yes do the table walk to find base rules */
         if (rule_test_map[rule_list[i]].flag == ALIAS_RULE) {
             /* Get base rules for the alias rule */
@@ -461,8 +494,17 @@ run_tests(RULE_ID_e *rule_list, uint32_t list_size)
             rule_test_status = TEST_STATUS_UNKNOWN;
             /* init a flag to track partial coverage */
             test_ns_flag = 0;
+            /* track whether any base rule completed with PASS */
+            test_pass_flag = 0;
+            /* track whether any base rule completed with WARN */
+            test_warn_flag = 0;
             /* convenience alias to the base rule list for this alias */
             base_rule_list = alias_rule_map[alias_rule_map_index].base_rule_list;
+
+            /* Print start header for alias rule */
+            val_print(ACS_PRINT_TEST, "\n\n  === Start tests for rules referenced by ", 0);
+            val_print(ACS_PRINT_TEST, rule_id_string[rule_list[i]], 0);
+            val_print(ACS_PRINT_TEST, " ===", 0);
 
             /* Run the base rules required by the alias; list is sentinel-terminated */
             for (j = 0; base_rule_list[j] != RULE_ID_SENTINEL; j++) {
@@ -496,10 +538,22 @@ run_tests(RULE_ID_e *rule_list, uint32_t list_size)
 
                 /* Run the base rule */
                 base_rule_id = alias_rule_map[alias_rule_map_index].base_rule_list[j];
-                base_rule_status =
-                    test_entry_func_table[rule_test_map[base_rule_id].test_entry_id](num_pe);
+                if (test_entry_func_table[rule_test_map[base_rule_id].test_entry_id] != NULL)
+                {
+                    base_rule_status =
+                        test_entry_func_table[rule_test_map[base_rule_id].test_entry_id](num_pe);
+                }
+                else
+                {
+                    val_print(ACS_PRINT_ERR, "\n\n  Rule failed due to NULL entry \n\r ", 0);
+                    base_rule_status = TEST_FAIL;
+                }
                 /* record base rule status */
                 rule_status_map[base_rule_id] = base_rule_status;
+                if (base_rule_status == TEST_PASS)
+                    test_pass_flag = 1;
+                if (base_rule_status == TEST_WARN)
+                    test_warn_flag = 1;
                 /* report status of base rule run */
                 print_rule_test_status(base_rule_list[j], 1, base_rule_status);
                 /* update overall alias rule status */
@@ -508,21 +562,39 @@ run_tests(RULE_ID_e *rule_list, uint32_t list_size)
                     rule_test_status = base_rule_status;
                 }
             }
-            /* Post-check: if any base rule was not supported but overall
-               status is PASS, mark the alias as partial coverage. */
-            if (test_ns_flag && (rule_test_status == TEST_PASS)) {
+            /* Post-check:
+               1) If any base rule PASSed but the aggregated alias status is
+                  WARN or SKIP, report partial coverage.
+               2) If any base rule was not supported and the aggregated alias
+                  status is PASS, report partial coverage. */
+            if ((test_pass_flag &&
+                 ((rule_test_status == TEST_SKIP) ||
+                  (rule_test_status == TEST_WARN))) ||
+                (test_ns_flag && (rule_test_status == TEST_PASS))) {
                 rule_test_status = TEST_PART_COV;
             }
+            /* If the alias only saw WARN/SKIP outcomes, prefer WARN over SKIP. */
+            if (test_warn_flag && (rule_test_status == TEST_SKIP)) {
+                rule_test_status = TEST_WARN;
+            }
 
-            /* Record and print overall alias rule status now and move to next rule */
-            rule_status_map[rule_list[i]] = rule_test_status;
-            print_rule_test_status(rule_list[i], 0, rule_test_status);
-            continue;
+            /* Print end header for alias rule */
+            val_print(ACS_PRINT_TEST, "\n\n  === End tests for rules referenced by ", 0);
+            val_print(ACS_PRINT_TEST, rule_id_string[rule_list[i]], 0);
+            val_print(ACS_PRINT_TEST, " ===\n", 0);
+
         } else if (rule_test_map[rule_list[i]].flag == BASE_RULE) {
             /* Base rule would have single test entry, could be wrapper too */
-            rule_test_status =
-                test_entry_func_table[rule_test_map[rule_list[i]].test_entry_id](num_pe);
-
+           if (test_entry_func_table[rule_test_map[rule_list[i]].test_entry_id] != NULL)
+            {
+                rule_test_status =
+                    test_entry_func_table[rule_test_map[rule_list[i]].test_entry_id](num_pe);
+            }
+            else
+            {
+                val_print(ACS_PRINT_ERR, "\n\n  Rule failed due to NULL entry \n\r ", 0);
+                rule_test_status = TEST_FAIL;
+            }
         }
 report_status:
         /* Record and print overall rule status */

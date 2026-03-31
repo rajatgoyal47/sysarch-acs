@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, 2021-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, 2021-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,19 +15,20 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/acs_pe.h"
-#include "val/include/val_interface.h"
-#include "val/include/acs_wakeup.h"
+#include "acs_val.h"
+#include "acs_pe.h"
+#include "val_interface.h"
+#include "acs_wakeup.h"
 
 #define TEST_NUM  (ACS_WAKEUP_TEST_NUM_BASE + 5)
 #define TEST_RULE "B_WAK_03, B_WAK_07"
 #define TEST_DESC "Wake from System Timer Int            "
 
 static uint64_t timer_num;
-extern uint32_t g_wakeup_timeout;
 static uint32_t g_failsafe_int_rcvd;
 static uint32_t g_timer_int_rcvd;
+extern uint32_t g_timeout_pass;
+extern uint32_t g_timeout_fail;
 
 static
 void
@@ -39,6 +40,13 @@ isr_failsafe()
   val_timer_set_phy_el1(0);
   val_print(ACS_PRINT_ERR, "       Received Failsafe interrupt\n", 0);
   g_failsafe_int_rcvd = 1;
+  /* On some system the failsafe is rcvd just after test interrupt and resulting
+     in incorrect fail, to avoid this ensure set test as fail only when failsafe
+     is hit and test interrupt is not rcvd
+  */
+  if (g_timer_int_rcvd == 0) {
+      val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+  }
   val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
   intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
   val_gic_end_of_interrupt(intid);
@@ -58,6 +66,8 @@ isr5()
   val_set_status(index, RESULT_PASS(TEST_NUM, 1));
   intid = val_timer_get_info(TIMER_INFO_SYS_INTID, timer_num);
   val_gic_end_of_interrupt(intid);
+  val_timer_set_phy_el1(0);
+  val_print(ACS_PRINT_DEBUG, "       Clear Failsafe interrupt\n", 0);
 }
 
 static
@@ -65,7 +75,7 @@ void
 wakeup_set_failsafe()
 {
   uint32_t intid;
-  uint64_t timer_expire_val = val_get_counter_frequency() * (g_wakeup_timeout + 1);
+  uint64_t timer_expire_val = CEIL_TO_MAX_SYS_TIMEOUT(val_get_timeout_to_ticks(g_timeout_fail));
 
   intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
   val_gic_install_isr(intid, isr_failsafe);
@@ -87,9 +97,9 @@ payload5()
   uint32_t ns_timer = 0;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint32_t intid;
-  uint64_t delay_loop;
+  uint32_t delay_loop = MAX_SPIN_LOOPS;
   uint64_t cnt_base_n;
-  uint64_t timer_expire_val = val_get_counter_frequency() * g_wakeup_timeout;
+  uint64_t timer_expire_val = CEIL_TO_MAX_SYS_TIMEOUT(val_get_timeout_to_ticks(g_timeout_pass));
 
   timer_num = val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS, 0);
   if (!timer_num) {
@@ -124,12 +134,15 @@ payload5()
           wakeup_set_failsafe();
           /* enable System timer */
           val_timer_set_system_timer((addr_t)cnt_base_n, timer_expire_val);
-	  val_power_enter_semantic(BSA_POWER_SEM_B);
+          val_power_enter_semantic(BSA_POWER_SEM_B);
 
           /* Add a delay loop after WFI called in case PE needs some time to enter WFI state
            * exit in case test or failsafe int is received
+           *
+           * This delay loop is a bounded spin wait used only to wait for the
+           * interrupt to arrive. It is not time-based and does not represent
+           * system counter ticks.
           */
-          delay_loop = val_get_counter_frequency() * g_wakeup_timeout;
           while (delay_loop && (g_timer_int_rcvd == 0) && (g_failsafe_int_rcvd == 0)) {
               delay_loop--;
           }
@@ -144,13 +157,13 @@ payload5()
           wakeup_clear_failsafe();
           if (!(g_timer_int_rcvd || g_failsafe_int_rcvd)) {
               intid = val_timer_get_info(TIMER_INFO_SYS_INTID, timer_num);
-	      val_gic_clear_interrupt(intid);
+              val_gic_clear_interrupt(intid);
               val_set_status(index, RESULT_SKIP(TEST_NUM, 4));
               val_print(ACS_PRINT_DEBUG,
                         "\n       PE wakeup by some other events/int or didn't enter WFI", 0);
           }
           val_print(ACS_PRINT_INFO, "\n       delay loop remainig value %d", delay_loop);
-	  return;
+          return;
 
       } else{
           val_print(ACS_PRINT_WARN, "\n       GIC Install Handler Failed...", 0);

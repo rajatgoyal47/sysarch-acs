@@ -1,5 +1,5 @@
 /** @file test_wrappers.h
- * Copyright (c) 2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,7 +25,6 @@
 uint32_t b_ppi_00_entry(uint32_t num_pe);
 uint32_t b_wak_03_07_entry(uint32_t num_pe);
 uint32_t s_l7mp_03_entry(uint32_t num_pe);
-uint32_t sys_ras_2_entry(uint32_t num_pe);
 uint32_t appendix_i_6_entry(uint32_t num_pe);
 uint32_t p_l1pe_01_entry(uint32_t num_pe);
 uint32_t ie_reg_1_entry(uint32_t num_pe);
@@ -44,6 +43,9 @@ uint32_t pci_li_01_entry(uint32_t num_pe);
 uint32_t pci_mm_01_entry(uint32_t num_pe);
 uint32_t pci_mm_03_entry(uint32_t num_pe);
 uint32_t ri_smu_1_entry(uint32_t num_pe);
+uint32_t cxl_02_entry(uint32_t num_pe);
+uint32_t cxl_11_entry(uint32_t num_pe);
+uint32_t cxl_12_entry(uint32_t num_pe);
 uint32_t ie_reg_2_entry(uint32_t num_pe);
 uint32_t ie_reg_4_entry(uint32_t num_pe);
 uint32_t pci_in_13_entry(uint32_t num_pe);

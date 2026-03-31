@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,7 +30,7 @@
 /* CLI parameter table for VBSA ACS, for description refer HelpMsg */
 CONST SHELL_PARAM_ITEM ParamList[] = {
     {L"-cache", TypeFlag},
-    {L"-el1physkip", TypeFlag},
+    {L"-el1skiptrap", TypeValue},
     {L"-f", TypeValue},
     {L"-fr", TypeFlag},
     {L"-h", TypeFlag},
@@ -59,11 +59,9 @@ HelpMsg (VOID)
         "Options:\n"
         "-cache  Pass this flag to indicate that if the test system supports\n"
         "        PCIe address translation cache\n"
-        "-el1physkip \n"
-        "        Skips EL1 register checks\n"
-        "        VE systems run ACS at EL1 and in some systems crash is observed\n"
-        "        during access of EL1 registers, this flag was introduced\n"
-        "        for debugging purposes only.\n"
+        "-el1skiptrap <list>\n"
+        "        Skip specific EL1 register reads known to trap under hypervisors.\n"
+        "        Tokens: cntpct, devmem, pmsidr\n"
         "-f      Name of the log file to record the test results in\n"
         "-fr     Run rules up to the Future requirements (FR) level.\n"
         "-h|-help\n"
@@ -87,10 +85,10 @@ HelpMsg (VOID)
         "-skip   Rule ID(s) to be skipped (comma-separated, like -r)\n"
         "        Example: -skip B_PE_01,B_GIC_02\n"
         "-skip-dp-nic-ms \n"
-        "        Skip PCIe tests for DisplayPort, Network, and Mass Storage devices\n"
+        "        Skip PCIe tests for DisplayPort, Network, Mass Storage devices and Unclassified devices\n"
         "-timeout <n> \n"
-        "        Set timeout multiple for wakeup tests\n"
-        "        1 - min value  5 - max value, Defaults to 1 \n"
+        "        Set pass timeout (in microseconds) for wakeup tests (500 us - 2 sec)\n"
+        "        Example: -timeout 2000 \n"
         "-v <n>  Verbosity of the prints\n"
         "        1 prints all, 5 prints only the errors\n");
 }

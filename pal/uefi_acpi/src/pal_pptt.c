@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2024-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2024-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,7 @@
 #include <Protocol/AcpiTable.h>
 #include <Protocol/Cpu.h>
 
-#include "include/pal_uefi.h"
+#include "pal_uefi.h"
 
 UINT64 pal_get_pptt_ptr(void);
 #define ADD_PTR(t, p, l) ((t *)((UINT8 *)p + l))
@@ -53,7 +53,8 @@ pal_cache_dump_info_table(CACHE_INFO_TABLE *CacheTable, PE_INFO_TABLE *PeTable)
     acs_print(ACS_PRINT_INFO, L"\n  Cache ID:                0x%llx", curr_entry->cache_id);
     acs_print(ACS_PRINT_INFO, L"\n  Size:                    0x%llx", curr_entry->size);
     acs_print(ACS_PRINT_INFO, L"\n  Next level index:        %d", curr_entry->next_level_index);
-    acs_print(ACS_PRINT_INFO, L"\n  Private flag:            0x%llx\n", curr_entry->is_private);
+    acs_print(ACS_PRINT_INFO, L"\n  Private flag:            0x%llx", curr_entry->is_private);
+    acs_print(ACS_PRINT_INFO, L"\n  Associativity:           0x%llx\n", curr_entry->associativity);
     curr_entry++;
   }
 
@@ -94,6 +95,8 @@ pal_cache_store_info(CACHE_INFO_TABLE *CacheTable,
   curr_entry->flags.size_property_valid = cache_type_struct->Flags.SizePropertyValid;
   curr_entry->flags.cache_type_valid = cache_type_struct->Flags.CacheTypeValid;
   curr_entry->flags.cache_id_valid = cache_type_struct->Flags.CacheIdValid;
+  curr_entry->flags.associativity_valid = cache_type_struct->Flags.AssociativityValid;
+  curr_entry->associativity = cache_type_struct->Associativity;
   curr_entry->size = cache_type_struct->Size;
   curr_entry->cache_type = cache_type_struct->Attributes.CacheType;
   curr_entry->cache_id = cache_type_struct->CacheId;

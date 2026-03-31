@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,7 +30,7 @@
 
 /* CLI parameter table for PCBSA ACS, for description refer HelpMsg */
 CONST SHELL_PARAM_ITEM ParamList[] = {
-    {L"-el1physkip", TypeFlag},
+    {L"-el1skiptrap", TypeValue},
     {L"-f", TypeValue},
     {L"-fr", TypeValue},
     {L"-h", TypeFlag},
@@ -54,11 +54,9 @@ HelpMsg (VOID)
 {
     Print (L"\nUsage: PcBsa.efi [options]\n"
         "Options:\n"
-        "-el1physkip \n"
-        "        Skips EL1 register checks\n"
-        "        VE systems run ACS at EL1 and in some systems crash is observed\n"
-        "        during access of EL1 registers, this flag was introduced\n"
-        "        for debugging purposes only.\n"
+        "-el1skiptrap <list>\n"
+        "        Skip specific EL1 register reads known to trap by the hypervisor.\n"
+        "        Tokens: cntpct, devmem, pmsidr\n"
         "-f      Name of the log file to record the test results in\n"
         "-fr     Run rules up to the Future requirements (FR) level.\n"
         "-h, -help\n"
@@ -81,8 +79,8 @@ HelpMsg (VOID)
         "        Skip the specified modules (comma-separated names).\n"
         "        Example: -skipmodule PE,GIC,PCIE\n"
         "-timeout <n> \n"
-        "        Set timeout multiple for wakeup tests\n"
-        "        1 - min value  5 - max value, Defaults to 1 \n"
+        "        Set pass timeout (in microseconds) for wakeup tests (500 us - 2 sec)\n"
+        "        Example: -timeout 2000 \n"
         "-v <n>  Verbosity of the prints\n"
         "        1 prints all, 5 prints only the errors\n");
 }
@@ -151,6 +149,8 @@ execute_tests()
     val_print(ACS_PRINT_TEST, "(Print level is %2d)\n\n", g_print_level);
     val_print(ACS_PRINT_TEST, "\n Creating Platform Information Tables\n", 0);
 
+    /* Modifying default memory attributes of UEFI*/
+    val_setup_mair_register();
 
     Status = createPeInfoTable();
     if (Status) {

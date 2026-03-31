@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2020, 2023-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020, 2023-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +15,11 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/acs_peripherals.h"
-#include "val/include/acs_memory.h"
-#include "val/include/acs_pe.h"
-#include "val/include/val_interface.h"
+#include "acs_val.h"
+#include "acs_peripherals.h"
+#include "acs_memory.h"
+#include "acs_pe.h"
+#include "val_interface.h"
 
 #define TEST_NUM   (ACS_MEMORY_MAP_TEST_NUM_BASE + 1)
 #define TEST_RULE  "B_MEM_02"
@@ -87,6 +87,9 @@ payload()
           branch_to_test = &&exception_taken;
 
           *((volatile uint64_t*)addr) = 0x100;
+
+          /* Issue a DSB instruction */
+          val_mem_issue_dsb();
 exception_taken:
           /* if the access did not go to our exception handler, fail and exit */
           if (IS_TEST_FAIL(val_get_status(index))) {

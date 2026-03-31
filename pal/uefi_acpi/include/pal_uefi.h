@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,8 @@
 
 #ifndef __PAL_UEFI_H__
 #define __PAL_UEFI_H__
+
+#include "pal_status.h"
 
 /* include ACPI specification headers */
 #include "Include/Guid/Acpi.h"
@@ -36,6 +38,7 @@ extern UINT32 g_curr_module;
 extern UINT32 g_enable_module;
 extern UINT32 g_pcie_p2p;
 extern UINT32 g_pcie_cache_present;
+VOID pal_warn_not_implemented(const CHAR8 *api_name);
 
 #define ACS_PRINT_ERR   5      /* Only Errors. use this to de-clutter the terminal and focus only on specifics */
 #define ACS_PRINT_WARN  4      /* Only warnings & errors. use this to de-clutter the terminal and focus only on specifics */
@@ -48,7 +51,6 @@ extern UINT32 g_pcie_cache_present;
 #define PCIE_CAP_NOT_FOUND      0x10000010  /* The specified capability was not found */
 #define PCIE_UNKNOWN_RESPONSE   0xFFFFFFFF  /* Function not found or UR response from completer */
 
-#define NOT_IMPLEMENTED         0x4B1D  /* Feature or API by default unimplemented */
 #define MEM_OFFSET_SMALL        0x10    /* Memory Offset from BAR base value that can be accesed*/
 
 #define TYPE0_MAX_BARS  6
@@ -131,6 +133,21 @@ typedef struct {
 }PE_INFO_TABLE;
 
 /**
+  @brief  MMU configuration structure for secondary PE initialization
+          This structure holds the primary PE's MMU configuration which
+          is used to enable MMU/caches on secondary PEs.
+**/
+typedef struct {
+  UINT64 ttbr0;      ///< Translation Table Base Register 0
+  UINT64 ttbr1;      ///< Translation Table Base Register 1
+  UINT64 tcr;        ///< Translation Control Register
+  UINT64 mair;       ///< Memory Attribute Indirection Register
+  UINT64 sctlr;      ///< System Control Register
+  UINT32 current_el; ///< Current Exception Level (1 or 2)
+  UINT32 reserved;   ///< Reserved for alignment
+} PE_MMU_CONFIG;
+
+/**
   @brief  Instance of smbios type 4 processor info
 **/
 typedef struct {
@@ -151,6 +168,7 @@ VOID     pal_pe_data_cache_ops_by_va(UINT64 addr, UINT32 type);
 #define CLEAN_AND_INVALIDATE  0x1
 #define CLEAN                 0x2
 #define INVALIDATE            0x3
+#define CLEAN_POC             0x4
 
 typedef struct {
   UINT32   gic_version;
@@ -283,6 +301,74 @@ typedef enum {
   NON_PREFETCH_MEMORY = 0x0,
   PREFETCH_MEMORY = 0x1
 }PCIE_MEM_TYPE_INFO_e;
+
+#define CXL_MAX_CFMWS_WINDOWS  2
+/*
+ * CXL info table describing per-host bridge component register windows and
+ * discovered capability flags from firmware (CEDT) or overrides.
+ */
+typedef struct {
+  UINT32 cxl_struct_type;      ///< Type of CXL Structure [CHBS/CFMWS and so on]
+  UINT32 uid;                  ///< CXL HB Unique ID
+  UINT32 component_reg_type;   ///< Type of CEDT Structure
+  UINT64 component_reg_base;   ///< Base address of the CHBCR/RCH DP RCRB
+  UINT64 component_reg_length; ///< Length of the range
+  UINT32 cxl_version;          ///< CXL Version
+  UINT32 hdm_decoder_count;    ///< No. of HDM decoders
+  UINT32 cfmws_count;
+  UINT64 cfmws_base[CXL_MAX_CFMWS_WINDOWS];
+  UINT64 cfmws_length[CXL_MAX_CFMWS_WINDOWS];
+  UINT32 cfmws_window[CXL_MAX_CFMWS_WINDOWS];
+} CXL_INFO_BLOCK;
+
+typedef struct {
+  UINT32         num_entries;
+  CXL_INFO_BLOCK device[];
+} CXL_INFO_TABLE;
+
+/*
+ * DSDT/SSDT AML parser with generic AML helpers.
+ */
+#define ACPI_MAX_ROOT_BRIDGES     32
+#define PAL_AML_MAX_DEVICE_DEPTH  8
+
+#define AML_OP_DEVICE_PREFIX 0x5B
+#define AML_OP_DEVICE        0x82
+#define AML_OP_NAME          0x08
+#define AML_OP_STRING        0x0D
+#define AML_OP_BYTE          0x0A
+#define AML_OP_WORD          0x0B
+#define AML_OP_DWORD         0x0C
+#define AML_OP_QWORD         0x0E
+#define AML_OP_PACKAGE       0x12u
+#define AML_OP_SCOPE         0x10u
+#define AML_OP_ZERO          0x00
+#define AML_OP_ONE           0x01
+
+#define AML_NAME_ROOT        0x5C
+#define AML_NAME_PARENT      0x5E
+#define AML_NAME_DUAL        0x2E
+#define AML_NAME_MULTI       0x2F
+#define AML_NAME_NULL        0x00
+
+typedef enum {
+  AML_DATA_NONE,
+  AML_DATA_INTEGER,
+  AML_DATA_STRING
+} PAL_AML_DATA_TYPE;
+
+typedef struct {
+  UINT32 uid;
+  UINT16 segment;
+  UINT8  bbn;
+  UINT8  hid_is_pci;
+  UINT8  uid_valid;
+} ACPI_ROOT_BRIDGE_INFO;
+
+typedef struct {
+  UINT32 end_offset;
+  ACPI_ROOT_BRIDGE_INFO info;
+} AML_DEVICE_SCOPE;
 
 VOID *pal_pci_bdf_to_dev(UINT32 bdf);
 VOID pal_pci_read_config_byte(UINT32 bdf, UINT8 offset, UINT8 *data);
@@ -464,6 +550,12 @@ typedef struct {
 UINT32 pal_pcie_get_root_port_bdf(UINT32 *seg, UINT32 *bus, UINT32 *dev, UINT32 *func);
 UINT32 pal_pcie_max_pasid_bits(UINT32 bdf);
 
+/* CXL component register type identifiers (CEDT CHBS) */
+#define CXL_COMPONENT_RCRB     0x1
+#define CXL_COMPONENT_CHBCR    0x2
+
+UINT32 pal_acpi_get_root_bridge_uid(UINT16 segment, UINT8 bbn, UINT32 *uid);
+
 /* Memory INFO table */
 #define MEM_MAP_SUCCESS  0x0
 #define MEM_MAP_NO_MEM   0x10000001
@@ -554,6 +646,7 @@ typedef struct {
     UINT32           err_intr_flags;/* Error interrupt flags */
     UINT32           max_nrdy;      /* max time in microseconds that MSC not ready
                                          after config change */
+    CHAR8            device_obj_name[MAX_NAMED_COMP_LENGTH]; /* Device object name */
     UINT32           rsrc_count;    /* number of resource nodes */
     MPAM_RESOURCE_NODE rsrc_node[]; /* Details of resource node */
 } MPAM_MSC_NODE;
@@ -572,6 +665,7 @@ typedef struct {
     UINT32          msc_count;  /* Number of MSC node */
     MPAM_MSC_NODE   msc_node[]; /* Details of MSC node */
 } MPAM_INFO_TABLE;
+UINT32 pal_mpam_parse_dsdt_info(MPAM_INFO_TABLE *MpamTable);
 
 
 /* Platform Communication Channel (PCC) info table */
@@ -715,6 +809,7 @@ typedef struct {
   UINT32 size_property_valid;
   UINT32 cache_type_valid;
   UINT32 cache_id_valid;
+  UINT8  associativity_valid;
 } CACHE_FLAGS;
 
 /* Since most of platform doesn't support cache id field (ACPI 6.4+), ACS uses PPTT offset as key
@@ -728,6 +823,7 @@ typedef struct {
   UINT32 cache_id;          /* Unique, non-zero identifier for this cache */
   UINT32 is_private;        /* Field indicate whether cache is private */
   UINT8  cache_type;        /* Cache type */
+  UINT8  associativity;     /* N-way cache associativity */
 } CACHE_INFO_ENTRY;
 
 typedef struct {

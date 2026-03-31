@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,12 +25,12 @@
 /* BSA Release versions */
 #define BSA_ACS_MAJOR_VER       1
 #define BSA_ACS_MINOR_VER       2
-#define BSA_ACS_SUBMINOR_VER    0
+#define BSA_ACS_SUBMINOR_VER    1
 
 /* SBSA Release versions */
 #define SBSA_ACS_MAJOR_VER       8
 #define SBSA_ACS_MINOR_VER       0
-#define SBSA_ACS_SUBMINOR_VER    0
+#define SBSA_ACS_SUBMINOR_VER    1
 
 /* PC BSA Release versions */
 #define PC_BSA_ACS_MAJOR_VER     1
@@ -38,8 +38,8 @@
 #define PC_BSA_ACS_SUBMINOR_VER  0
 
 /* VBSA Release versions */
-#define VBSA_ACS_MAJOR_VER       0
-#define VBSA_ACS_MINOR_VER       7
+#define VBSA_ACS_MAJOR_VER       1
+#define VBSA_ACS_MINOR_VER       0
 #define VBSA_ACS_SUBMINOR_VER    0
 
 /* xBSA ACS Release versions */
@@ -53,8 +53,8 @@
 
 /* MPAM Release versions */
 #define MPAM_ACS_MAJOR_VER      0
-#define MPAM_ACS_MINOR_VER      5
-#define MPAM_ACS_SUBMINOR_VER   1
+#define MPAM_ACS_MINOR_VER      7
+#define MPAM_ACS_SUBMINOR_VER   0
 
 /* PFDI Release versions */
 #define PFDI_ACS_MAJOR_VER      0
@@ -73,7 +73,7 @@
 
 #define G_SBSA_LEVEL             4
 #define SBSA_MIN_LEVEL_SUPPORTED 3
-#define SBSA_MAX_LEVEL_SUPPORTED 8
+#define SBSA_MAX_LEVEL_SUPPORTED 9
 
 #define G_PCBSA_LEVEL             1
 #define PCBSA_MIN_LEVEL_SUPPORTED 1
@@ -103,9 +103,11 @@
                                        /*[72 B Each + 16 B Header]*/
 #define PCIE_INFO_TBL_SZ        1024   /*Supports max 40 RC's    */
                                        /*[24 B Each + 4 B Header]*/
+#define CXL_INFO_TBL_SZ         512    /*Supports 6 CXL host bridges*/
+                                       /*[80 B Each]*/
 #define SMBIOS_INFO_TBL_SZ      65536  /*Supports max 1024 Processor Slots/Sockets*/
                                        /*[64 B Each]*/
-#define PMU_INFO_TBL_SZ         20496  /*Supports maximum 512 PMUs*/
+#define PMU_INFO_TBL_SZ         20496  /*Suports maximum 512 PMUs*/
                                        /*[40 B Each + 4 B Header]*/
 #define RAS_INFO_TBL_SZ         40960  /*Supports maximum 256 RAS Nodes*/
                                        /*[144 B Each + 12 B Header]*/
@@ -115,8 +117,9 @@
                                        /*[36 B Each + 4 B Header]*/
 #define SRAT_INFO_TBL_SZ        16384  /*Support maximum of 500 mem proximity domain entries*/
                                        /*[32 B Each + 8 B Header]*/
-#define MPAM_INFO_TBL_SZ        262144 /*Supports maximum of 1800 MSC entries*/
-                                       /*[24+(24*5) B Each + 4 B Header]*/
+#define MPAM_INFO_TBL_SZ        409600 /*Supports maximum of 1800 MSC entries*/
+                                       /*[(200+24) B Each + 4 B Header]*/
+                                       /*[includes device object name]*/
 #define HMAT_INFO_TBL_SZ        12288  /*Supports maximum of 400 Proximity domains*/
                                        /*[24 B Each + 8 B Header]*/
 #define PCC_INFO_TBL_SZ         262144 /*Supports maximum of 234 PCC info entries*/
@@ -152,7 +155,8 @@ extern UINT32  g_num_skip;
 extern UINT64  g_stack_pointer;
 extern UINT64  g_exception_ret_addr;
 extern UINT64  g_ret_addr;
-extern UINT32  g_wakeup_timeout;
+extern UINT32  g_timeout_pass;
+extern UINT32  g_timeout_fail;
 extern UINT32  g_build_sbsa;
 extern UINT32  g_build_pcbsa;
 extern UINT32  g_print_mmio;
@@ -164,7 +168,7 @@ extern UINT32  g_num_modules;
 extern UINT32 *g_skip_modules;
 extern UINT32  g_num_skip_modules;
 extern UINT32  g_sys_last_lvl_cache;
-extern UINT32  g_el1physkip;
+extern UINT32  g_el1skiptrap_mask;
 extern SHELL_FILE_HANDLE g_acs_log_file_handle;
 extern SHELL_FILE_HANDLE g_dtb_log_file_handle;
 extern RULE_ID_e *g_rule_list;
@@ -190,6 +194,7 @@ uint32_t createRasInfoTable(void);
 void     createTimerInfoTable(void);
 void     createWatchdogInfoTable(void);
 void     createPcieVirtInfoTable(void);
+void     createCxlInfoTable(void);
 void     createPeripheralInfoTable(void);
 void     createSmbiosInfoTable(void);
 void     createPmuInfoTable(void);

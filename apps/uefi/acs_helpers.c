@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -548,12 +548,46 @@ command_init (void)
     /* Parse -timeout */
     CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-timeout");
     if (CmdLineArg == NULL) {
-        g_wakeup_timeout = 1;
+        g_timeout_pass = WAKEUP_WD_PASS_TIMEOUT_DEFAULT;
+        g_timeout_fail = g_timeout_pass * WAKEUP_WD_FAILSAFE_TIMEOUT_MULTIPLIER;
     } else {
-        g_wakeup_timeout = StrDecimalToUintn(CmdLineArg);
-        Print(L"Wakeup timeout multiple %d.\n", g_wakeup_timeout);
-        if (g_wakeup_timeout > 5)
-            g_wakeup_timeout = 5;
+        /* Accept a single value; ignore any trailing delimiters */
+        CHAR16 buf[64];
+        UINTN len = StrLen(CmdLineArg);
+        UINTN i;
+
+        if (len >= (sizeof(buf) / sizeof(buf[0])))
+            len = (sizeof(buf) / sizeof(buf[0])) - 1;
+
+        for (i = 0; i < len; i++) {
+            buf[i] = CmdLineArg[i];
+        }
+        buf[i] = L'\0';
+
+        if (i == 0) {
+            Print(L"Invalid -timeout: provide a timeout value\n");
+            return SHELL_INVALID_PARAMETER;
+        }
+
+        /* trim leading/trailing spaces */
+        while (buf[0] == L' ' || buf[0] == L'\t') {
+            for (i = 0; buf[i] != L'\0'; i++) buf[i] = buf[i + 1];
+        }
+        i = StrLen(buf);
+        while (i > 0 && (buf[i - 1] == L' ' || buf[i - 1] == L'\t')) {
+            buf[i - 1] = L'\0';
+            i--;
+        }
+
+        g_timeout_pass = (UINT32)StrDecimalToUintn(buf);
+        g_timeout_fail = g_timeout_pass * WAKEUP_WD_FAILSAFE_TIMEOUT_MULTIPLIER;
+        if (!(g_timeout_pass >= WAKEUP_WD_PASS_TIMEOUT_THRESHOLD &&
+              g_timeout_pass <= WAKEUP_WD_PASS_TIMEOUT_MAX_THRESHOLD)) {
+            Print(L"Invalid -timeout: pass timeout range should be within 500ms and 2sec\n");
+            return SHELL_INVALID_PARAMETER;
+        }
+
+        Print(L"Timeouts (us): PASS=%d, FAIL=%d\n", g_timeout_pass, g_timeout_fail);
     }
 
     /* Parse verbosity level */
@@ -948,8 +982,57 @@ command_init (void)
         g_pcie_cache_present = FALSE;
     }
 
-    if (ShellCommandLineGetFlag (ParamPackage, L"-el1physkip")) {
-        g_el1physkip = TRUE;
+    /* -el1skiptrap <params>: skip specific EL1 register accesses known to trap under hypervisors */
+    CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-el1skiptrap");
+    if (CmdLineArg != NULL) {
+
+        /* -el1skiptrap only applicable while running ACS at EL1 */
+        if (val_pe_reg_read(CurrentEL) == AARCH64_EL1) {
+
+            UINTN arg_len = StrLen(CmdLineArg);
+            UINTN token_start = 0;
+            UINTN token_end = 0;
+            BOOLEAN invalid_token = FALSE;
+
+            while (token_start < arg_len) {
+                /* find end of token (comma or newline/CR) */
+                token_end = token_start;
+                while (token_end < arg_len && CmdLineArg[token_end] != L','
+                                && CmdLineArg[token_end] != L'\n'
+                                && CmdLineArg[token_end] != L'\r')
+                    token_end++;
+                /* trim */
+                while (token_start < token_end &&
+                    (CmdLineArg[token_start] == L' ' || CmdLineArg[token_start] == L'\t'))
+                    token_start++;
+                while (token_end > token_start &&
+                    (CmdLineArg[token_end-1] == L' ' || CmdLineArg[token_end-1] == L'\t'))
+                    token_end--;
+                if (token_end > token_start) {
+                    CHAR16 token[32];
+                    UINTN  tlen = token_end - token_start;
+                    UINTN  ii;
+                    if (tlen >= (sizeof(token)/sizeof(token[0])))
+                        tlen = (sizeof(token)/sizeof(token[0])) - 1;
+                    for (ii = 0; ii < tlen; ii++) token[ii] = CmdLineArg[token_start + ii];
+                    token[tlen] = L'\0';
+
+                    if (w_ascii_streq_caseins(token, L"pmsidr")) {
+                        g_el1skiptrap_mask |= EL1SKIPTRAP_PMSIDR;
+                    } else if (w_ascii_streq_caseins(token, L"cntpct")) {
+                        g_el1skiptrap_mask |= EL1SKIPTRAP_CNTPCT;
+                    } else if (w_ascii_streq_caseins(token, L"devmem")) {
+                        g_el1skiptrap_mask |= EL1SKIPTRAP_DEVMEM;
+                    } else {
+                        Print(L"Invalid -el1skiptrap token: %s\n", token);
+                        invalid_token = TRUE;
+                    }
+                }
+                token_start = (token_end < arg_len) ? token_end + 1 : token_end;
+            }
+            if (invalid_token)
+                return SHELL_INVALID_PARAMETER;
+        }
     }
 
     return 0;
@@ -1085,6 +1168,17 @@ createPcieVirtInfoTable(
     IoVirtInfoTable = val_aligned_alloc(SIZE_4K, IOVIRT_INFO_TBL_SZ);
 
     val_iovirt_create_info_table(IoVirtInfoTable);
+}
+
+VOID
+createCxlInfoTable(
+)
+{
+  UINT64 *CxlInfoTable;
+
+  CxlInfoTable = val_aligned_alloc(SIZE_4K, CXL_INFO_TBL_SZ);
+
+  val_cxl_create_info_table(CxlInfoTable);
 }
 
 VOID

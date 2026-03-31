@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2019-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +15,11 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/val_interface.h"
-#include "val/include/acs_pcie.h"
-#include "val/include/acs_pe.h"
-#include "val/include/acs_memory.h"
+#include "acs_val.h"
+#include "val_interface.h"
+#include "acs_pcie.h"
+#include "acs_pe.h"
+#include "acs_memory.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 63)
 #define TEST_RULE  "RI_RST_1"
@@ -96,7 +96,8 @@ payload(void)
       val_pcie_read_cfg(bdf, TYPE01_RIDR, &reg_value);
       base_cc = reg_value >> TYPE01_BCC_SHIFT;
       if (g_pcie_skip_dp_nic_ms &&
-          ((base_cc == MAS_CC) || (base_cc == CNTRL_CC) || (base_cc == DP_CNTRL_CC)))
+          ((base_cc == UNCLAS_CC) || (base_cc == MAS_CC)
+          || (base_cc == CNTRL_CC) || (base_cc == DP_CNTRL_CC)))
       {
           val_print(ACS_PRINT_DEBUG, "\n       Skipping for BDF - 0x%x ", bdf);
           val_print(ACS_PRINT_DEBUG, " Classcode is : 0x%x ", base_cc);

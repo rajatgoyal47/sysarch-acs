@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,12 +15,12 @@
  * limitations under the License.
  **/
 
-#include "include/acs_val.h"
-#include "include/acs_common.h"
-#include "include/acs_mpam.h"
-#include "include/acs_mpam_reg.h"
-#include "include/acs_memory.h"
-#include "include/val_interface.h"
+#include "acs_val.h"
+#include "acs_common.h"
+#include "acs_mpam.h"
+#include "acs_mpam_reg.h"
+#include "acs_memory.h"
+#include "val_interface.h"
 
 /**
   @brief   This API resets the MPAMF_ESR.errcode bits. This would be used to clear
@@ -35,11 +35,14 @@ uint32_t val_mpam_msc_reset_errcode(uint32_t msc_index)
     uint64_t esr_value;
     uint32_t esr_errcode;
 
-    esr_value = val_mpam_mmr_read(msc_index, REG_MPAMF_ESR);
+    esr_value = val_mpam_mmr_read64(msc_index, REG_MPAMF_ESR);
 
-    /* Create a mask to clear bits 24-27 */
-    uint64_t mask = ~(ESR_ERRCODE_MASK << ESR_ERRCODE_SHIFT);
+    /* Create a mask to clear bits ERRCODE 24-27, OVRWR 31, RIS 32-35 */
+    uint64_t mask = ~(((uint64_t)ESR_ERRCODE_MASK << ESR_ERRCODE_SHIFT) |
+                      ((uint64_t)ESR_RIS_MASK << ESR_RIS_SHIFT)         |
+                      ((uint64_t)ESR_OVRWR_MASK << ESR_OVRWR_SHIFT));
 
+    val_print(ACS_PRINT_DEBUG, "\n       Mask applied is %llx", mask);
     /* Update ESR and write back to the register */
     esr_value &= mask;
     val_mpam_mmr_write64(msc_index, REG_MPAMF_ESR, esr_value);
@@ -67,10 +70,17 @@ uint32_t val_mpam_msc_reset_errcode(uint32_t msc_index)
 uint32_t val_mpam_msc_get_errcode(uint32_t msc_index)
 {
     uint32_t errcode;
-    uint64_t esr_value = val_mpam_mmr_read(msc_index, REG_MPAMF_ESR);
+    uint64_t esr_value = val_mpam_mmr_read64(msc_index, REG_MPAMF_ESR);
 
     errcode = ((esr_value >> ESR_ERRCODE_SHIFT) & ESR_ERRCODE_MASK);
     return errcode;
+}
+
+bool val_mpam_msc_get_esr_ovrwr(uint32_t msc_index)
+{
+    uint64_t esr_value = val_mpam_mmr_read64(msc_index, REG_MPAMF_ESR);
+
+    return ((esr_value >> ESR_OVRWR_SHIFT) & ESR_OVRWR_MASK);
 }
 
 /**
@@ -81,21 +91,47 @@ uint32_t val_mpam_msc_get_errcode(uint32_t msc_index)
   @param   msc_index  - index of the MSC node in the MPAM info table.
   @return  void
 **/
-void val_mpam_msc_generate_psr_error(uint32_t msc_index)
+uint32_t val_mpam_msc_generate_psr_error(uint32_t msc_index)
 {
 
     uint16_t max_partid;
+    uint32_t part_sel_value;
+    uint32_t part_sel_read;
+    uint32_t partid_sel_read;
 
     /* Extract max PARTID supported by this MSC */
     max_partid = val_mpam_get_max_partid(msc_index);
     val_print(ACS_PRINT_DEBUG, "\n       Max PARTID is %d", max_partid);
 
+    if (max_partid == MPAMIDR_PARTID_MAX_MASK) {
+        val_print(ACS_PRINT_WARN,
+                  "\n       MSC index %d: Max PARTID is 0xFFFF; cannot test out-of-range PARTID. Skipping MSC",
+                  msc_index);
+        return ACS_STATUS_SKIP;
+    }
+
     /* Write (max_partid+1) to PART_SEL register to generate PSR error */
-    val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, max_partid + 1);
-    val_print(ACS_PRINT_DEBUG, "\n       PARTID written to MPAMCFG_PART_SEL is %d", max_partid + 1);
+    part_sel_value = val_mpam_mmr_read(msc_index, REG_MPAMCFG_PART_SEL);
+    part_sel_value = (part_sel_value &
+                      ~(PART_SEL_PARTID_SEL_MASK << PART_SEL_PARTID_SEL_SHIFT)) |
+                     BITFIELD_SET(PART_SEL_PARTID_SEL, (max_partid + 1));
+    val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, part_sel_value);
+    val_print(ACS_PRINT_DEBUG, "\n       PARTID written to MPAMCFG_PART_SEL is %d",
+                               (max_partid + 1));
+
+    /* Check whether MPAMCFG_PART_SEL.PARTID_SEL is updated */
+    part_sel_read = val_mpam_mmr_read(msc_index, REG_MPAMCFG_PART_SEL);
+    partid_sel_read = BITFIELD_READ(PART_SEL_PARTID_SEL, part_sel_read);
+    val_print(ACS_PRINT_DEBUG, "\n       PARTID read from MPAMCFG_PART_SEL is %d",
+                               partid_sel_read);
+
+    if (partid_sel_read == (uint32_t)(max_partid + 1)) {
+        /* If updated, access the configuration register to cause the error */
+        val_mpam_mmr_read(msc_index, REG_MPAMCFG_PART_SEL);
+    }
 
     val_mem_issue_dsb();
-    return;
+    return ACS_STATUS_PASS;
 }
 
 /**
@@ -167,6 +203,13 @@ uint32_t val_mpam_msc_generate_por_error(uint32_t msc_index)
     /* Start mem copy transaction to generate POR error interrupt */
     val_memcpy(src_buf, dest_buf, SIZE_1K);
 
+    /* Wait for some time */
+    val_time_delay_ms(1000 * ONE_MILLISECOND);
+
+    /* Free the buffers */
+    val_memory_free_aligned(src_buf);
+    val_memory_free_aligned(dest_buf);
+
     return ACS_STATUS_PASS;
 }
 
@@ -224,6 +267,14 @@ uint32_t val_mpam_msc_generate_pmgor_error(uint32_t msc_index)
 
     /* Start mem copy transaction to generate PMGOR error interrupt */
     val_memcpy(src_buf, dest_buf, SIZE_1K);
+
+    /* Wait for some time */
+    val_time_delay_ms(1000 * ONE_MILLISECOND);
+
+    /* Free the buffers */
+    val_memory_free_aligned(src_buf);
+    val_memory_free_aligned(dest_buf);
+
     return ACS_STATUS_PASS;
 }
 
@@ -277,11 +328,11 @@ void val_mpam_msc_generate_msmon_oflow_error(uint32_t msc_index, uint16_t mon_co
     uint64_t max_count = 0;
     uint64_t nrdy_timeout;
 
-    /* Set interrupt enable bit in MPAMF_ECR */
-    val_mpam_mmr_write(msc_index, REG_MPAMF_ECR, (1 << ECR_ENABLE_INTEN_SHIFT));
-
     /* Write mon_count to MON_SEL register to configure the last monitor */
     val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MON_SEL, mon_count);
+
+    /* Write 0b0000 into MPAMF_ESR.ERRCODE to clear the interrupt */
+    val_mpam_msc_reset_errcode(msc_index);
 
     /* Configure monitor filter reg for default partid and default pmg */
     val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MBWU_FLT,
@@ -289,7 +340,6 @@ void val_mpam_msc_generate_msmon_oflow_error(uint32_t msc_index, uint16_t mon_co
 
     /* Configure monitor ctrl reg for default partid and pmg to generate a oflow interrupt */
     val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MBWU_CTL, (
-                                                    (1 << MBWU_CTL_OFLOW_INTR_L_SHIFT) |
                                                     (1 << MBWU_CTL_ENABLE_MATCH_PARTID_SHIFT) |
                                                     (1 << MBWU_CTL_ENABLE_MATCH_PMG_SHIFT) |
                                                     (1 << MBWU_CTL_ENABLE_OFLOW_INTR_SHIFT)
@@ -312,6 +362,9 @@ void val_mpam_msc_generate_msmon_oflow_error(uint32_t msc_index, uint16_t mon_co
             max_count = MSMON_COUNT_31BIT;  // (31 bits)
             val_mpam_mmr_write(msc_index, REG_MSMON_MBWU, ((0 << MBWU_NRDY_SHIFT) | max_count));
     }
+
+    /* Set interrupt enable bit in MPAMF_ECR */
+    val_mpam_mmr_write(msc_index, REG_MPAMF_ECR, (1 << ECR_ENABLE_INTEN_SHIFT));
 
     val_mem_issue_dsb();
 

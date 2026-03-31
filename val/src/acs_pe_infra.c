@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2020-2021,2023-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020-2021,2023-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +15,13 @@
  * limitations under the License.
  **/
 
-#include "include/acs_val.h"
-#include "include/acs_pe.h"
-#include "include/acs_common.h"
-#include "include/acs_std_smc.h"
-#include "driver/gic/acs_exception.h"
-#include "include/val_interface.h"
-#include "include/pal_interface.h"
+#include "acs_val.h"
+#include "acs_pe.h"
+#include "acs_common.h"
+#include "acs_std_smc.h"
+#include "acs_exception.h"
+#include "val_interface.h"
+#include "pal_interface.h"
 
 PE_SMBIOS_PROCESSOR_INFO_TABLE *g_smbios_info_table;
 int32_t gPsciConduit;
@@ -223,6 +223,7 @@ val_pe_get_index_mpid(uint64_t mpid)
            Uses PSCI_CPU_OFF to switch off PE after payload execution.
            1. Caller       -  PAL code
            2. Prerequisite -  Stack pointer for this PE is setup by PAL
+                              MMU/caches enabled by ModuleEntryPoint
   @param   None
   @return  None
 **/

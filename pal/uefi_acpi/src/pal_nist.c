@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2024-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2024-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,7 @@
  * limitations under the License.
 **/
 
-#include "include/pal_uefi.h"
+#include "pal_uefi.h"
 
 /**
   @brief   This API generates a 32 bit random number.
@@ -26,6 +26,7 @@
 UINT32
 pal_nist_generate_rng(UINT32 *rng_buffer)
 {
-  return NOT_IMPLEMENTED;
+  pal_warn_not_implemented(__func__);
+  return PAL_STATUS_NOT_IMPLEMENTED;
 
 }

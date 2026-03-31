@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +15,11 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/acs_pe.h"
-#include "val/include/acs_mpam.h"
-#include "val/include/acs_mpam_reg.h"
-#include "val/include/val_interface.h"
+#include "acs_val.h"
+#include "acs_pe.h"
+#include "acs_mpam.h"
+#include "acs_mpam_reg.h"
+#include "val_interface.h"
 
 #define TEST_NUM   ACS_MPAM_ERROR_TEST_NUM_BASE  +  1
 #define TEST_DESC  "Check MSC PARTID selection range error"
@@ -55,11 +55,13 @@ static void payload(void)
             return;
         }
 
+        /* Generate PARTID selection range (PSR) error */
+        status = val_mpam_msc_generate_psr_error(index);
+        if (status == ACS_STATUS_SKIP)
+            continue;
+
         /* Test runs on atleast one MSC */
         test_skip = 0;
-
-        /* Generate PARTID selection range (PSR) error */
-        val_mpam_msc_generate_psr_error(index);
 
         /* Wait for some time for the error to be reflected in MPAMF_ESR */
         val_time_delay_ms(100 * ONE_MILLISECOND);

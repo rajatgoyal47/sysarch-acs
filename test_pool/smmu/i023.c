@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +15,11 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/acs_iovirt.h"
-#include "val/include/acs_smmu.h"
-#include "val/include/acs_memory.h"
-#include "val/include/val_interface.h"
+#include "acs_val.h"
+#include "acs_iovirt.h"
+#include "acs_smmu.h"
+#include "acs_memory.h"
+#include "val_interface.h"
 
 #define TEST_NUM   (ACS_SMMU_TEST_NUM_BASE + 23)
 #define TEST_RULE  "S_L7SM_02"
@@ -95,10 +95,10 @@ payload(void)
 
       /*Check the CATU in ETR path*/
       status = val_smmu_is_etr_behind_catu((char8_t *)etr_path[i]);
-      if (status == NOT_IMPLEMENTED) {
+      if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
         val_print(ACS_PRINT_DEBUG,
                     "\n       val_smmu_is_etr_behind_catu API not implemented", 0);
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+        val_set_status(index, RESULT_WARN(TEST_NUM, 1));
         return;
       } else if (status) {
         val_print(ACS_PRINT_DEBUG, "\n       No CATU found in ETR path at index %d", i);

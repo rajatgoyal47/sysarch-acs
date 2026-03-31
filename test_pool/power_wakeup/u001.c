@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2019, 2021-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019, 2021-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,17 +15,17 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/acs_pe.h"
-#include "val/include/val_interface.h"
-#include "val/include/acs_wakeup.h"
+#include "acs_val.h"
+#include "acs_pe.h"
+#include "val_interface.h"
+#include "acs_wakeup.h"
 
 #define TEST_NUM  (ACS_WAKEUP_TEST_NUM_BASE + 1)
 #define TEST_RULE "B_WAK_03, B_WAK_07"
 #define TEST_DESC "Wake from EL1 PHY Timer Int           "
 
-extern uint32_t g_wakeup_timeout;
 static uint32_t g_el1phy_int_received;
+extern uint32_t g_timeout_pass;
 
 static
 void
@@ -48,8 +48,8 @@ payload1()
 {
   uint32_t intid;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
-  uint64_t delay_loop = val_get_counter_frequency() * g_wakeup_timeout;
-  uint64_t timer_expire_val = val_get_counter_frequency() * g_wakeup_timeout;
+  uint32_t delay_loop = MAX_SPIN_LOOPS;
+  uint32_t timer_expire_val = CEIL_TO_MAX_SYS_TIMEOUT(val_get_timeout_to_ticks(g_timeout_pass));
 
   intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
   if (val_gic_install_isr(intid, isr1)) {
@@ -63,6 +63,10 @@ payload1()
 
   /* Add a delay loop after WFI called in case PE needs some time to enter WFI state
    * exit if test int comes
+   *
+   * This delay loop is a bounded spin wait used only to wait for the
+   * interrupt to arrive. It is not time-based and does not represent
+   * system counter ticks.
   */
   while (delay_loop && (g_el1phy_int_received == 0)) {
       delay_loop--;
@@ -92,7 +96,7 @@ u001_entry(uint32_t num_pe)
 
   num_pe = 1;  //This Timer test is run on single processor
 
-  if (!g_el1physkip) {
+  if (!(g_el1skiptrap_mask & EL1SKIPTRAP_CNTPCT)) {
       val_log_context((char8_t *)__FILE__, (char8_t *)__func__, __LINE__);
       status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
 

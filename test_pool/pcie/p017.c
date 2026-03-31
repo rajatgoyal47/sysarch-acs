@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2021, 2024-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021, 2024-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +15,11 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/acs_pcie.h"
-#include "val/include/acs_pe.h"
-#include "val/include/acs_memory.h"
-#include "val/include/acs_iovirt.h"
+#include "acs_val.h"
+#include "acs_pcie.h"
+#include "acs_pe.h"
+#include "acs_memory.h"
+#include "acs_iovirt.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 17)
 #define TEST_RULE  "PCI_PP_05"
@@ -42,16 +42,14 @@ payload(void)
   uint32_t rc_ats_attr;
   uint32_t rc_ats_supp;
   uint32_t data;
+  uint32_t status;
   pcie_device_bdf_table *bdf_tbl_ptr;
 
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   /* Check If PCIe Hierarchy supports P2P */
-  if (val_pcie_p2p_support() == NOT_IMPLEMENTED) {
-    val_print(ACS_PRINT_DEBUG, "\n       The test is applicable only if the system supports", 0);
-    val_print(ACS_PRINT_DEBUG, "\n       P2P traffic. If the system supports P2P, pass the", 0);
-    val_print(ACS_PRINT_DEBUG, "\n       command line option '-p2p' while running the binary", 0);
-    val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+  if (val_pcie_p2p_support() == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
+    val_set_status(pe_index, RESULT_WARN(TEST_NUM, 1));
     return;
   }
 
@@ -95,7 +93,12 @@ payload(void)
       if (dp_type == RP)
       {
           /* Check If RP supports P2P with other RP's. */
-          if (val_pcie_dev_p2p_support(bdf))
+          status = val_pcie_dev_p2p_support(bdf);
+          if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
+              val_set_status(pe_index, RESULT_WARN(TEST_NUM, 1));
+              return;
+          }
+          if (status)
               continue;
 
           /* If test runs for atleast one RP */

@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2020-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +22,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include "pal_status.h"
+#include "platform_override_fvp.h"
 
 typedef uintptr_t addr_t;
 typedef char     char8_t;
@@ -43,6 +45,10 @@ extern uint32_t g_enable_module;
 #define MEM_ALIGN_32K      0x8000
 #define MEM_ALIGN_64K      0x10000
 
+#define EL1SKIPTRAP_PMSIDR   (1u << 0)
+#define EL1SKIPTRAP_CNTPCT   (1u << 1)
+#define EL1SKIPTRAP_DEVMEM   (1u << 2)
+
 #define TRUE 1
 #define FALSE 0
 
@@ -62,6 +68,7 @@ void *pal_aligned_alloc( uint32_t alignment, uint32_t size );
 
 void pal_uart_print(int log, const char *fmt, ...);
 void *mem_alloc(size_t alignment, size_t size);
+void pal_warn_not_implemented(const char *api_name);
 #define print(verbose, string, ...)  if(verbose >= g_print_level) \
                                                    pal_uart_print(verbose, string, ##__VA_ARGS__)
 
@@ -87,7 +94,7 @@ void *mem_alloc(size_t alignment, size_t size);
 
 /* TYPE 0/1 Cmn Cfg reg offsets and mask*/
 #define TYPE01_CPR           0x34
-#define TYPE01_CPR_MASK      0xff
+#define TYPE01_CPR_MASK      0xfc
 #define COMMAND_REG_OFFSET   0x04
 #define REG_ACC_DATA         0x7
 
@@ -130,7 +137,7 @@ void *mem_alloc(size_t alignment, size_t size);
 #define PCIE_CIDR_MASK       0xff
 #define PCIE_NCPR_MASK       0xff
 #define PCIE_ECAP_CIDR_MASK  0xffff
-#define PCIE_ECAP_NCPR_MASK  0xfff
+#define PCIE_ECAP_NCPR_MASK  0xffc
 
 #define PCIE_ECAP_START      0x100
 
@@ -175,16 +182,15 @@ void *mem_alloc(size_t alignment, size_t size);
 #define CLEAN_AND_INVALIDATE  0x1
 #define CLEAN                 0x2
 #define INVALIDATE            0x3
-
+#define CLEAN_POC             0x4
 #define HEAP_INITIALISED      0xDC
-#define NOT_IMPLEMENTED       0x4B1D
 
 #define MEM_SIZE_64K              0x10000
 
-#define ATTR_NORMAL_NONCACHEABLE  (0x0ull << 2)
-#define ATTR_NORMAL_WB_WA_RA      (0x1ull << 2)
-#define ATTR_DEVICE               (0x2ull << 2)
-#define ATTR_NORMAL_WB            (0x1ull << 3)
+#define ATTR_NORMAL_NONCACHEABLE  (0x1ull << 2)
+#define ATTR_NORMAL_WB_WA_RA      (0x3ull << 2)
+#define ATTR_DEVICE               (0x0ull << 2)
+#define ATTR_NORMAL_WB            (0x3ull << 3)
 
 /* Stage 1 Inner and Outer Cacheability attribute encoding without TEX remap */
 #define ATTR_S1_NONCACHEABLE   (0x0ull << 2)
@@ -395,7 +401,7 @@ typedef struct {
 **/
 
 #define LEGACY_PCI_IRQ_CNT 4  // Legacy PCI IRQ A, B, C. and D
-#define MAX_IRQ_CNT 0xFFFF    // This value is arbitrary and may have to be adjusted
+#define MAX_IRQ_CNT PLATFORM_BM_OVERRIDE_MAX_IRQ_CNT
 
 typedef struct {
   uint32_t  irq_list[MAX_IRQ_CNT];
@@ -455,6 +461,29 @@ typedef struct {
   pcie_device_attr device[];         ///< in the format of Segment/Bus/Dev/Func
 } pcie_device_bdf_table;
 
+#define CXL_MAX_CFMWS_WINDOWS  2
+/*
+ * CXL info table describing per-host bridge component register windows and
+ * discovered capability flags from firmware (CEDT) or overrides.
+ */
+typedef struct {
+  uint32_t cxl_struct_type;      ///< Type of CXL Structure [CHBS/CFMWS and so on]
+  uint32_t uid;                  ///< CXL HB Unique ID
+  uint32_t component_reg_type;   ///< Type of CEDt Structure
+  uint64_t component_reg_base;   ///< Base address of the CHBCR/RCH DP RCRB
+  uint64_t component_reg_length; ///< Length of the range
+  uint32_t cxl_version;          ///< CXL Version
+  uint32_t hdm_decoder_count;    ///< No. of HDM decoders
+  uint32_t cfmws_count;
+  uint64_t cfmws_base[CXL_MAX_CFMWS_WINDOWS];
+  uint64_t cfmws_length[CXL_MAX_CFMWS_WINDOWS];
+  uint32_t cfmws_window[CXL_MAX_CFMWS_WINDOWS];
+} CXL_INFO_BLOCK;
+
+typedef struct {
+  uint32_t num_entries;
+  CXL_INFO_BLOCK device[];
+} CXL_INFO_TABLE;
 
 typedef struct {
   uint32_t    num_usb;   ///< Number of USB  Controllers
@@ -520,6 +549,10 @@ typedef struct {
   uint8_t                                      PciFunctionNumber;
   uint8_t                                      PciSegment;
 } PLATFORM_OVERRIDE_UART_INFO_TABLE;
+
+typedef struct {
+  uint32_t                                     GlobalSystemInterrupt;
+} PLATFORM_OVERRIDE_SATA_INFO_TABLE;
 
 /**
   @brief MSI(X) controllers info structure
@@ -713,7 +746,10 @@ typedef enum {
     ENABLE_POISON_MODE = 0xE,
     ENABLE_RAS_CTRL = 0xF,
     DISABLE_POISON_MODE = 0x10,
-    CLEAR_TXN = 0x11
+    CLEAR_TXN = 0x11,
+    ENABLE_CACHE_TXN = 0x12,
+    GENERATE_PMREQ_VDM = 0x13,
+    GENERATE_MEFN_VDM = 0x14
 } EXERCISER_PARAM_TYPE;
 
 typedef enum {
@@ -801,6 +837,7 @@ typedef struct {
     uint32_t    err_intr_flags;/* Error interrupt flags */
     uint32_t    max_nrdy;      /* max time in microseconds that MSC not ready
                                   after config change */
+    char        device_obj_name[MAX_NAMED_COMP_LENGTH]; /* Device object name */
     uint32_t    rsrc_count;    /* number of resource nodes */
     MPAM_RESOURCE_NODE rsrc_node[];   /* Details of resource node */
 } MPAM_MSC_NODE;
@@ -817,6 +854,10 @@ typedef struct {
     uint32_t          msc_count;  /* Number of MSC node */
     MPAM_MSC_NODE   msc_node[]; /* Details of MSC node */
 } MPAM_INFO_TABLE;
+
+
+void pal_mpam_create_info_table(MPAM_INFO_TABLE *MpamTable);
+uint32_t pal_mpam_parse_dsdt_info(MPAM_INFO_TABLE *MpamTable);
 
 /**
   @brief  SRAT node type
@@ -878,19 +919,21 @@ typedef struct {
   uint32_t size_property_valid;
   uint32_t cache_type_valid;
   uint32_t cache_id_valid;
+  uint8_t  associativity_valid;
 } CACHE_FLAGS;
 
 /* Since most of platform doesn't support cache id field (ACPI 6.4+), ACS uses PPTT offset as key
    to uniquely identify a cache, In future once platforms align with ACPI 6.4+ my_offset member
    might be removed from cache entry*/
 typedef struct {
-  CACHE_FLAGS flags;        /* Cache flags */
+  CACHE_FLAGS flags;          /* Cache flags */
   uint32_t my_offset;         /* Cache PPTT structure offset */
   uint32_t next_level_index;  /* Index of next level cache entry in CACHE_INFO_TABLE */
   uint32_t size;              /* Size of the cache in bytes */
   uint32_t cache_id;          /* Unique, non-zero identifier for this cache */
   uint32_t is_private;        /* Field indicate whether cache is private */
   uint8_t  cache_type;        /* Cache type */
+  uint8_t  associativity;     /* N-Way Cache associativity */
 } CACHE_INFO_ENTRY;
 
 typedef struct {
@@ -1113,6 +1156,16 @@ typedef struct {
 typedef struct {
   int32_t  status;             /* command response status code */
 } PCC_MPAM_MSC_WRITE_RESP_PARA;
+
+typedef struct {
+  uint64_t ttbr0;      ///< Translation Table Base Register 0
+  uint64_t ttbr1;      ///< Translation Table Base Register 1
+  uint64_t tcr;        ///< Translation Control Register
+  uint64_t mair;       ///< Memory Attribute Indirection Register
+  uint64_t sctlr;      ///< System Control Register
+  uint32_t current_el; ///< Current Exception Level (1 or 2)
+  uint32_t reserved;   ///< Reserved for alignment
+} PE_MMU_CONFIG;
 
 #define MPAM_FB_PROTOCOL_ID    0x1A
 #define MPAM_MSG_TYPE_CMD      0x0

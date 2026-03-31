@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +15,13 @@
  * limitations under the License.
  **/
 
-#include "val/include/acs_val.h"
-#include "val/include/acs_pcie_enumeration.h"
-#include "val/include/acs_pcie.h"
-#include "val/include/acs_pe.h"
-#include "val/include/acs_smmu.h"
-#include "val/include/acs_memory.h"
-#include "val/include/acs_exerciser.h"
+#include "acs_val.h"
+#include "acs_pcie_enumeration.h"
+#include "acs_pcie.h"
+#include "acs_pe.h"
+#include "acs_smmu.h"
+#include "acs_memory.h"
+#include "acs_exerciser.h"
 
 static const
 test_config_t test_entries[] = {
@@ -163,7 +163,11 @@ payload(void *arg)
       if (smmu_index == ACS_INVALID_INDEX)
           dram_buf_iova = dram_buf_phys;
       else
-          dram_buf_iova = (void *) val_smmu_pa2iova(smmu_index, (uint64_t)dram_buf_phys);
+          status = val_smmu_pa2iova(smmu_index, (uint64_t)dram_buf_phys,
+                                    (uint64_t *)&dram_buf_iova);
+
+      if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED)
+        goto test_skip_unimplemented;
 
       /*
        * Issue a Memory Read request from exerciser to cause unsupported
@@ -211,9 +215,14 @@ exception_return:
       val_set_status(pe_index, RESULT_FAIL(test_data->test_num, fail_cnt));
   else
       val_set_status(pe_index, RESULT_PASS(test_data->test_num, 01));
-
   return;
 
+test_skip_unimplemented:
+    /* Restore Rootport Bus Master Enable */
+      val_pcie_enable_bme(erp_bdf);
+    /* Return the buffer to the heap manager */
+    val_memory_free_pages(dram_buf_virt, TEST_DATA_NUM_PAGES);
+    val_set_status(pe_index, RESULT_WARN(test_data->test_num, 02));
 }
 
 uint32_t

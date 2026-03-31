@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2021-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2021-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
-#include "val/include/acs_val.h"
-#include "val/include/acs_pe.h"
-#include "val/include/acs_pcie.h"
+#include "acs_val.h"
+#include "acs_pe.h"
+#include "acs_pcie.h"
 
 #define TEST_NUM   (ACS_PCIE_TEST_NUM_BASE + 4)
 #define TEST_RULE  "PCI_IN_13"
@@ -78,7 +78,8 @@ check_bdf_under_rp(uint32_t rp_bdf)
                   val_print(ACS_PRINT_DEBUG, "\n       Class code is 0x%x", reg_value);
                   base_cc = reg_value >> TYPE01_BCC_SHIFT;
                   if (g_pcie_skip_dp_nic_ms &&
-                      ((base_cc == CNTRL_CC) || (base_cc == DP_CNTRL_CC) || (base_cc == MAS_CC)))
+                      ((base_cc == UNCLAS_CC) || (base_cc == CNTRL_CC)
+                      || (base_cc == DP_CNTRL_CC) || (base_cc == MAS_CC)))
                       return 1;
               }
            }
