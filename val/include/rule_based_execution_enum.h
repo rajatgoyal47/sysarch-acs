@@ -653,6 +653,7 @@ typedef enum {
     PE062_ENTRY,
     PE067_ENTRY,
     PE068_ENTRY,
+    PE069_ENTRY,
     V_L1PE_02_ENTRY,
     PE065_ENTRY,
     G001_ENTRY,

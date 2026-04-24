@@ -561,7 +561,13 @@ val_get_pe_architecture(uint32_t index)
 {
   PE_SMBIOS_TYPE4_INFO *type4_entry;
   uint32_t cur_pe_count = 0;
-  uint32_t num_slots = g_smbios_info_table->slot_count;
+  uint32_t num_slots;
+
+  if (g_smbios_info_table == NULL) {
+    return ACS_STATUS_ERR;
+  }
+
+  num_slots = g_smbios_info_table->slot_count;
 
   if (num_slots == 0) {
     return ACS_STATUS_ERR;

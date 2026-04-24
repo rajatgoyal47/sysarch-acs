@@ -344,11 +344,11 @@ The checklist provides information about:
       <td>L5</td>
       <td>S_L5PE_03</td>
       <td>S_L5PE_03</td>
-      <td>Not Covered</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>69</td>
+      <td>Check FEAT_TRF support for CS-BSA C</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
       <td></td>
     </tr>
     <tr>
@@ -3677,6 +3677,7 @@ The checklist provides information about:
 ## Latest Checklist Changes
 - Updated PCI_MM_02 coverage with test 907.
 - Updated S_L5SM_04, S_L6PE_08, S_L6SM_04
+- Added rule S_L5PE_03
 
 ### v26.03_SBSA_8.0.1
 - **FR Added:** LVQBC, KBRZG

@@ -36,6 +36,7 @@ pe060.c
 pe061.c
 pe062.c
 pe065.c
+pe069.c
 g012.c
 g013.c
 g014.c

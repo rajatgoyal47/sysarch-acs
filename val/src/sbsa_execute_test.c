@@ -84,6 +84,7 @@ val_sbsa_pe_execute_tests(uint32_t level, uint32_t num_pe)
 
   if (((level > 4)  && (g_sbsa_only_level == 0)) || (g_sbsa_only_level == 5)) {
       status |= pe031_entry(num_pe);
+      status |= pe069_entry(num_pe);
       status |= pe032_entry(num_pe);
       status |= pe033_entry(num_pe);
       status |= pe034_entry(num_pe);

@@ -370,6 +370,14 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .flag             = BASE_RULE,
             .test_num         = ACS_PE_TEST_NUM_BASE  +  32,
         },
+        [S_L5PE_03] = {
+            .test_entry_id    = PE069_ENTRY,
+            .module_id        = PE,
+            .rule_desc        = "Check FEAT_TRF support per CS-BSA C",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PE_TEST_NUM_BASE  +  69,
+        },
         [S_L5PE_04] = {
             .test_entry_id    = PE033_ENTRY,
             .module_id        = PE,
@@ -3021,9 +3029,6 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
         [B_PE_16] = {
             .module_id        = PE,
         },
-        [S_L5PE_03] = {
-            .module_id        = PE,
-        },
         [S_L6PE_07] = {
             .module_id        = PE,
         },
@@ -3764,6 +3769,7 @@ test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL] = {
     [PE066_ENTRY] = pe066_entry,
     [PE067_ENTRY] = pe067_entry,
     [PE068_ENTRY] = pe068_entry,
+    [PE069_ENTRY] = pe069_entry,
     [CXL001_ENTRY] = cxl001_entry,
     [CXL002_ENTRY] = cxl002_entry,
     [CXL003_ENTRY] = cxl003_entry,
@@ -4068,6 +4074,7 @@ test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL] = {
     [PE040_ENTRY] = pe040_entry,
     [PE064_ENTRY] = pe064_entry,
     [PE065_ENTRY] = pe065_entry,
+    [PE069_ENTRY] = pe069_entry,
     [M005_ENTRY] = m005_entry,
     [M008_ENTRY] = m008_entry,
     [ETE008_ENTRY] = ete008_entry,
