@@ -18,6 +18,8 @@
 #ifndef __ACS_PE_H__
 #define __ACS_PE_H__
 
+#include "val_sysreg_pe.h"
+
 /* Processor Family Type 4 */
 #define PROCESSOR_FAMILY_ARMV9         0x102
 
@@ -196,113 +198,12 @@ typedef enum {
   VTCR_EL2
 } BSA_ACS_PE_REGS;
 
-uint64_t ArmReadMpidr(void);
-uint64_t ArmReadIdPfr0(void);
-uint64_t ArmReadIdPfr1(void);
-uint64_t AA64ReadMmfr0(void);
-uint64_t AA64ReadMmfr1(void);
-uint64_t AA64ReadMmfr2(void);
-uint64_t AA64ReadMmfr3(void);
-uint64_t AA64ReadCtr(void);
-uint64_t AA64ReadIsar0(void);
-uint64_t AA64ReadIsar1(void);
-uint64_t AA64ReadIsar2(void);
-uint64_t AA64ReadSctlr3(void);
-uint64_t AA64ReadSctlr2(void);
-uint64_t AA64ReadSctlr1(void);
-uint64_t AA64ReadPmcr(void);
-uint64_t AA64ReadIdDfr0(void);
-uint64_t AA64ReadIdDfr1(void);
-uint64_t AA64ReadCurrentEL(void);
-uint64_t AA64ReadMdcr2(void);
-uint64_t AA64ReadVbar2(void);
-uint64_t AA64ReadCcsidr(void);
-uint64_t AA64ReadCsselr(void);
-uint64_t AA64ReadClidr(void);
-uint64_t ArmReadDfr0(void);
-uint64_t ArmReadIsar0(void);
-uint64_t ArmReadIsar1(void);
-uint64_t ArmReadIsar2(void);
-uint64_t ArmReadIsar3(void);
-uint64_t ArmReadIsar4(void);
-uint64_t ArmReadIsar5(void);
-uint64_t ArmReadMmfr0(void);
-uint64_t ArmReadMmfr1(void);
-uint64_t ArmReadMmfr2(void);
-uint64_t ArmReadMmfr3(void);
-uint64_t ArmReadMmfr4(void);
-uint64_t ArmReadPfr0(void);
-uint64_t ArmReadPfr1(void);
-uint64_t ArmReadMidr(void);
-uint64_t ArmReadMvfr0(void);
-uint64_t ArmReadMvfr1(void);
-uint64_t ArmReadMvfr2(void);
-uint64_t AA64ReadPmceid0(void);
-uint64_t AA64ReadPmceid1(void);
-uint64_t AA64ReadVmpidr(void);
-uint64_t AA64ReadVpidr(void);
-uint64_t AA64ReadPmbidr(void);
-uint64_t AA64ReadPmsidr(void);
-uint64_t AA64ReadLorid(void);
-uint64_t AA64ReadErridr(void);
-uint64_t AA64ReadErr0fr(void);
-uint64_t AA64ReadErr1fr(void);
-uint64_t AA64ReadErr2fr(void);
-uint64_t AA64ReadErr3fr(void);
-uint64_t AA64ReadMair1(void);
-uint64_t AA64ReadMair2(void);
-uint64_t AA64ReadTcr1(void);
-uint64_t AA64ReadTcr2(void);
-uint64_t AA64ReadTtbr0El1(void);
-uint64_t AA64ReadTtbr0El2(void);
-uint64_t AA64ReadTtbr1El1(void);
-uint64_t AA64ReadTtbr1El2(void);
 uint64_t AA64WriteSp(uint64_t write_data);
-uint64_t AA64ReadEsr2(void);
 uint64_t AA64ReadSp(void);
-uint64_t AA64ReadFar2(void);
 uint64_t ArmRdvl(void);
-uint64_t AA64ReadDbgbcr0El1(void);
-uint64_t AA64ReadDbgbcr1El1(void);
-uint64_t AA64ReadDbgbcr2El1(void);
-uint64_t AA64ReadDbgbcr3El1(void);
-uint64_t AA64ReadDbgbcr4El1(void);
-uint64_t AA64ReadDbgbcr5El1(void);
-uint64_t AA64ReadDbgbcr6El1(void);
-uint64_t AA64ReadDbgbcr7El1(void);
-uint64_t AA64ReadDbgbcr8El1(void);
-uint64_t AA64ReadDbgbcr9El1(void);
-uint64_t AA64ReadDbgbcr10El1(void);
-uint64_t AA64ReadDbgbcr11El1(void);
-uint64_t AA64ReadDbgbcr12El1(void);
-uint64_t AA64ReadDbgbcr13El1(void);
-uint64_t AA64ReadDbgbcr14El1(void);
-uint64_t AA64ReadDbgbcr15El1(void);
-uint64_t AA64ReadZfr0(void);
-uint64_t AA64ReadBrbidr0(void);
-uint64_t AA64ReadTrbidr(void);
-uint64_t AA64ReadVtcr(void);
-uint64_t AA64ReadTrcidr0(void);
-uint64_t AA64ReadTrcidr4(void);
-uint64_t AA64ReadTrcidr5(void);
 
 void AA64IssueISB(void);
 void DisableSpe(void);
-void ArmCallWFI(void);
-void ArmExecuteMemoryBarrier(void);
-void AA64WritePmsirr(uint64_t write_data);
-void AA64WritePmscr2(uint64_t write_data);
-void AA64WritePmsfcr(uint64_t write_data);
-void AA64WritePmblimitr(uint64_t write_data);
-void AA64WritePmbptr(uint64_t write_data);
-void AA64WriteMdcr2(uint64_t write_data);
-void AA64WritePmcr(uint64_t write_data);
-void AA64WritePmovsset(uint64_t write_data);
-void AA64WritePmovsclr(uint64_t write_data);
-void AA64WritePmintenset(uint64_t write_data);
-void AA64WritePmintenclr(uint64_t write_data);
-void AA64WriteCsselr(uint64_t write_data);
-void AA64WriteVbar2(uint64_t write_data);
 
 void val_pe_update_elr(void *context, uint64_t offset);
 void val_pe_context_save(uint64_t sp, uint64_t elr);
@@ -381,4 +282,3 @@ uint32_t pe067_entry(uint32_t num_pe);
 uint32_t pe068_entry(uint32_t num_pe);
 
 #endif
-

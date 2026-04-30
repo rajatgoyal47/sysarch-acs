@@ -39,7 +39,7 @@ static void intr_handler(void)
 {
     if (e_intr_pending == 0)
     {
-        val_print(ACS_PRINT_ERR, "\n       Multiple interrupts received", 0);
+        val_print(ERROR, "\n       Multiple interrupts received");
         test_fail++;
         return;
     }
@@ -48,7 +48,7 @@ static void intr_handler(void)
 
     if (!val_pcie_check_interrupt_status(e_bdf))
     {
-        val_print(ACS_PRINT_ERR, "\n       No outstanding interrupt for bdf 0x%x", e_bdf);
+        val_print(ERROR, "\n       No outstanding interrupt for bdf 0x%x", e_bdf);
         test_fail++;
         return;
     }
@@ -62,7 +62,7 @@ static void intr_handler(void)
     /* Clear the interrupt pending state */
     e_intr_pending = 0;
 
-    val_print(ACS_PRINT_INFO, "\n       Received legacy interrupt %d", e_intr_line);
+    val_print(TRACE, "\n       Received legacy interrupt %d", e_intr_line);
 
 }
 
@@ -84,8 +84,8 @@ payload (void)
   /* Allocate memory for interrupt mappings */
   e_intr_map = val_aligned_alloc(MEM_ALIGN_4K, sizeof(PERIPHERAL_IRQ_MAP));
   if (!e_intr_map) {
-    val_print(ACS_PRINT_ERR, "\n       Memory allocation error", 00);
-    val_set_status(pe_index, RESULT_FAIL (TEST_NUM, 2));
+    val_print(ERROR, "\n       Memory allocation error", 00);
+    val_set_status(pe_index, RESULT_FAIL(2));
     return;
   }
 
@@ -100,7 +100,7 @@ payload (void)
 
     /* Get the exerciser BDF */
     e_bdf = val_exerciser_get_bdf(instance);
-    val_print(ACS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
+    val_print(DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
 
     /* Check if the PCI interrupt request pins is connected INTA#-through-INTD */
     val_pcie_read_cfg(e_bdf, PCIE_INTERRUPT_LINE, &e_intr_pin);
@@ -130,8 +130,8 @@ payload (void)
             ret_val = val_gic_install_isr(e_intr_line, intr_handler);
             if (ret_val)
             {
-                val_print (ACS_PRINT_ERR, "\n      Installing ISR failed for IRQ: %x", e_intr_line);
-                val_set_status(pe_index, RESULT_FAIL (TEST_NUM, 02));
+                val_print (ERROR, "\n      Installing ISR failed for IRQ: %x", e_intr_line);
+                val_set_status(pe_index, RESULT_FAIL(02));
                 return;
             }
 
@@ -150,7 +150,7 @@ payload (void)
                 val_gic_end_of_interrupt(e_intr_line);
                 val_gic_disableInterruptSource(e_intr_line);
                 val_gic_free_irq(e_intr_line, 0);
-                val_print(ACS_PRINT_ERR, "\n       Interrupt trigger failed for bdf 0x%lx", e_bdf);
+                val_print(ERROR, "\n       Interrupt trigger failed for bdf 0x%lx", e_bdf);
                 test_fail++;
                 continue;
             }
@@ -158,7 +158,7 @@ payload (void)
             /* Check if interrupt status bit is cleared in Status register */
             if (val_pcie_check_interrupt_status(e_bdf))
             {
-                val_print(ACS_PRINT_ERR, "\n       Outstanding interrupt for bdf 0x%x", e_bdf);
+                val_print(ERROR, "\n       Outstanding interrupt for bdf 0x%x", e_bdf);
                 test_fail++;
                 /* Deassert and uninstall ISR before moving to next */
                 val_exerciser_ops(CLEAR_INTR, e_intr_line, instance);
@@ -177,20 +177,20 @@ payload (void)
            break;
         }
         else {
-           val_print(ACS_PRINT_DEBUG, "\n    PCIe Legacy IRQs unmapped. Skipping bdf: 0x%x", e_bdf);
+           val_print(DEBUG, "\n    PCIe Legacy IRQs unmapped. Skipping bdf: 0x%x", e_bdf);
             continue;
         }
    }
  }
 
   if (test_fail)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 03));
+      val_set_status(pe_index, RESULT_FAIL(03));
   else if (warn_cnt)
-      val_set_status(pe_index, RESULT_WARN(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_WARNING(01));
   else if (test_skip)
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_SKIP(01));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS);
 
 
   val_memory_free_aligned(e_intr_map);
@@ -209,7 +209,7 @@ e006_entry(uint32_t num_pe)
   status = val_initialize_test (TEST_NUM, TEST_DESC, num_pe);
   if (status != ACS_STATUS_SKIP) {
       if (val_exerciser_test_init() != ACS_STATUS_PASS)
-          return TEST_SKIP_VAL;
+          return TEST_SKIP;
       val_run_test_payload (TEST_NUM, num_pe, payload, 0);
   }
 

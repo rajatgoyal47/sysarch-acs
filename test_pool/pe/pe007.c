@@ -37,9 +37,9 @@ payload()
   }
 
   if (((data >> 25) & 1) == 0) //Bit 25 must be 0
-      val_set_status(index, RESULT_PASS(TEST_NUM, 2));
+      val_set_status(index, RESULT_PASS);
   else
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+      val_set_status(index, RESULT_FAIL(2));
 
   return;
 }

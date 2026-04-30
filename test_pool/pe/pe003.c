@@ -33,9 +33,9 @@ payload()
   data = (data & 0xF00000) >> 20;
 
   if ((data == 0x0) || (data == 0x1))
-        val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+        val_set_status(index, RESULT_PASS);
   else
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+        val_set_status(index, RESULT_FAIL(1));
 
   return;
 

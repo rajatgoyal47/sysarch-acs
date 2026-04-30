@@ -18,6 +18,7 @@
 #ifndef __ACS_RAS_H
 #define __ACS_RAS_H
 
+#include "val_sysreg_ras.h"
 
 #define ERR_FR_CE_MASK   (0x3ull << 53)
 #define ERR_FR_DE_MASK   (0x1ull << 52)
@@ -130,24 +131,5 @@ uint32_t ras015_entry(uint32_t num_pe);
 uint32_t ras016_entry(uint32_t num_pe);
 uint32_t ras017_entry(uint32_t num_pe);
 uint32_t ras018_entry(uint32_t num_pe);
-
-uint64_t AA64ReadErrIdr1(void);
-uint64_t AA64ReadErrAddr1(void);
-uint64_t AA64ReadErrCtlr1(void);
-uint64_t AA64ReadErrFr1(void);
-uint64_t AA64ReadErrStatus1(void);
-uint64_t AA64ReadErrSelr1(void);
-uint64_t AA64ReadErrPfgf1(void);
-uint64_t AA64ReadErrPfgctl1(void);
-uint64_t AA64ReadErrPfgcdn1(void);
-
-void AA64WriteErrIdr1(uint64_t write_data);
-void AA64WriteErrAddr1(uint64_t write_data);
-void AA64WriteErrCtlr1(uint64_t write_data);
-void AA64WriteErrStatus1(uint64_t write_data);
-void AA64WriteErrSelr1(uint64_t write_data);
-void AA64WriteErrPfgf1(uint64_t write_data);
-void AA64WriteErrPfgctl1(uint64_t write_data);
-void AA64WriteErrPfgcdn1(uint64_t write_data);
 
 #endif // __ACS_RAS_H

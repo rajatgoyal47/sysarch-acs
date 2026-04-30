@@ -42,7 +42,7 @@ esr(uint64_t interrupt_type, void *context)
   /* Update the ELR to point to next instrcution */
   val_pe_update_elr(context, branch_to_test);
 
-  val_print(ACS_PRINT_DEBUG, "\n       Received Exception of type %d", interrupt_type);
+  val_print(DEBUG, "\n       Received Exception of type %d", interrupt_type);
 }
 
 static
@@ -56,11 +56,11 @@ payload()
 
   val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
   val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
-  val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+  val_set_status(index, RESULT_SKIP(1));
 
-  if (g_el1skiptrap_mask & EL1SKIPTRAP_DEVMEM) {
-      val_print(ACS_PRINT_DEBUG,
-                "\n       Skipping device memory access due to -el1skiptrap devmem", 0);
+  if (acs_policy_get_el1skiptrap_mask() & EL1SKIPTRAP_DEVMEM) {
+      val_print(DEBUG,
+                "\n       Skipping device memory access due to -el1skiptrap devmem");
       goto normal_mem_test;
   }
 
@@ -70,12 +70,12 @@ payload()
       /* Get the address of device memory region */
       addr = val_memory_get_addr(MEM_TYPE_DEVICE, instance, &attr);
       if (!addr) {
-          val_print(ACS_PRINT_DEBUG, "\n       Error in getting dev mem for"
+          val_print(DEBUG, "\n       Error in getting dev mem for"
                                    " index %d  ", instance);
           goto normal_mem_test;
       }
 
-      val_print(ACS_PRINT_DEBUG, "\n       Device Mem Address : 0x%llx", addr);
+      val_print(DEBUG, "\n       Device Mem Address : 0x%llx", addr);
       /* Access must not cause a deadlock */
       original_value = *((volatile addr_t*)addr);
       *((volatile addr_t*)addr) = original_value;
@@ -83,7 +83,7 @@ payload()
           {};
 
 exception_taken_d:
-      val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(index, RESULT_PASS);
       loop_var--;
       instance++;
   }
@@ -97,11 +97,11 @@ normal_mem_test:
       /* Get the address of normal memory region */
       addr = val_memory_get_addr((MEMORY_INFO_e)MEMORY_TYPE_NORMAL, instance, &attr);
       if (!addr) {
-          val_print(ACS_PRINT_DEBUG, "\n       Error in obtaining normal memory for"
+          val_print(DEBUG, "\n       Error in obtaining normal memory for"
                                    " instance %d", instance);
           return;
       }
-      val_print(ACS_PRINT_DEBUG, "\n       Normal Mem Address : 0x%llx", addr);
+      val_print(DEBUG, "\n       Normal Mem Address : 0x%llx", addr);
       /* Access must not cause a deadlock */
       original_value = *((volatile addr_t*)addr);
       *((volatile addr_t*)addr) = original_value;
@@ -109,7 +109,7 @@ normal_mem_test:
           {};
 
 exception_taken_n:
-      val_set_status(index, RESULT_PASS(TEST_NUM, 2));
+      val_set_status(index, RESULT_PASS);
       loop_var--;
       instance++;
   }

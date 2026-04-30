@@ -42,8 +42,8 @@ esr(uint64_t interrupt_type, void *context)
   /* Update the ELR to return to test specified address */
   val_pe_update_elr(context, (uint64_t)branch_to_test);
 
-  val_print(ACS_PRINT_INFO, "\n       Received exception of type: %d", interrupt_type);
-  val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+  val_print(TRACE, "\n       Received exception of type: %d", interrupt_type);
+  val_set_status(pe_index, RESULT_FAIL(01));
 }
 
 /*
@@ -64,27 +64,27 @@ calculate_vf(uint32_t seg, uint32_t bdf, uint32_t sriov_base)
   val_pcie_read_cfg(bdf, sriov_base + SRIOV_VF_OFF_STR, &reg_value);
   first_vf_offset = reg_value & SRIOV_FIRST_VF_SHIFT;
   vf_stride = (reg_value >> SRIOV_STRIDE_SHIFT) & SRIOV_STRIDE_MASK;
-  val_print(ACS_PRINT_INFO, "\n    First vf offset is 0x%x", first_vf_offset);
-  val_print(ACS_PRINT_INFO, "\n    vf stride is 0x%x", vf_stride);
+  val_print(TRACE, "\n    First vf offset is 0x%x", first_vf_offset);
+  val_print(TRACE, "\n    vf stride is 0x%x", vf_stride);
 
   val_pcie_read_cfg(bdf, sriov_base + SRIOV_VF_COUNT, &reg_value);
   num_vf = (reg_value >> SRIOV_NUM_VF_SHIFT) & SRIOV_NUM_VF_MASK;
-  val_print(ACS_PRINT_INFO, "\n    Number of VF's is 0x%x", num_vf);
+  val_print(TRACE, "\n    Number of VF's is 0x%x", num_vf);
 
   vf_rid = pf_rid + first_vf_offset;
-  if (num_vf > MAX_VFS)
-     val_print(ACS_PRINT_WARN, "\n    Number of VF's present is more than 256", 0);
+  if (num_vf > MAX_VFS) {
+     val_print(WARN, "\n    Number of VF's present is more than 256. Limiting to 256 entries");
+     num_vf = MAX_VFS;
+  }
 
   for (index = 0; index < num_vf; index++)
   {
      vf_bdf = PCIE_CREATE_BDF_FROM_PACKED(seg, vf_rid);
-     val_print(ACS_PRINT_INFO, "\n    Seg is 0x%x", seg);
-     val_print(ACS_PRINT_INFO, "\n    vf rid is 0x%x", vf_rid);
-     val_print(ACS_PRINT_INFO, "\n    vf bdf is 0x%x", vf_bdf);
+     val_print(TRACE, "\n    Seg is 0x%x", seg);
+     val_print(TRACE, "\n    vf rid is 0x%x", vf_rid);
+     val_print(TRACE, "\n    vf bdf is 0x%x", vf_bdf);
      skip_rid_list[index] = vf_bdf;
      vf_rid += vf_stride;
-     if (index > MAX_VFS)
-         val_print(ACS_PRINT_WARN, "\n    Index value is more than 255", 0);
   }
 }
 
@@ -116,8 +116,8 @@ payload(void)
   status |= val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
   if (status)
   {
-      val_print(ACS_PRINT_ERR, "\n       Failed in installing the exception handler", 0);
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+      val_print(ERROR, "\n       Failed in installing the exception handler");
+      val_set_status(index, RESULT_FAIL(01));
       return;
   }
 
@@ -126,8 +126,8 @@ payload(void)
   num_ecam = val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0);
 
   if (num_ecam == 0) {
-      val_print(ACS_PRINT_DEBUG, "\n       No ECAM in MCFG. Skipping test               ", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
+      val_print(DEBUG, "\n       No ECAM in MCFG. Skipping test               ");
+      val_set_status(index, RESULT_SKIP(01));
       return;
   }
 
@@ -135,8 +135,8 @@ payload(void)
       num_ecam--;
       ecam_base = val_pcie_get_info(PCIE_INFO_ECAM, num_ecam);
       if (ecam_base == 0) {
-          val_print(ACS_PRINT_ERR, "\n       ECAM Base in MCFG is 0            ", 0);
-          val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+          val_print(ERROR, "\n       ECAM Base in MCFG is 0            ");
+          val_set_status(index, RESULT_SKIP(02));
           return;
       }
       segment = val_pcie_get_info(PCIE_INFO_SEGMENT, num_ecam);
@@ -153,9 +153,9 @@ payload(void)
 
                //If this is really PCIe CFG space, Device ID and Vendor ID cannot be 0
                if (ret == PCIE_NO_MAPPING || (data == 0)) {
-                  val_print(ACS_PRINT_ERR, "\n       Incorrect data at ECAM Base %4x    ", data);
-                  val_print(ACS_PRINT_ERR, "\n       BDF is  %x    ", bdf);
-                  val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
+                  val_print(ERROR, "\n       Incorrect data at ECAM Base %4x    ", data);
+                  val_print(ERROR, "\n       BDF is  %x    ", bdf);
+                  val_set_status(index, RESULT_FAIL(02));
                   return;
                }
 
@@ -164,18 +164,18 @@ payload(void)
                {
                   if (val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS,  &data) != PCIE_SUCCESS)
                   {
-                    val_print(ACS_PRINT_DEBUG,
+                    val_print(DEBUG,
                               "\n       Skipping legacy PCI device with BDF 0x%x", bdf);
                     continue;
                   }
 
-                  val_print(ACS_PRINT_INFO, "\n     Valid BDF is %x", bdf);
+                  val_print(TRACE, "\n     Valid BDF is %x", bdf);
                   if (val_pcie_function_header_type(bdf) == TYPE0_HEADER)
                   {
                       if (val_pcie_find_capability(bdf, PCIE_ECAP, ECID_SRIOV,
                                                    &sriov_base) == PCIE_SUCCESS) {
-                          val_print(ACS_PRINT_INFO, "\n     SR-IOV capability present", 0);
-                          val_print(ACS_PRINT_INFO, "\n     Check for VF's to skip", 0);
+                          val_print(TRACE, "\n     SR-IOV capability present");
+                          val_print(TRACE, "\n     Check for VF's to skip");
                           calculate_vf(segment, bdf, sriov_base);
                       }
                   }
@@ -188,10 +188,10 @@ payload(void)
 
                      /* if data read from next ECAP offset is 0xFFFF-FFFF, report failure */
                      if (data == PCIE_UNKNOWN_RESPONSE) {
-                        val_print(ACS_PRINT_ERR,
+                        val_print(ERROR,
                                 "\n       Invalid data read from ECAP offset 0x%x", next_offset);
                         val_memory_set(skip_rid_list, sizeof(uint32_t) * MAX_VFS, 0);
-                        val_set_status(index, RESULT_FAIL(TEST_NUM, 03));
+                        val_set_status(index, RESULT_FAIL(03));
                         return;
                      }
 
@@ -211,7 +211,7 @@ payload(void)
                      give valid response. Hence skipping the VF's */
                   for (vf_index = 0; vf_index < num_vf; vf_index++) {
                       if (bdf == skip_rid_list[vf_index]) {
-                          val_print(ACS_PRINT_INFO, "\n   BDF 0x%x is a VF. Hence skipping", bdf);
+                          val_print(TRACE, "\n   BDF 0x%x is a VF. Hence skipping", bdf);
                           continue;
                       }
                   }
@@ -220,9 +220,8 @@ payload(void)
 
                   /* Returned data must be FF's, otherwise the test must fail */
                   if (data != PCIE_UNKNOWN_RESPONSE) {
-                     val_print(ACS_PRINT_ERR, "\n       Incorrect data for Bdf 0x%x    ", bdf);
-                     val_set_status(index, RESULT_FAIL(TEST_NUM,
-                                     (bus_index << PCIE_BUS_SHIFT)|dev_index));
+                     val_print(ERROR, "\n       Incorrect data for Bdf 0x%x    ", bdf);
+                     val_set_status(index, RESULT_FAIL((bus_index << PCIE_BUS_SHIFT)|dev_index));
                      return;
                   }
 
@@ -230,9 +229,8 @@ payload(void)
 
                   /* Returned data must be FF's, otherwise the test must fail */
                   if (data != PCIE_UNKNOWN_RESPONSE) {
-                     val_print(ACS_PRINT_ERR, "\n       Incorrect data for Bdf 0x%x    ", bdf);
-                     val_set_status(index, RESULT_FAIL(TEST_NUM,
-                                     (bus_index << PCIE_BUS_SHIFT)|dev_index));
+                     val_print(ERROR, "\n       Incorrect data for Bdf 0x%x    ", bdf);
+                     val_set_status(index, RESULT_FAIL((bus_index << PCIE_BUS_SHIFT)|dev_index));
                      return;
                   }
 
@@ -243,7 +241,7 @@ payload(void)
       val_memory_set(skip_rid_list, sizeof(uint32_t) * MAX_VFS, 0);
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+  val_set_status(index, RESULT_PASS);
 
 exception_return:
   return;

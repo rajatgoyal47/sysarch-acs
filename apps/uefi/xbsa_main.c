@@ -119,8 +119,8 @@ HelpMsg (VOID)
         "-skipmodule \n"
         "        Skip the specified modules (comma-separated names).\n"
         "        Example: -skipmodule PE,GIC,PCIE\n"
-        "-timeout <n> \n"
-        "        Set pass timeout (in microseconds) for wakeup tests (500 us - 2 sec)\n"
+        "-timeout <microseconds> \n"
+        "        Set pass timeout (delay in microseconds) for wakeup & WD & timer tests (500us - 2sec)\n"
         "        Example: -timeout 2000 \n"
         "-v <n>  Verbosity of the prints\n"
         "        1 prints all, 5 prints only the errors\n"
@@ -152,28 +152,31 @@ freeAcsMem(void)
 
 /* Apply default values to -a -l options if no value passed to cli */
 static UINT32
-apply_cli_defaults(VOID)
+apply_cli_defaults(acs_run_request_t *ctx)
 {
-    if (g_arch_selection == ARCH_NONE && g_rule_count == 0) {
+    if (ctx == NULL)
+        return ACS_STATUS_FAIL;
+
+    if (ctx->arch_selection == ARCH_NONE && ctx->rule_count == 0) {
         Print(L"No -r or -a specified; defaulting to -a bsa\n");
-        g_arch_selection = ARCH_BSA;
+        ctx->arch_selection = ARCH_BSA;
     }
 
-    if (g_bsa_sw_view_mask != 0 && g_arch_selection != ARCH_BSA) {
+    if (ctx->bsa_sw_view_mask != 0 && ctx->arch_selection != ARCH_BSA) {
         Print(L"-hyp/-os/-ps ignored: requires -a bsa.\n");
-        g_bsa_sw_view_mask = 0;
+        ctx->bsa_sw_view_mask = 0;
     }
 
-    if (g_level_filter_mode == LVL_FILTER_NONE && g_arch_selection != ARCH_NONE) {
-        if (g_arch_selection == ARCH_BSA) {
-            g_level_filter_mode = LVL_FILTER_MAX;
-            g_level_value = BSA_LEVEL_1;
-        } else if (g_arch_selection == ARCH_SBSA) {
-            g_level_filter_mode = LVL_FILTER_MAX;
-            g_level_value = SBSA_LEVEL_4;
-        } else if (g_arch_selection == ARCH_PCBSA) {
-            g_level_filter_mode = LVL_FILTER_MAX;
-            g_level_value = PCBSA_LEVEL_1;
+    if (ctx->level_filter_mode == LVL_FILTER_NONE && ctx->arch_selection != ARCH_NONE) {
+        if (ctx->arch_selection == ARCH_BSA) {
+            ctx->level_filter_mode = LVL_FILTER_MAX;
+            ctx->level_value = BSA_LEVEL_1;
+        } else if (ctx->arch_selection == ARCH_SBSA) {
+            ctx->level_filter_mode = LVL_FILTER_MAX;
+            ctx->level_value = SBSA_LEVEL_4;
+        } else if (ctx->arch_selection == ARCH_PCBSA) {
+            ctx->level_filter_mode = LVL_FILTER_MAX;
+            ctx->level_value = PCBSA_LEVEL_1;
         }
     }
 
@@ -185,20 +188,23 @@ execute_tests()
 {
     VOID               *branch_label;
     UINT32             Status;
+    acs_run_request_t  *ctx;
+
+    ctx = acs_get_run_request_mut();
 
     /* Apply any ACS specific default values */
-    Status = apply_cli_defaults();
+    Status = apply_cli_defaults(ctx);
     if (Status != ACS_STATUS_PASS) {
         goto exit_acs;
     }
 
     /* Print ACS header */
-    val_print(ACS_PRINT_TEST, "\n\nxBSA Architecture Compliance Suite", 0);
-    val_print(ACS_PRINT_TEST, "\n          Version %d.", XBSA_ACS_MAJOR_VER);
-    val_print(ACS_PRINT_TEST, "%d.", XBSA_ACS_MINOR_VER);
-    val_print(ACS_PRINT_TEST, "%d\n", XBSA_ACS_SUBMINOR_VER);
-    val_print(ACS_PRINT_TEST, "(Print level is %2d)\n\n", g_print_level);
-    val_print(ACS_PRINT_TEST, "\n       Creating Platform Information Tables\n", 0);
+    val_print(INFO, "\n\nxBSA Architecture Compliance Suite");
+    val_print(INFO, "\n          Version %d.", XBSA_ACS_MAJOR_VER);
+    val_print(INFO, "%d.", XBSA_ACS_MINOR_VER);
+    val_print(INFO, "%d\n", XBSA_ACS_SUBMINOR_VER);
+    val_print(INFO, "(Print level is %2d)\n\n", acs_policy_get_print_level());
+    val_print(INFO, "\n       Creating Platform Information Tables\n");
 
 
     /* Create info tables */
@@ -206,12 +212,18 @@ execute_tests()
     if (Status) {
             if (g_acs_log_file_handle)
                 ShellCloseFile(&g_acs_log_file_handle);
+            if (g_dtb_log_file_handle)
+                ShellCloseFile(&g_dtb_log_file_handle);
+            acs_release_run_request(ctx);
             return Status;
     }
     Status = createGicInfoTable();
     if (Status) {
             if (g_acs_log_file_handle)
                 ShellCloseFile(&g_acs_log_file_handle);
+            if (g_dtb_log_file_handle)
+                ShellCloseFile(&g_dtb_log_file_handle);
+            acs_release_run_request(ctx);
             return Status;
     }
 
@@ -239,25 +251,26 @@ execute_tests()
     val_allocate_shared_mem();
     FlushImage();
 
-    if ((g_rule_count > 0 && g_rule_list != NULL) || (g_arch_selection != ARCH_NONE)) {
+    if ((ctx->rule_count > 0 && ctx->rule_list != NULL) || (ctx->arch_selection != ARCH_NONE)) {
         /* Merge arch rules if any, then apply CLI filters (-skip, -m, -skipmodule) */
-        g_rule_count = filter_rule_list_by_cli(&g_rule_list, g_rule_count);
-        if (g_rule_count == 0 || g_rule_list == NULL)
+        filter_rule_list_by_cli(ctx);
+        if (ctx->rule_count == 0 || ctx->rule_list == NULL)
             goto exit_acs;
 
         /* Print rule selections */
         print_selection_summary();
 
         /* Run rule based test orchestrator */
-        run_tests(g_rule_list, g_rule_count);
+        run_tests(ctx);
     }
 
     val_print_acs_test_status_summary();
-    val_print(ACS_PRINT_ERR, "\n      *** ACS tests complete. Reset the system. ***\n\n", 0);
+    val_print(ERROR, "\n      *** ACS tests complete. Reset the system. ***\n\n");
 
     freeAcsMem();
 
 exit_acs:
+    acs_release_run_request(ctx);
     /* Close any file handles open */
     if (g_dtb_log_file_handle) {
         ShellCloseFile(&g_dtb_log_file_handle);

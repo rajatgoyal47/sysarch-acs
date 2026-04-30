@@ -63,7 +63,7 @@ payload(void)
           continue;
 
       e_bdf = val_exerciser_get_bdf(instance);
-      val_print(ACS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
+      val_print(DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
 
       /* ARI Capability not applicable for RCiEP */
       dp_type = val_pcie_device_port_type(e_bdf);
@@ -72,7 +72,7 @@ payload(void)
 
       /* Check if exerciser is child of one of the rootports */
       if (val_pcie_parent_is_rootport(e_bdf, &erp_bdf)) {
-          val_print(ACS_PRINT_DEBUG,
+          val_print(DEBUG,
               "\n       Exerciser not a downstream device to RP. Skipping 0x%x", e_bdf);
           continue;
       }
@@ -85,8 +85,8 @@ payload(void)
 
       /* Skip the device if the RP does not support ARI forwarding */
       if (status == 0) {
-          val_print(ACS_PRINT_WARN, "\n       ARI Forwarding not supported for bdf 0x%x", erp_bdf);
-          val_print(ACS_PRINT_WARN, "\n       Skipping test for exerciser bdf 0x%x", e_bdf);
+          val_print(WARN, "\n       ARI Forwarding not supported for bdf 0x%x", erp_bdf);
+          val_print(WARN, "\n       Skipping test for exerciser bdf 0x%x", e_bdf);
           continue;
       }
 
@@ -106,8 +106,8 @@ payload(void)
 
       /* Fail the test if the bitfied does not respond to the write */
       if (reg_value != 1) {
-          val_print(ACS_PRINT_ERR, "\n       ARI Forwarding Enable bit not set for", 0);
-          val_print(ACS_PRINT_ERR, " bdf 0x%x", erp_bdf);
+          val_print(ERROR, "\n       ARI Forwarding Enable bit not set for");
+          val_print(ERROR, " bdf 0x%x", erp_bdf);
           fail_cnt++;
           continue;
       }
@@ -138,7 +138,7 @@ payload(void)
               val_exerciser_get_param(CFG_TXN_ATTRIBUTES, (uint64_t *)&header_type, 0, instance);
               if (header_type != TYPE0)
               {
-                  val_print(ACS_PRINT_ERR, "\n       BDF 0x%x Sec Bus Type 0 error", erp_bdf);
+                  val_print(ERROR, "\n       BDF 0x%x Sec Bus Type 0 error", erp_bdf);
                   fail_cnt++;
               }
               val_exerciser_get_param(CLEAR_TXN, 0, 0, instance);
@@ -176,7 +176,7 @@ payload(void)
               val_exerciser_get_param(CFG_TXN_ATTRIBUTES, (uint64_t *)&header_type, 0, instance);
               if (header_type != TYPE1)
               {
-                  val_print(ACS_PRINT_ERR, "\n       BDF 0x%x Sec Bus Type 1 error", erp_bdf);
+                  val_print(ERROR, "\n       BDF 0x%x Sec Bus Type 1 error", erp_bdf);
                   fail_cnt++;
               }
           }
@@ -191,11 +191,11 @@ payload(void)
 
 test_result:
   if (test_skip)
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_SKIP(01));
   else if (fail_cnt)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, fail_cnt));
+      val_set_status(pe_index, RESULT_FAIL(fail_cnt));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(pe_index, RESULT_PASS);
 
   return;
 
@@ -212,7 +212,7 @@ e015_entry(uint32_t num_pe)
   status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
   if (status != ACS_STATUS_SKIP) {
       if (val_exerciser_test_init() != ACS_STATUS_PASS)
-          return TEST_SKIP_VAL;
+          return TEST_SKIP;
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
   }
 

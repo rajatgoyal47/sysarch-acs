@@ -105,7 +105,7 @@ return_reg_value(uint32_t reg, uint8_t dependency)
 
   /* Skip specific EL1 register reads if requested via -el1skiptrap */
   if (reg == PMSIDR_EL1) {
-      if (g_el1skiptrap_mask & EL1SKIPTRAP_PMSIDR) {
+      if (acs_policy_get_el1skiptrap_mask() & EL1SKIPTRAP_PMSIDR) {
           return 0;
       }
   }
@@ -161,7 +161,7 @@ return_reg_value(uint32_t reg, uint8_t dependency)
         break;
 
     default:
-        val_print(ACS_PRINT_ERR, "\n Unknown dependency = %d ", dependency);
+        val_print(ERROR, "\n Unknown dependency = %d ", dependency);
         return 0x0;
   }
 
@@ -221,9 +221,9 @@ id_regs_check(void)
   }
 
   if (check == 1)
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+      val_set_status(index, RESULT_FAIL(2));
   else
-      val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(index, RESULT_PASS);
 
   return;
 }
@@ -242,8 +242,8 @@ payload(uint32_t num_pe)
   volatile pe_reg_info *pe_buffer;
 
   if (num_pe == 1) {
-      val_print(ACS_PRINT_DEBUG, "\n       Skipping as num of PE is 1    ", 0);
-      val_set_status(my_index, RESULT_SKIP(TEST_NUM, 1));
+      val_print(DEBUG, "\n       Skipping as num of PE is 1    ");
+      val_set_status(my_index, RESULT_SKIP(1));
       return;
   }
 
@@ -258,22 +258,22 @@ payload(uint32_t num_pe)
          val_pe_reg_write(CSSELR_EL1, i << 1);
          cache_list[i] = return_reg_value(reg_list[0].reg_name, reg_list[0].dependency);
          val_data_cache_ops_by_va((addr_t)(cache_list + i), CLEAN_AND_INVALIDATE);
-         val_print(ACS_PRINT_INFO, "\n       Primary PE Index %d", my_index);
-         val_print(ACS_PRINT_INFO, ", cache index %d", i);
-         val_print(ACS_PRINT_INFO, ", size read 0x%016llx", cache_list[i]);
+         val_print(TRACE, "\n       Primary PE Index %d", my_index);
+         val_print(TRACE, ", cache index %d", i);
+         val_print(TRACE, ", size read 0x%016llx", cache_list[i]);
       }
       i++;
   }
 
   for (i = 1; i < NUM_OF_REGISTERS; i++) {
       rd_data_array[i] = return_reg_value(reg_list[i].reg_name, reg_list[i].dependency);
-      val_print(ACS_PRINT_INFO, "\n       Primary PE Index %d, ", my_index);
-      val_print(ACS_PRINT_INFO, reg_list[i].reg_desc, 0);
+      val_print(TRACE, "\n       Primary PE Index %d, ", my_index);
+      val_print(TRACE, reg_list[i].reg_desc);
 
       if (reg_list[i].dependency == AA32)
-          val_print(ACS_PRINT_INFO, "  0x%08llx ", rd_data_array[i]);
+          val_print(TRACE, "  0x%08llx ", rd_data_array[i]);
       else
-          val_print(ACS_PRINT_INFO, "  0x%016llx ", rd_data_array[i]);
+          val_print(TRACE, "  0x%016llx ", rd_data_array[i]);
 
       val_data_cache_ops_by_va((addr_t)(rd_data_array + i), CLEAN_AND_INVALIDATE);
   }
@@ -283,8 +283,8 @@ payload(uint32_t num_pe)
   g_pe_reg_info = (pe_reg_info *) val_memory_calloc(num_pe, sizeof(pe_reg_info));
 
   if (g_pe_reg_info == NULL) {
-      val_print(ACS_PRINT_ERR, "\n       Allocation for secondary PE Registers Failed \n", 0);
-      val_set_status(my_index, RESULT_FAIL(TEST_NUM, 1));
+      val_print(ERROR, "\n       Allocation for secondary PE Registers Failed \n");
+      val_set_status(my_index, RESULT_FAIL(1));
       return;
   }
 
@@ -295,15 +295,15 @@ payload(uint32_t num_pe)
           while ((--timeout) && (IS_RESULT_PENDING(val_get_status(i))));
 
           if(timeout == 0) {
-              val_print(ACS_PRINT_ERR, "\n       **Timed out** for PE index = %d", i);
-              val_set_status(i, RESULT_FAIL(TEST_NUM, 3));
+              val_print(ERROR, "\n       **Timed out** for PE index = %d", i);
+              val_set_status(i, RESULT_FAIL(3));
               return;
           }
       }
   }
 
-  val_print(ACS_PRINT_TEST, "\n       Primary PE Index     %d", my_index);
-  val_print(ACS_PRINT_TEST, "\n       Primary PE MIDR_EL1  0x%08llx", rd_data_array[1]);
+  val_print(INFO, "\n       Primary PE Index     %d", my_index);
+  val_print(INFO, "\n       Primary PE MIDR_EL1  0x%08llx", rd_data_array[1]);
 
   for (i = 0; i < num_pe; i++) {
       uint32_t unique = 1;
@@ -318,11 +318,11 @@ payload(uint32_t num_pe)
           }
           if (unique == 1 && rd_data_array[1] != pe_buffer->reg_data[1]) {
               if (t == 0) {
-                  val_print(ACS_PRINT_TEST, "\n       Other Cores          0x%08llx      ",
+                  val_print(INFO, "\n       Other Cores          0x%08llx      ",
                                                                         pe_buffer->reg_data[1]);
                   t = 1;
               } else {
-                  val_print(ACS_PRINT_TEST, "\n                             0x%08llx      ",
+                  val_print(INFO, "\n                             0x%08llx      ",
                                                                         pe_buffer->reg_data[1]);
                 }
            }
@@ -330,7 +330,7 @@ payload(uint32_t num_pe)
   }
 
   if (t == 0) {
-      val_print(ACS_PRINT_TEST, "\n       Other Cores          Identical       ", 0);
+      val_print(INFO, "\n       Other Cores          Identical       ");
   }
 
   pe_buffer = NULL;
@@ -343,20 +343,20 @@ payload(uint32_t num_pe)
              if (!(pe_buffer->cache_status[cache_index]) &&
                                                     (pe_buffer->pe_cache[cache_index] != 0))
              {
-                 val_print(ACS_PRINT_INFO, "\n        PE Index %d", i);
-                 val_print(ACS_PRINT_INFO, ", cache index %d", cache_index);
-                 val_print(ACS_PRINT_INFO, ", size read 0x%016llx",
+                 val_print(TRACE, "\n        PE Index %d", i);
+                 val_print(TRACE, ", cache index %d", cache_index);
+                 val_print(TRACE, ", size read 0x%016llx",
                                                              pe_buffer->pe_cache[cache_index]);
              }
              else if (pe_buffer->pe_cache[cache_index] != 0)
              {
-                   val_print(ACS_PRINT_ERR, "\n        PE Index %d", i);
-                   val_print(ACS_PRINT_ERR, ", cache index %d", cache_index);
-                   val_print(ACS_PRINT_ERR, ", size read 0x%016llx     FAIL\n",
+                   val_print(ERROR, "\n        PE Index %d", i);
+                   val_print(ERROR, ", cache index %d", cache_index);
+                   val_print(ERROR, ", size read 0x%016llx     FAIL\n",
                                                              pe_buffer->pe_cache[cache_index]);
-                   val_print(ACS_PRINT_ERR, "          Masked Primary PE Value  0x%016llx \n",
+                   val_print(ERROR, "          Masked Primary PE Value  0x%016llx \n",
                                               cache_list[cache_index] & (~reg_list[0].reg_mask));
-                   val_print(ACS_PRINT_ERR, "          Masked Current PE Value  0x%016llx ",
+                   val_print(ERROR, "          Masked Current PE Value  0x%016llx ",
                                       pe_buffer->pe_cache[cache_index] & (~reg_list[0].reg_mask));
                    cache_fail = cache_fail + 1;
              }
@@ -364,28 +364,28 @@ payload(uint32_t num_pe)
 
           for (int reg_index = 1; reg_index < NUM_OF_REGISTERS; reg_index++) {
              if (!(pe_buffer->reg_status[reg_index])) {
-                 val_print(ACS_PRINT_INFO, "\n        PE Index %d, ", i);
-                 val_print(ACS_PRINT_INFO, reg_list[reg_index].reg_desc, 0);
+                 val_print(TRACE, "\n        PE Index %d, ", i);
+                 val_print(TRACE, reg_list[reg_index].reg_desc);
                  if (reg_list[reg_index].dependency == AA32)
-                     val_print(ACS_PRINT_INFO, "   0x%08llx", pe_buffer->reg_data[reg_index]);
+                     val_print(TRACE, "   0x%08llx", pe_buffer->reg_data[reg_index]);
                  else
-                     val_print(ACS_PRINT_INFO, "   0x%016llx", pe_buffer->reg_data[reg_index]);
+                     val_print(TRACE, "   0x%016llx", pe_buffer->reg_data[reg_index]);
              } else  {
-                 val_print(ACS_PRINT_ERR, "\n        PE Index %d, ", i);
-                 val_print(ACS_PRINT_ERR, reg_list[reg_index].reg_desc, 0);
+                 val_print(ERROR, "\n        PE Index %d, ", i);
+                 val_print(ERROR, reg_list[reg_index].reg_desc);
                  if (reg_list[reg_index].dependency == AA32) {
-                     val_print(ACS_PRINT_ERR, "    0x%08llx    FAIL\n",
+                     val_print(ERROR, "    0x%08llx    FAIL\n",
                                                         pe_buffer->reg_data[reg_index]);
-                     val_print(ACS_PRINT_ERR, "          Masked Primary PE Value  0x%08llx \n",
+                     val_print(ERROR, "          Masked Primary PE Value  0x%08llx \n",
                                        rd_data_array[reg_index] & (~reg_list[reg_index].reg_mask));
-                     val_print(ACS_PRINT_ERR, "          Masked Current PE Value  0x%08llx ",
+                     val_print(ERROR, "          Masked Current PE Value  0x%08llx ",
                                  pe_buffer->reg_data[reg_index] & (~reg_list[reg_index].reg_mask));
                  } else {
-                     val_print(ACS_PRINT_ERR, "    0x%016llx    FAIL\n",
+                     val_print(ERROR, "    0x%016llx    FAIL\n",
                                                         pe_buffer->reg_data[reg_index]);
-                     val_print(ACS_PRINT_ERR, "          Masked Primary PE Value  0x%016llx \n",
+                     val_print(ERROR, "          Masked Primary PE Value  0x%016llx \n",
                                        rd_data_array[reg_index] & (~reg_list[reg_index].reg_mask));
-                     val_print(ACS_PRINT_ERR, "          Masked Current PE Value  0x%016llx ",
+                     val_print(ERROR, "          Masked Current PE Value  0x%016llx ",
                                  pe_buffer->reg_data[reg_index] & (~reg_list[reg_index].reg_mask));
                    }
                  reg_fail = reg_fail + 1;
@@ -398,12 +398,12 @@ payload(uint32_t num_pe)
   }
 
   if (total_fail) {
-      val_print(ACS_PRINT_ERR, "\n\n    Total Register and cache fail for all PE %d \n",
+      val_print(ERROR, "\n\n    Total Register and cache fail for all PE %d \n",
                                                                              total_fail);
-      val_set_status(my_index, RESULT_FAIL(TEST_NUM, 4));
+      val_set_status(my_index, RESULT_FAIL(4));
   }
   else
-      val_set_status(my_index, RESULT_PASS(TEST_NUM, 2));
+      val_set_status(my_index, RESULT_PASS);
 
   val_memory_free((void *) g_pe_reg_info);
   return;

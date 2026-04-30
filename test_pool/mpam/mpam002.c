@@ -46,7 +46,7 @@ static uint32_t get_llc_msc_index(void)
 
     /* If parsing had passed in last call, return the cached value */
     if (llc_msc_index != LLC_MSC_INDEX_UNKNOWN) {
-        val_print(ACS_PRINT_DEBUG, "\n       Returning parsed LLC MPAM MSC index = %d",
+        val_print(DEBUG, "\n       Returning parsed LLC MPAM MSC index = %d",
                   llc_msc_index);
         return llc_msc_index;
     }
@@ -55,33 +55,33 @@ static uint32_t get_llc_msc_index(void)
     /* Re-run even if previous parse was failed for ERROR prints */
 
     /* Find the LLC cache identifier */
-    val_print(ACS_PRINT_DEBUG, "\n       Parsing for LLC MPAM MSC index", 0);
+    val_print(DEBUG, "\n       Parsing for LLC MPAM MSC index");
     llc_index = val_cache_get_llc_index();
     if (llc_index == CACHE_TABLE_EMPTY) {
-        val_print(ACS_PRINT_ERR, "\n       Cache info table empty", 0);
+        val_print(ERROR, "\n       Cache info table empty");
         return LLC_MSC_INDEX_UNKNOWN;
     }
 
     cache_identifier = val_cache_get_info(CACHE_ID, llc_index);
     if (cache_identifier == INVALID_CACHE_INFO) {
-        val_print(ACS_PRINT_ERR, "\n       LLC invalid in PPTT", 0);
+        val_print(ERROR, "\n       LLC invalid in PPTT");
         return LLC_MSC_INDEX_UNKNOWN;
     }
 
     /* Check in the MPAM table which MSC is attached to the LLC */
     msc_node_cnt = val_mpam_get_msc_count();
-    val_print(ACS_PRINT_DEBUG, "\n       MSC count = %d", msc_node_cnt);
+    val_print(DEBUG, "\n       MSC count = %d", msc_node_cnt);
 
     if (msc_node_cnt == 0) {
-        val_print(ACS_PRINT_ERR, "\n       MPAM MSC count is zero", 0);
+        val_print(ERROR, "\n       MPAM MSC count is zero");
         return LLC_MSC_INDEX_UNKNOWN;
     }
 
     /* visit each MSC node and check for cache resources */
     for (msc_index = 0; msc_index < msc_node_cnt; msc_index++) {
         rsrc_node_cnt = val_mpam_get_info(MPAM_MSC_RSRC_COUNT, msc_index, 0);
-        val_print(ACS_PRINT_DEBUG, "\n       MSC index      = %d", msc_index);
-        val_print(ACS_PRINT_DEBUG, "\n       Resource count = %d", rsrc_node_cnt);
+        val_print(DEBUG, "\n       MSC index      = %d", msc_index);
+        val_print(DEBUG, "\n       Resource count = %d", rsrc_node_cnt);
         for (rsrc_index = 0; rsrc_index < rsrc_node_cnt; rsrc_index++) {
             /* check whether the resource location is cache */
             if (val_mpam_get_info(MPAM_MSC_RSRC_TYPE, msc_index, rsrc_index) ==
@@ -89,8 +89,8 @@ static uint32_t get_llc_msc_index(void)
                 if (val_mpam_get_info(MPAM_MSC_RSRC_DESC1, msc_index, rsrc_index) ==
                                                                                cache_identifier) {
                     /* We have MSC which controls/monitors the LLC cache */
-                    val_print(ACS_PRINT_DEBUG, "\n       Resource index = %d", rsrc_index);
-                    val_print(ACS_PRINT_DEBUG, "\n       MSC index of LLC = %d", msc_index);
+                    val_print(DEBUG, "\n       Resource index = %d", rsrc_index);
+                    val_print(DEBUG, "\n       MSC index of LLC = %d", msc_index);
 
                     /* Store the LLC MSC index in static variable */
                     llc_msc_index = msc_index;
@@ -111,23 +111,33 @@ static void payload_check_mpam_llc_csu_support(void)
     uint32_t llc_msc_index;
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
+    /* Check if PE implements FEAT_MPAM */
+    /* ID_AA64PFR0_EL1.MPAM bits[43:40] > 0 or ID_AA64PFR1_EL1.MPAM_frac bits[19:16] > 0
+       indicates implementation of MPAM extension */
+    if (!((VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 40, 43) > 0) ||
+       (VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR1_EL1), 16, 19) > 0))) {
+        val_set_status(index, RESULT_SKIP(01));
+        val_print(DEBUG, "\n       FEAT_MPAM not supported by PE");
+        return;
+    }
+
     /* Get MPAM msc_index of LLC cache */
     llc_msc_index = get_llc_msc_index();
 
     /* Check if msc_index in valid, else mark test as FAIL */
     if (llc_msc_index == LLC_MSC_INDEX_UNKNOWN) {
-        val_print(ACS_PRINT_ERR, "\n       MSC on LLC not found ", 0);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+        val_print(ERROR, "\n       MSC on LLC not found ");
+        val_set_status(index, RESULT_FAIL(01));
         return;
     }
 
     /* Check if LLC supports CSU monitor */
     if (!val_mpam_supports_csumon(llc_msc_index)) {
-        val_print(ACS_PRINT_ERR, "\n       CSU MON unsupported by LLC", 0);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
+        val_print(ERROR, "\n       CSU MON unsupported by LLC");
+        val_set_status(index, RESULT_FAIL(02));
         return;
     } else {
-        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+        val_set_status(index, RESULT_PASS);
         return;
     }
 
@@ -139,24 +149,34 @@ static void payload_check_llc_csu_mon_count(void)
     uint32_t csumon_count;
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
+    /* Check if PE implements FEAT_MPAM */
+    /* ID_AA64PFR0_EL1.MPAM bits[43:40] > 0 or ID_AA64PFR1_EL1.MPAM_frac bits[19:16] > 0
+       indicates implementation of MPAM extension */
+    if (!((VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 40, 43) > 0) ||
+       (VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR1_EL1), 16, 19) > 0))) {
+        val_set_status(index, RESULT_SKIP(01));
+        val_print(DEBUG, "\n       FEAT_MPAM not supported by PE");
+        return;
+    }
+
     /* Get MPAM msc_index of LLC cache */
     llc_msc_index = get_llc_msc_index();
 
     /* Check if msc_index in valid, else mark test as FAIL */
     if (llc_msc_index == LLC_MSC_INDEX_UNKNOWN) {
-        val_print(ACS_PRINT_ERR, "\n       MSC on LLC not found ", 0);
-        val_set_status(index, RESULT_FAIL(TEST_NUM1, 01));
+        val_print(ERROR, "\n       MSC on LLC not found ");
+        val_set_status(index, RESULT_FAIL(01));
         return;
     }
 
     /* Check if atleast 16 CSU monitor are present */
     csumon_count = val_mpam_get_csumon_count(llc_msc_index);
     if (csumon_count < 16) {
-        val_print(ACS_PRINT_ERR, "\n       CSU MON %d less than 16", csumon_count);
-        val_set_status(index, RESULT_FAIL(TEST_NUM1, 02));
+        val_print(ERROR, "\n       CSU MON %d less than 16", csumon_count);
+        val_set_status(index, RESULT_FAIL(02));
         return;
     } else {
-        val_set_status(index, RESULT_PASS(TEST_NUM1, 01));
+        val_set_status(index, RESULT_PASS);
         return;
     }
 }

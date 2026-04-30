@@ -61,7 +61,7 @@ pfdi_invalid_feature_check(void)
     val_pfdi_invalidate_ret_params(&pfdi_buffer->inval[i]);
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
   return;
 }
 
@@ -78,8 +78,8 @@ static void payload_invalid_pe_feature_check(void *arg)
   g_pfdi_invalid_feature = (PFDI_INVAL_RETURNS *)
                             val_memory_calloc(num_pe, sizeof(PFDI_INVAL_RETURNS));
   if (g_pfdi_invalid_feature == NULL) {
-    val_print(ACS_PRINT_ERR, "\n       Allocation for PFDI Invalid Feature Failed \n", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+    val_print(ERROR, "\n       Allocation for PFDI Invalid Feature Failed \n");
+    val_set_status(index, RESULT_FAIL(1));
     return;
   }
 
@@ -102,8 +102,8 @@ static void payload_invalid_pe_feature_check(void *arg)
       while ((--timeout) && (IS_RESULT_PENDING(val_get_status(i))));
 
       if (timeout == 0) {
-        val_print(ACS_PRINT_ERR, "\n       **Timed out** for PE index = %d", i);
-        val_set_status(i, RESULT_FAIL(TEST_NUM, 2));
+        val_print(ERROR, "\n       **Timed out** for PE index = %d", i);
+        val_set_status(i, RESULT_FAIL(2));
         goto free_pfdi_details;
       }
     }
@@ -120,29 +120,29 @@ static void payload_invalid_pe_feature_check(void *arg)
       val_pfdi_invalidate_ret_params(&pfdi_buffer->inval[inval_case]);
 
       if (pfdi_buffer->inval[inval_case].x0 != PFDI_ACS_INVALID_PARAMETERS) {
-        val_print(ACS_PRINT_ERR, "\n       PFDI feature with invalid x%d", inval_case + 2);
-        val_print(ACS_PRINT_ERR, " param failed %ld ", pfdi_buffer->inval[inval_case].x0);
-        val_print(ACS_PRINT_ERR, "on PE = %d", i);
+        val_print(ERROR, "\n       PFDI feature with invalid x%d", inval_case + 2);
+        val_print(ERROR, " param failed %ld ", pfdi_buffer->inval[inval_case].x0);
+        val_print(ERROR, "on PE = %d", i);
         test_fail++;
       }
 
       if ((pfdi_buffer->inval[inval_case].x1 != 0) || (pfdi_buffer->inval[inval_case].x2 != 0) ||
           (pfdi_buffer->inval[inval_case].x3 != 0) || (pfdi_buffer->inval[inval_case].x4 != 0)) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
                 "\n       Registers X1-X4 are not zero for x%d invalid case:", inval_case + 2);
-        val_print(ACS_PRINT_ERR, " x1=0x%llx", pfdi_buffer->inval[inval_case].x1);
-        val_print(ACS_PRINT_ERR, " x2=0x%llx", pfdi_buffer->inval[inval_case].x2);
-        val_print(ACS_PRINT_ERR, " x3=0x%llx", pfdi_buffer->inval[inval_case].x3);
-        val_print(ACS_PRINT_ERR, " x4=0x%llx", pfdi_buffer->inval[inval_case].x4);
-        val_print(ACS_PRINT_ERR, "\n       Failed on PE = %d", i);
+        val_print(ERROR, " x1=0x%llx", pfdi_buffer->inval[inval_case].x1);
+        val_print(ERROR, " x2=0x%llx", pfdi_buffer->inval[inval_case].x2);
+        val_print(ERROR, " x3=0x%llx", pfdi_buffer->inval[inval_case].x3);
+        val_print(ERROR, " x4=0x%llx", pfdi_buffer->inval[inval_case].x4);
+        val_print(ERROR, "\n       Failed on PE = %d", i);
         test_fail++;
       }
     }
 
     if (test_fail)
-      val_set_status(i, RESULT_FAIL(TEST_NUM, 3));
+      val_set_status(i, RESULT_FAIL(3));
     else
-      val_set_status(i, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(i, RESULT_PASS);
   }
 
 free_pfdi_details:

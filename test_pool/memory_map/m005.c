@@ -39,28 +39,45 @@ static void payload_check_s2_64kb_granule_support(void)
 {
     uint64_t data = 0;
     uint32_t pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
+    uint8_t feat_gtg, tgran4_2, tgran16_2, tgran64;
 
     /* Check if EL2 is supported, if not skip the test. non-zero value in ID_AA64PFR0_EL1[11:8]
        indicate EL2 support */
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 8, 11);
 
     if (data == 0) {
-        val_print(ACS_PRINT_DEBUG, "\n       EL2 not implemented, Skipping the test.", 0);
-        val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+        val_print(DEBUG, "\n       EL2 not implemented, Skipping the test.");
+        val_set_status(pe_index, RESULT_SKIP(01));
         return;
     }
 
-    /* Check PE support for 64KB memory granule size at stage 2. ID_AA64MMFR0_EL1[39:36] == b0010
-       indicates 64KB granule supported at stage 2, and value b0000 is deprecated when EL2 is
-       implemented hence not checking ID_AA64MMFR0_EL1.TGran64 field.*/
-    data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64MMFR0_EL1), 36, 39);
-    if (data != 0x2) {
-        val_print(ACS_PRINT_ERR, "\n       64KB granule not supported at stage 2.", 0);
-        val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
-        return;
+    data = val_pe_reg_read(ID_AA64MMFR0_EL1);
+    /* FEAT_GTG presence is identified directly by the stage-2 granule fields. */
+    tgran4_2  = VAL_EXTRACT_BITS(data, 40, 43);
+    tgran16_2 = VAL_EXTRACT_BITS(data, 32, 35);
+    tgran64   = VAL_EXTRACT_BITS(data, 36, 39);
+    feat_gtg = (tgran4_2 != 0x0) || (tgran16_2 != 0x0) || (tgran64 != 0x0);
+
+    /*
+     * FEAT_GTG (Armv8.5+) introduces the stage 2 granule fields [43:32].
+     * Use the feature field to decide which encoding to consume.
+     */
+    if (feat_gtg) {
+        if (tgran64 != 0x2) {
+            val_print(ERROR, "\n       64KB granule not supported at stage 2 (TGran64_2).");
+            val_set_status(pe_index, RESULT_FAIL(01));
+            return;
+        }
+    } else {
+        tgran64 = VAL_EXTRACT_BITS(data, 24, 27);
+        if (tgran64 != 0x0) {
+            val_print(ERROR, "\n       64KB granule not supported at stage 2 (TGran64).");
+            val_set_status(pe_index, RESULT_FAIL(02));
+            return;
+        }
     }
 
-    val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+    val_set_status(pe_index, RESULT_PASS);
     return;
 }
 
@@ -77,8 +94,8 @@ static void payload_check_peripheral_addr_64kb_apart(void)
     peri_count = val_peripheral_get_info(NUM_ALL, 0);
 
     if (peri_count < 2) {
-        val_print(ACS_PRINT_DEBUG, "\n       No or one peripherals reported by the system.", 0);
-        val_set_status(pe_index, RESULT_SKIP(TEST_NUM1, 01));
+        val_print(DEBUG, "\n       No or one peripherals reported by the system.");
+        val_set_status(pe_index, RESULT_SKIP(01));
         return;
     }
 
@@ -88,8 +105,8 @@ static void payload_check_peripheral_addr_64kb_apart(void)
 
             peri_addr1 = val_peripheral_get_info(ANY_BASE0, peri_index);
             peri_addr2 = val_peripheral_get_info(ANY_BASE0, peri_index1);
-            val_print(ACS_PRINT_INFO, "\n   addr of Peripheral 1 is  %llx", peri_addr1);
-            val_print(ACS_PRINT_INFO, "\n   addr of Peripheral 2 is  %llx", peri_addr2);
+            val_print(TRACE, "\n   addr of Peripheral 1 is  %llx", peri_addr1);
+            val_print(TRACE, "\n   addr of Peripheral 2 is  %llx", peri_addr2);
 
            if ((peri_addr1 == 0) || (peri_addr2 == 0)) {
                 continue;
@@ -99,7 +116,7 @@ static void payload_check_peripheral_addr_64kb_apart(void)
                          peri_addr1 - peri_addr2 : peri_addr2 - peri_addr1;
 
             if (addr_diff < MEM_SIZE_64KB) {
-                val_print(ACS_PRINT_ERR,
+                val_print(ERROR,
                          "\n  Peripheral base addresses isn't atleast 64Kb apart %llx", addr_diff);
                 fail_cnt++;
             }
@@ -107,9 +124,9 @@ static void payload_check_peripheral_addr_64kb_apart(void)
     }
 
     if (fail_cnt) {
-        val_set_status(pe_index, RESULT_FAIL(TEST_NUM1, 01));
+        val_set_status(pe_index, RESULT_FAIL(01));
     } else {
-        val_set_status(pe_index, RESULT_PASS(TEST_NUM1, 01));
+        val_set_status(pe_index, RESULT_PASS);
     }
 }
 

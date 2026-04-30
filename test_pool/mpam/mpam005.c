@@ -41,10 +41,10 @@ static void payload(void)
 
 
     msc_node_cnt = val_mpam_get_msc_count();
-    val_print(ACS_PRINT_DEBUG, "\n       MSC count = %d", msc_node_cnt);
+    val_print(DEBUG, "\n       MSC count = %d", msc_node_cnt);
 
     if (msc_node_cnt == 0) {
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+        val_set_status(index, RESULT_FAIL(01));
         return;
     }
 
@@ -57,8 +57,8 @@ static void payload(void)
             msc_addr1 = val_mpam_get_info(MPAM_MSC_BASE_ADDR, msc_index1, 0);
 
             if (msc_addr1 >= msc_addr && msc_addr1 <= (msc_addr + msc_len)) {
-                val_print(ACS_PRINT_ERR, "\n       MSC %d and", msc_index);
-                val_print(ACS_PRINT_ERR, " %d memory layout overlapping", msc_index1);
+                val_print(ERROR, "\n       MSC %d and", msc_index);
+                val_print(ERROR, " %d memory layout overlapping", msc_index1);
                 test_fails++;
             }
         }
@@ -67,11 +67,11 @@ static void payload(void)
         peri_count = val_peripheral_get_info(NUM_USB, 0);
         while (peri_count) {
             --peri_count;  //array index starts from 0, so subtract 1 from count
-            val_print(ACS_PRINT_DEBUG, "\n       USB index %d", peri_count);
+            val_print(DEBUG, "\n       USB index %d", peri_count);
             peripheral_base = val_peripheral_get_info(USB_BASE0, peri_count);
             if (peripheral_base >= msc_addr && peripheral_base <= (msc_addr + msc_len)) {
-                val_print(ACS_PRINT_ERR, "\n       MSC %d and", msc_index);
-                val_print(ACS_PRINT_ERR, " USB %d memory layout overlapping", peri_count);
+                val_print(ERROR, "\n       MSC %d and", msc_index);
+                val_print(ERROR, " USB %d memory layout overlapping", peri_count);
                 test_fails++;
             }
         }
@@ -81,11 +81,11 @@ static void payload(void)
         peri_count = val_peripheral_get_info(NUM_UART, 0);
         while (peri_count) {
             --peri_count;  //array index starts from 0, so subtract 1 from count
-            val_print(ACS_PRINT_DEBUG, "\n       UART index %d", peri_count);
+            val_print(DEBUG, "\n       UART index %d", peri_count);
             peripheral_base = val_peripheral_get_info(UART_BASE0, peri_count);
             if (peripheral_base >= msc_addr && peripheral_base <= (msc_addr + msc_len)) {
-                val_print(ACS_PRINT_ERR, "\n       MSC %d and", msc_index);
-                val_print(ACS_PRINT_ERR, " UART %d memory layout overlapping", peri_count);
+                val_print(ERROR, "\n       MSC %d and", msc_index);
+                val_print(ERROR, " UART %d memory layout overlapping", peri_count);
                 test_fails++;
             }
         }
@@ -94,20 +94,20 @@ static void payload(void)
         peri_count = val_peripheral_get_info(NUM_SATA, 0);
         while (peri_count) {
             --peri_count;  //array index starts from 0, so subtract 1 from count
-            val_print(ACS_PRINT_DEBUG, "\n       SATA index %d", peri_count);
+            val_print(DEBUG, "\n       SATA index %d", peri_count);
             peripheral_base = val_peripheral_get_info(SATA_BASE0, peri_count);
             if (peripheral_base >= msc_addr && peripheral_base <= (msc_addr + msc_len)) {
-                val_print(ACS_PRINT_ERR, "\n       MSC %d and", msc_index);
-                val_print(ACS_PRINT_ERR, " SATA %d memory layout overlapping", peri_count);
+                val_print(ERROR, "\n       MSC %d and", msc_index);
+                val_print(ERROR, " SATA %d memory layout overlapping", peri_count);
                 test_fails++;
             }
         }
     }
 
     if (test_fails)
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
+        val_set_status(index, RESULT_FAIL(02));
     else
-        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+        val_set_status(index, RESULT_PASS);
 }
 
 uint32_t mpam005_entry(uint32_t num_pe)

@@ -38,7 +38,7 @@ intr_handler(void)
 {
   /* Clear the interrupt pending state */
   irq_pending = 0;
-  val_print(ACS_PRINT_INFO, "\n       Received MSI interrupt %x       ", lpi_int_id + instance);
+  val_print(TRACE, "\n       Received MSI interrupt %x       ", lpi_int_id + instance);
   val_gic_end_of_interrupt(lpi_int_id + instance);
   return;
 }
@@ -64,8 +64,8 @@ payload (void)
   index = val_pe_get_index_mpid (val_pe_get_mpid());
 
   if (val_gic_get_info(GIC_INFO_NUM_ITS) == 0) {
-      val_print(ACS_PRINT_DEBUG, "\n       No ITS, Skipping Test.\n", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+      val_print(DEBUG, "\n       No ITS, Skipping Test.\n");
+      val_set_status(index, RESULT_SKIP(1));
       return;
   }
 
@@ -86,12 +86,12 @@ payload (void)
 
     /* Get the exerciser BDF */
     e_bdf = val_exerciser_get_bdf(instance);
-    val_print(ACS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
+    val_print(DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
 
     /* Search for MSI-X Capability */
     if ((val_pcie_find_capability(e_bdf, PCIE_CAP, CID_MSIX, &msi_cap_offset)) &&
         (val_pcie_find_capability(e_bdf, PCIE_CAP, CID_MSI, &msi_cap_offset))) {
-      val_print(ACS_PRINT_INFO, "\n       No MSI-X Capability, Skipping for 0x%x", e_bdf);
+      val_print(TRACE, "\n       No MSI-X Capability, Skipping for 0x%x", e_bdf);
       continue;
     }
 
@@ -102,26 +102,26 @@ payload (void)
                                         PCIE_EXTRACT_BDF_SEG(e_bdf), &device_id,
                                         &stream_id, &its_id);
     if (status) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
             "\n       Could not get device info for BDF : 0x%x", e_bdf);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+        val_set_status(index, RESULT_FAIL(1));
         return;
     }
 
     status = val_gic_request_msi(e_bdf, device_id, its_id, lpi_int_id + instance, msi_index);
     if (status) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
             "\n       MSI Assignment failed for bdf : 0x%x", e_bdf);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+        val_set_status(index, RESULT_FAIL(2));
         return;
     }
 
     status = val_gic_install_isr(lpi_int_id + instance, intr_handler);
 
     if (status) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
             "\n       Intr handler registration failed Interrupt : 0x%x", lpi_int_id + instance);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 3));
+        val_set_status(index, RESULT_FAIL(3));
         return;
     }
 
@@ -130,9 +130,9 @@ payload (void)
 
     /* Get ITS Base for current ITS */
     if (val_gic_its_get_base(its_id, &its_base)) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
             "\n       Could not find ITS Base for its_id : 0x%x", its_id);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 4));
+        val_set_status(index, RESULT_FAIL(4));
         return;
     }
 
@@ -145,11 +145,11 @@ payload (void)
         {};
 
     if (timeout == 0) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
             "\n       Interrupt trigger failed for : 0x%x, ", lpi_int_id + instance);
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
             "BDF : 0x%x   ", e_bdf);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 5));
+        val_set_status(index, RESULT_FAIL(5));
         val_gic_free_msi(e_bdf, device_id, its_id, lpi_int_id + instance, msi_index);
         return;
     }
@@ -159,12 +159,12 @@ payload (void)
   }
 
   if (test_skip) {
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+    val_set_status(index, RESULT_SKIP(2));
     return;
   }
 
   /* Pass Test */
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 
 }
 
@@ -179,7 +179,7 @@ e033_entry(uint32_t num_pe)
   status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
   if (status != ACS_STATUS_SKIP) {
       if (val_exerciser_test_init() != ACS_STATUS_PASS)
-          return TEST_SKIP_VAL;
+          return RESULT_SKIP(0);
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
   }
 

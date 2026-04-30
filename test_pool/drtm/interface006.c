@@ -32,8 +32,8 @@ payload(uint32_t num_pe)
 
   /*Statu value lessthan zero are error case*/
   if (status < DRTM_ACS_SUCCESS) {
-    val_print(ACS_PRINT_ERR, "\n       DRTM query TPM feature failed err=%d", status);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+    val_print(ERROR, "\n       DRTM query TPM feature failed err=%d", status);
+    val_set_status(index, RESULT_FAIL(1));
     return;
   }
 
@@ -42,16 +42,16 @@ payload(uint32_t num_pe)
     if ((val_drtm_reserved_bits_check_is_zero(VAL_EXTRACT_BITS(features_tpm, 16, 31))
              != ACS_STATUS_PASS) && (val_drtm_reserved_bits_check_is_zero(
              VAL_EXTRACT_BITS(features_tpm, 37, 63)) != ACS_STATUS_PASS)) {
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+      val_set_status(index, RESULT_FAIL(2));
       return;
     }
   } else {
-    val_print(ACS_PRINT_ERR,
-              "\n       TPM feature value not available in return value", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 3));
+    val_print(ERROR,
+              "\n       TPM feature value not available in return value");
+    val_set_status(index, RESULT_FAIL(3));
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

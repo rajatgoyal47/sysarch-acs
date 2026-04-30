@@ -35,7 +35,7 @@ esr(uint64_t interrupt_type, void *context)
 {
   /* Return to the test flow after handling the exception. */
   val_pe_update_elr(context, (uint64_t)branch_to_test);
-  val_print(ACS_PRINT_ERR, "\n       Received exception of type: %d", interrupt_type);
+  val_print(ERROR, "\n       Received exception of type: %d", interrupt_type);
   exception_observed = 1;
 }
 
@@ -78,20 +78,20 @@ payload(void)
   status = val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
   status |= val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
   if (status) {
-    val_print(ACS_PRINT_ERR, "\n       Failed in installing the exception handler", 0);
-    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+    val_print(ERROR, "\n       Failed in installing the exception handler");
+    val_set_status(pe_index, RESULT_FAIL(01));
     return;
   }
 
   status = val_exerciser_check_firmware_handle_support();
   if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
-    val_set_status(pe_index, RESULT_WARN(TEST_NUM, 1));
+    val_set_status(pe_index, RESULT_WARNING(1));
     return;
   }
 
   if (status != ACS_STATUS_PASS) {
-    val_print(ACS_PRINT_ERR, "\n       Firmware first handling not supported", 0);
-    val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+    val_print(ERROR, "\n       Firmware first handling not supported");
+    val_set_status(pe_index, RESULT_SKIP(01));
     return;
   }
 
@@ -117,7 +117,7 @@ payload(void)
 
     status = val_exerciser_set_param(GENERATE_MEFN_VDM, 0, e_bdf, instance);
     if (status != ACS_STATUS_PASS) {
-      val_print(ACS_PRINT_ERR, "\n       MEFN trigger not succesful BDF 0x%x", e_bdf);
+      val_print(ERROR, "\n       MEFN trigger not succesful BDF 0x%x", e_bdf);
       continue;
     }
 
@@ -126,18 +126,18 @@ payload(void)
 
 exception_return:
     if (!exception_observed) {
-      val_print(ACS_PRINT_ERR, "\n      MEFN trigger did not raise exception for BDF 0x%x", e_bdf);
-      val_print(ACS_PRINT_ERR, " RP BDF is 0x%x", rp_bdf);
+      val_print(ERROR, "\n      MEFN trigger did not raise exception for BDF 0x%x", e_bdf);
+      val_print(ERROR, " RP BDF is 0x%x", rp_bdf);
       fail_count++;
     }
   }
 
   if (test_skip) {
-    val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+    val_set_status(pe_index, RESULT_SKIP(01));
   } else if (fail_count) {
-    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, fail_count));
+    val_set_status(pe_index, RESULT_FAIL(fail_count));
   } else {
-    val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+    val_set_status(pe_index, RESULT_PASS);
   }
 }
 
@@ -152,7 +152,7 @@ e045_entry(uint32_t num_pe)
   status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
   if (status != ACS_STATUS_SKIP) {
     if (val_exerciser_test_init() != ACS_STATUS_PASS)
-      return TEST_SKIP_VAL;
+      return TEST_SKIP;
     val_run_test_payload(TEST_NUM, num_pe, payload, 0);
   }
 

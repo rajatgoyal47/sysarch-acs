@@ -64,9 +64,9 @@ payload(void)
 
            while (offset <= BAR_TYPE_1_MAX_OFFSET) {
               val_pcie_read_cfg(bdf, offset, &bar_value);
-              val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x ", bdf);
-              val_print(ACS_PRINT_DEBUG, "BAR offset0x%x value", offset);
-              val_print(ACS_PRINT_DEBUG, " is 0x%x     ", bar_value);
+              val_print(DEBUG, "\n       BDF - 0x%x ", bdf);
+              val_print(DEBUG, "BAR offset0x%x value", offset);
+              val_print(DEBUG, " is 0x%x     ", bar_value);
               bar_orig = 0;
               bar_new = 0;
 
@@ -79,8 +79,8 @@ payload(void)
 
               if (BAR_REG(bar_value) == BAR_64_BIT)
               {
-                  val_print(ACS_PRINT_INFO,
-                           "\n       The BAR supports 64-bit address capability", 0);
+                  val_print(TRACE,
+                           "\n       The BAR supports 64-bit address capability");
                   val_pcie_read_cfg(bdf, offset+4, &bar_value_1);
                   base_upper = bar_value_1;
 
@@ -102,8 +102,8 @@ payload(void)
                  bar_upper_bits = bar_reg_value;
                  bar_new = (bar_upper_bits << 32) | bar_value;
                 if (bar_orig == bar_new) {
-                    val_print(ACS_PRINT_DEBUG, "\n       Value read from BAR 0x%llx", bar_new);
-                    val_print(ACS_PRINT_ERR,
+                    val_print(DEBUG, "\n       Value read from BAR 0x%llx", bar_new);
+                    val_print(ERROR,
                               "\n       Read write to BAR reg not supported bdf %x", bdf);
                     fail_cnt++;
                 }
@@ -115,8 +115,8 @@ payload(void)
               }
 
              else {
-                 val_print(ACS_PRINT_INFO,
-                           "\n       The BAR supports 32-bit address capability", 0);
+                 val_print(TRACE,
+                           "\n       The BAR supports 32-bit address capability");
 
                  /* BAR supports 32-bit address. Write all 1's
                   * to BARn and identify the size requested
@@ -128,10 +128,10 @@ payload(void)
                  val_pcie_read_cfg(bdf, offset, &bar_reg_value);
                  bar_new = bar_reg_value;
                  if (bar_orig == bar_new) {
-                    val_print(ACS_PRINT_DEBUG,
+                    val_print(DEBUG,
                               "\n       Value written into BAR 0x%x", TEST_DATA_1);
-                    val_print(ACS_PRINT_DEBUG, " Value read from BAR 0x%x", bar_new);
-                    val_print(ACS_PRINT_ERR,
+                    val_print(DEBUG, " Value read from BAR 0x%x", bar_new);
+                    val_print(ERROR,
                               "\n       Read write to BAR reg not supported bdf %x", bdf);
                     fail_cnt++;
                  }
@@ -145,13 +145,13 @@ payload(void)
   }
 
   if (test_skip == 1) {
-      val_print(ACS_PRINT_DEBUG, "\n       No target device type found. Skipping test", 0);
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+      val_print(DEBUG, "\n       No target device type found. Skipping test");
+      val_set_status(pe_index, RESULT_SKIP(1));
   }
   else if (fail_cnt)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, fail_cnt));
+      val_set_status(pe_index, RESULT_FAIL(fail_cnt));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

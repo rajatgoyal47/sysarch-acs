@@ -1,5 +1,5 @@
 #/** @file
-# Copyright (c) 2016-2019, 2022-2025, Arm Limited or its affiliates. All rights reserved.
+# Copyright (c) 2016-2019, 2022-2026, Arm Limited or its affiliates. All rights reserved.
 # SPDX-License-Identifier : Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,15 +36,8 @@
 .text
 .align 3
 
-GCC_ASM_EXPORT (ArmCallWFI)
 GCC_ASM_EXPORT (SpeProgramUnderProfiling)
 GCC_ASM_EXPORT (DisableSpe)
-GCC_ASM_EXPORT (ArmExecuteMemoryBarrier)
-GCC_ASM_EXPORT (AA64IssueDSB)
-
-ASM_PFX(ArmCallWFI):
-  wfi
-  ret
 
 ASM_PFX(SpeProgramUnderProfiling):
   mov   x2,#12    // No of instructions in the loop
@@ -81,12 +74,4 @@ ASM_PFX(DisableSpe):
   //msr   pmblimitr_el1,x0
   isb
 
-  ret
-
-ASM_PFX(ArmExecuteMemoryBarrier):
-  dmb sy
-  ret
-
-ASM_PFX(AA64IssueDSB):
-  dsb sy
   ret

@@ -42,11 +42,11 @@ payload(uint32_t num_pe)
   /* Get RDBase Address for current PE */
   (void)num_pe;
   pe_rdbase = val_gic_get_pe_rdbase(index);
-  val_print(ACS_PRINT_DEBUG, "\n       PE RD base address %llx", pe_rdbase);
+  val_print(DEBUG, "\n       PE RD base address %llx", pe_rdbase);
   if (pe_rdbase == 0)
   {
-    val_print(ACS_PRINT_ERR, "\n       Could not get RD Base Address", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+    val_print(ERROR, "\n       Could not get RD Base Address");
+    val_set_status(index, RESULT_FAIL(1));
     return;
   }
 
@@ -57,24 +57,24 @@ payload(uint32_t num_pe)
   /* Check that LPI Support is disabled*/
   if ((VAL_EXTRACT_BITS(gicr_ctrl_value, 0, 0) != 0) ||
       (VAL_EXTRACT_BITS(gicr_ctrl_value, 3, 3) != 0)) {
-    val_print(ACS_PRINT_ERR, "\n       LPI is not disabled", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+    val_print(ERROR, "\n       LPI is not disabled");
+    val_set_status(index, RESULT_FAIL(2));
     return;
   }
 
   num_its = val_gic_get_info(GIC_INFO_NUM_ITS);
   if (num_its == 0) {
-    val_print(ACS_PRINT_DEBUG, "\n       No ITS, Skipping Test.", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+    val_print(DEBUG, "\n       No ITS, Skipping Test.");
+    val_set_status(index, RESULT_SKIP(1));
     return;
   }
 
   for (its_id = 0; its_id < num_its; its_id++) {
     /* Get ITS Base for current ITS */
     if (val_gic_its_get_base(its_id, &its_base)) {
-      val_print(ACS_PRINT_ERR,
+      val_print(ERROR,
             "\n       Could not find ITS Base for its_id : 0x%x", its_id);
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 3));
+      val_set_status(index, RESULT_FAIL(3));
       return;
     }
 
@@ -83,12 +83,12 @@ payload(uint32_t num_pe)
     /* Check that ITS is disabled*/
     if ((VAL_EXTRACT_BITS(gits_ctrl_value, 0, 0) != 0) ||
         (VAL_EXTRACT_BITS(gits_ctrl_value, 31, 31) != 1)) {
-      val_print(ACS_PRINT_ERR, "\n       ITS is not disabled", 0);
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 4));
+      val_print(ERROR, "\n       ITS is not disabled");
+      val_set_status(index, RESULT_FAIL(4));
       return;
     }
   }
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t
@@ -102,7 +102,7 @@ interface010_entry(uint32_t num_pe)
 
   if (status != ACS_STATUS_SKIP) {
       if (val_gic_its_configure() != ACS_STATUS_PASS)
-          return TEST_SKIP_VAL;
+          return TEST_SKIP;
       /* execute payload, which will execute relevant functions on current and other PEs */
       payload(num_pe);
   }

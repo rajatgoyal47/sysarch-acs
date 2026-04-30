@@ -18,6 +18,8 @@
 #ifndef __ACS_PMU_H__
 #define __ACS_PMU_H__
 
+#include "val_sysreg_pmu_reg.h"
+
 /* EL2 Cycle Count Filter Enable */
 #define NSH_EN    27
 /* Cycle Counter Enable */
@@ -36,13 +38,6 @@
 #define PMCR_EN_BIT             0
 
 #define PMCR_NUM_COUNTERS_MASK  0xF800
-
-uint64_t AA64ReadPmccntr(void);
-uint64_t AA64ReadPmccfiltr(void);
-uint64_t AA64ReadPmcntenset(void);
-void AA64WritePmccntr(uint64_t WriteData);
-void AA64WritePmccfiltr(uint64_t WriteData);
-void AA64WritePmcntenset(uint64_t WriteData);
 
 uint64_t val_pmu_get_info(PMU_INFO_e type, uint32_t node_index);
 uint8_t  val_pmu_supports_dedicated_cycle_counter(uint32_t node_index);
@@ -68,7 +63,7 @@ uint32_t val_generate_traffic(uint64_t interface_acpiid, uint32_t pmu_node_index
 uint32_t val_pmu_check_monitor_count_value(uint64_t interface_acpiid, uint32_t count_value,
                                                                           uint32_t eventid);
 void     val_pmu_set_node_coresight_complaint(uint32_t flag, uint32_t node_index);
-test_status_t is_coresight_pmu_present(void);
+uint32_t is_coresight_pmu_present(void);
 
 uint32_t pmu001_entry(uint32_t num_pe);
 uint32_t pmu002_entry(uint32_t num_pe);

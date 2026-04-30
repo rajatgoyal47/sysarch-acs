@@ -40,7 +40,7 @@ val_mpam_execute_error_tests(uint32_t num_pe)
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == ACS_MPAM_ERROR_TEST_NUM_BASE) {
-        val_print(ACS_PRINT_INFO, "\n       USER Override - Skipping all ERROR tests\n", 0);
+        val_print(TRACE, "\n       USER Override - Skipping all ERROR tests\n");
         return ACS_STATUS_SKIP;
       }
   }
@@ -48,7 +48,7 @@ val_mpam_execute_error_tests(uint32_t num_pe)
   /* Check if there are any tests to be executed in current module with user override options*/
   status = val_check_skip_module(ACS_MPAM_ERROR_TEST_NUM_BASE);
   if (status) {
-      val_print(ACS_PRINT_INFO, "\n       USER Override - Skipping all ERROR tests\n", 0);
+      val_print(TRACE, "\n       USER Override - Skipping all ERROR tests\n");
       return ACS_STATUS_SKIP;
   }
 
@@ -78,9 +78,9 @@ val_mpam_execute_error_tests(uint32_t num_pe)
 
   /* Setup ITS for MSI Tests */
   if (g_its_init != 1) {
-      val_print(ACS_PRINT_INFO, "\n      Initializing ITS\n", 0);
+      val_print(TRACE, "\n      Initializing ITS\n");
       if (val_gic_its_configure() == ACS_STATUS_ERR) {
-          val_print(ACS_PRINT_ERR, "\n     val_gic_its_configure() failed \n", 0);
+          val_print(ERROR, "\n     val_gic_its_configure() failed \n");
           status = ACS_STATUS_SKIP;
           return status;
       }
@@ -115,8 +115,8 @@ val_mpam_execute_membw_tests(uint32_t num_pe)
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == ACS_MPAM_MEMORY_TEST_NUM_BASE) {
-        val_print(ACS_PRINT_INFO,
-                             "\n       USER Override - Skipping all Memory Bandwidth tests\n", 0);
+        val_print(TRACE,
+                             "\n       USER Override - Skipping all Memory Bandwidth tests\n");
         return ACS_STATUS_SKIP;
       }
   }
@@ -124,8 +124,8 @@ val_mpam_execute_membw_tests(uint32_t num_pe)
   /* Check if there are any tests to be executed in current module with user override options*/
   status = val_check_skip_module(ACS_MPAM_MEMORY_TEST_NUM_BASE);
   if (status) {
-      val_print(ACS_PRINT_INFO,
-                             "\n       USER Override - Skipping all Memory Bandwidth tests\n", 0);
+      val_print(TRACE,
+                             "\n       USER Override - Skipping all Memory Bandwidth tests\n");
       return ACS_STATUS_SKIP;
   }
 
@@ -164,7 +164,7 @@ val_mpam_execute_register_tests(uint32_t num_pe)
   num_pe = 1;
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == ACS_MPAM_REGISTER_TEST_NUM_BASE) {
-        val_print(ACS_PRINT_INFO, "\n       USER Override - Skipping all Register tests\n", 0);
+        val_print(TRACE, "\n       USER Override - Skipping all Register tests\n");
         return ACS_STATUS_SKIP;
       }
   }
@@ -172,7 +172,7 @@ val_mpam_execute_register_tests(uint32_t num_pe)
   /* Check if there are any tests to be executed in current module with user override options*/
   status = val_check_skip_module(ACS_MPAM_REGISTER_TEST_NUM_BASE);
   if (status) {
-      val_print(ACS_PRINT_INFO, "\n       USER Override - Skipping all Register tests\n", 0);
+      val_print(TRACE, "\n       USER Override - Skipping all Register tests\n");
       return ACS_STATUS_SKIP;
   }
 
@@ -210,7 +210,7 @@ val_mpam_execute_cache_tests(uint32_t num_pe)
   num_pe = 1;
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == ACS_MPAM_CACHE_TEST_NUM_BASE) {
-        val_print(ACS_PRINT_INFO, "\n       USER Override - Skipping all CACHE tests\n", 0);
+        val_print(TRACE, "\n       USER Override - Skipping all CACHE tests\n");
         return ACS_STATUS_SKIP;
       }
   }
@@ -218,7 +218,7 @@ val_mpam_execute_cache_tests(uint32_t num_pe)
   /* Check if there are any tests to be executed in current module with user override options*/
   status = val_check_skip_module(ACS_MPAM_CACHE_TEST_NUM_BASE);
   if (status) {
-      val_print(ACS_PRINT_INFO, "\n       USER Override - Skipping all CACHE tests\n", 0);
+      val_print(TRACE, "\n       USER Override - Skipping all CACHE tests\n");
       return ACS_STATUS_SKIP;
   }
 

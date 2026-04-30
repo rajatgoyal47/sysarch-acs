@@ -63,8 +63,8 @@ payload(void)
    */
   pgt_base_array = val_aligned_alloc(MEM_ALIGN_4K, sizeof(uint64_t) * num_exercisers);
   if (!pgt_base_array) {
-      val_print(ACS_PRINT_ERR, "\n       mem alloc failure %x", 03);
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 03));
+      val_print(ERROR, "\n       mem alloc failure %x", 03);
+      val_set_status(pe_index, RESULT_FAIL(03));
       return;
   }
 
@@ -72,12 +72,12 @@ payload(void)
 
   /* Get translation attributes via TCR and translation table base via TTBR */
   if (val_pe_reg_read_tcr(0 /*for TTBR0*/, &pgt_desc.tcr)) {
-    val_print(ACS_PRINT_ERR, "\n       Unable to get translation attributes via TCR", 0);
+    val_print(ERROR, "\n       Unable to get translation attributes via TCR");
     goto test_fail;
   }
 
   if (val_pe_reg_read_ttbr(0 /*TTBR0*/, &ttbr)) {
-    val_print(ACS_PRINT_ERR, "\n       Unable to get translation table via TBBR", 0);
+    val_print(ERROR, "\n       Unable to get translation table via TBBR");
     goto test_fail;
   }
 
@@ -97,7 +97,7 @@ payload(void)
 
     /* Get exerciser bdf */
     e_bdf = val_exerciser_get_bdf(instance);
-    val_print(ACS_PRINT_DEBUG, "\n       Exercise BDF - 0x%x", e_bdf);
+    val_print(DEBUG, "\n       Exercise BDF - 0x%x", e_bdf);
 
     /* Get SMMU node index for this exerciser instance */
     master.smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf),
@@ -109,7 +109,7 @@ payload(void)
         /* DCP bit is RES0 for SMMUv3, hence check only for SMMU verion greater than 3.0 */
         smmu_minor = VAL_EXTRACT_BITS(val_smmu_read_cfg(SMMUv3_AIDR, master.smmu_index), 0, 3);
         if (smmu_minor == 0) {
-            val_print(ACS_PRINT_DEBUG, "\n       SMMU version is v3.%d", smmu_minor);
+            val_print(DEBUG, "\n       SMMU version is v3.%d", smmu_minor);
             continue;
         }
 
@@ -124,14 +124,14 @@ payload(void)
         /* Need to know input and output address sizes before creating page table */
         pgt_desc.ias = val_smmu_get_info(SMMU_IN_ADDR_SIZE, master.smmu_index);
         if (pgt_desc.ias == 0) {
-          val_print(ACS_PRINT_ERR,
+          val_print(ERROR,
                     "\n       Input address size of SMMU %d is 0", master.smmu_index);
           goto test_fail;
         }
 
         pgt_desc.oas = val_smmu_get_info(SMMU_OUT_ADDR_SIZE, master.smmu_index);
         if (pgt_desc.oas == 0) {
-          val_print(ACS_PRINT_ERR,
+          val_print(ERROR,
                     "\n       Output address size of SMMU %d is 0", master.smmu_index);
           goto test_fail;
         }
@@ -140,8 +140,8 @@ payload(void)
            will update pgt_desc.pgt_base to point to created translation table */
         pgt_desc.pgt_base = (uint64_t) NULL;
         if (val_pgt_create(mem_desc, &pgt_desc)) {
-          val_print(ACS_PRINT_ERR,
-                    "\n       Unable to create page table with given attributes", 0);
+          val_print(ERROR,
+                    "\n       Unable to create page table with given attributes");
           goto test_fail;
         }
 
@@ -151,7 +151,7 @@ payload(void)
            for VA to PA translations */
         if (val_smmu_map(master, pgt_desc))
         {
-            val_print(ACS_PRINT_ERR,
+            val_print(ERROR,
                      "\n       SMMU mapping failed (%x)     ", e_bdf);
             goto test_fail;
         }
@@ -161,7 +161,7 @@ payload(void)
        */
        dcp_bit = val_smmu_config_ste_dcp(master, 1);
        if (!dcp_bit) {
-           val_print(ACS_PRINT_ERR, "\n      STE.DCP bit not set", 0);
+           val_print(ERROR, "\n      STE.DCP bit not set");
            goto test_fail;
        }
 
@@ -170,23 +170,23 @@ payload(void)
        */
        dcp_bit = val_smmu_config_ste_dcp(master, 0);
        if (dcp_bit) {
-           val_print(ACS_PRINT_ERR, "\n      STE.DCP bit set", 0);
+           val_print(ERROR, "\n      STE.DCP bit set");
            goto test_fail;
        }
     }
 
   }
 
-  val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+  val_set_status(pe_index, RESULT_PASS);
   goto test_clean;
 
 test_fail:
-  val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
+  val_set_status(pe_index, RESULT_FAIL(02));
 
 test_clean:
 
   if (test_skip == 1)
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_SKIP(01));
 
   /* Remove all address mappings for each exerciser */
   for (instance = 0; instance < num_exercisers; ++instance)
@@ -225,7 +225,7 @@ e030_entry(uint32_t num_pe)
   status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
   if (status != ACS_STATUS_SKIP) {
       if (val_exerciser_test_init() != ACS_STATUS_PASS)
-          return TEST_SKIP_VAL;
+          return TEST_SKIP;
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
   }
 

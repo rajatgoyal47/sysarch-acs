@@ -29,17 +29,17 @@ uint8_t get_effective_e2h(void)
 
   /* if EL2 is not present, effective E2H will be 0 */
   if (val_pe_reg_read(CurrentEL) == AARCH64_EL1) {
-    val_print(ACS_PRINT_DEBUG, "\n       CurrentEL: AARCH64_EL1", 0);
+    val_print(DEBUG, "\n       CurrentEL: AARCH64_EL1");
     return 0;
   }
 
-  uint32_t hcr_e2h = VAL_EXTRACT_BITS(ArmReadHcrEl2(), 34, 34);
-  uint32_t feat_vhe = VAL_EXTRACT_BITS(ArmReadAA64MMFR1EL1(), 8, 11);
-  uint32_t e2h0 = VAL_EXTRACT_BITS(ArmReadAA64MMFR4EL1(), 24, 27);
+  uint32_t hcr_e2h = VAL_EXTRACT_BITS(read_hcr_el2(), 34, 34);
+  uint32_t feat_vhe = VAL_EXTRACT_BITS(read_id_aa64mmfr1_el1(), 8, 11);
+  uint32_t e2h0 = VAL_EXTRACT_BITS(read_s3_0_c0_c7_4(), 24, 27);
 
-  val_print(ACS_PRINT_DEBUG, "\n       hcr_e2h   : 0x%x", hcr_e2h);
-  val_print(ACS_PRINT_DEBUG, "\n       feat_vhe  : 0x%x", feat_vhe);
-  val_print(ACS_PRINT_DEBUG, "\n       e2h0 : 0x%x", e2h0);
+  val_print(DEBUG, "\n       hcr_e2h   : 0x%x", hcr_e2h);
+  val_print(DEBUG, "\n       feat_vhe  : 0x%x", feat_vhe);
+  val_print(DEBUG, "\n       e2h0 : 0x%x", e2h0);
 
   if (feat_vhe == 0x0) //ID_AA64MMFR1_EL1.VH
     effective_e2h = 0;
@@ -48,7 +48,7 @@ uint8_t get_effective_e2h(void)
   else
     effective_e2h = hcr_e2h;
 
-  val_print(ACS_PRINT_DEBUG, "\n       effective e2h : 0x%x\n", effective_e2h);
+  val_print(DEBUG, "\n       effective e2h : 0x%x\n", effective_e2h);
   return effective_e2h;
 }
 
@@ -71,62 +71,62 @@ ArmArchTimerReadReg (
     switch (Reg) {
 
     case CntFrq:
-      return ArmReadCntFrq();
+      return read_cntfrq_el0();
 
     case CntPct:
-      return ArmReadCntPct();
+      return read_cntpct_el0();
 
     case CntPctSS:
-      return ArmReadCntPctSS();
+      return read_cntpctss_el0();
 
     case CntkCtl:
-      return effective_e2h ? ArmReadCntkCtl12() : ArmReadCntkCtl();
+      return effective_e2h ? read_cntkctl_el12() : read_cntkctl_el1();
 
     case CntpTval:
       /* Check For E2H, If EL2 Host then access to cntp_tval_el02 */
-      return effective_e2h ? ArmReadCntpTval02() : ArmReadCntpTval();
+      return effective_e2h ? read_cntp_tval_el02() : read_cntp_tval_el0();
 
     case CntpCtl:
       /* Check For E2H, If EL2 Host then access to cntp_ctl_el02 */
-      return effective_e2h ? ArmReadCntpCtl02() : ArmReadCntpCtl();
+      return effective_e2h ? read_cntp_ctl_el02() : read_cntp_ctl_el0();
 
     case CntvTval:
-      return effective_e2h ? ArmReadCntvTval02() : ArmReadCntvTval();
+      return effective_e2h ? read_cntv_tval_el02() : read_cntv_tval_el0();
 
     case CntvCtl:
-      return effective_e2h ? ArmReadCntvCtl02() : ArmReadCntvCtl();
+      return effective_e2h ? read_cntv_ctl_el02() : read_cntv_ctl_el0();
 
     case CntvCt:
-      return ArmReadCntvCt();
+      return read_cntvct_el0();
 
     case CntVctSS:
-      return ArmReadCntVctSS();
+      return read_cntvctss_el0();
 
     case CntpCval:
-      return effective_e2h ? ArmReadCntpCval02() : ArmReadCntpCval();
+      return effective_e2h ? read_cntp_cval_el02() : read_cntp_cval_el0();
 
     case CntvCval:
-      return effective_e2h ? ArmReadCntvCval02() : ArmReadCntvCval();
+      return effective_e2h ? read_cntv_cval_el02() : read_cntv_cval_el0();
 
     case CntvOff:
-      return ArmReadCntvOff();
+      return read_cntvoff_el2();
     case CnthpCtl:
-      return ArmReadCnthpCtl();
+      return read_cnthp_ctl_el2();
     case CnthpTval:
-      return ArmReadCnthpTval();
+      return read_cnthp_tval_el2();
     case CnthvCtl:
-      return ArmReadCnthvCtl();
+      return read_cnthv_ctl_el2();
     case CnthvTval:
-      return ArmReadCnthvTval();
+      return read_cnthv_tval_el2();
 
     case CnthCtl:
     case CnthpCval:
-      val_print(ACS_PRINT_TEST, "The register is related to Hypervisor Mode. \
-      Can't perform requested operation\n ", 0);
+      val_print(INFO, "The register is related to Hypervisor Mode. \
+      Can't perform requested operation\n ");
       break;
 
     default:
-      val_print(ACS_PRINT_TEST, "Unknown ARM Generic Timer register %x.\n ", Reg);
+      val_print(INFO, "Unknown ARM Generic Timer register %x.\n ", Reg);
     }
 
     return 0xFFFFFFFF;
@@ -154,79 +154,79 @@ ArmArchTimerWriteReg (
     switch(Reg) {
 
     case CntPct:
-      val_print(ACS_PRINT_TEST, "Can't write to Read Only Register: CNTPCT\n", 0);
+      val_print(INFO, "Can't write to Read Only Register: CNTPCT\n");
       break;
 
     case CntkCtl:
       if (effective_e2h)
-        ArmWriteCntkCtl12(*data_buf);
+        write_cntkctl_el12(*data_buf);
       else
-        ArmWriteCntkCtl(*data_buf);
+        write_cntkctl_el1(*data_buf);
       break;
 
     case CntpTval:
       if (effective_e2h)
-        ArmWriteCntpTval02(*data_buf);
+        write_cntp_tval_el02(*data_buf);
       else
-        ArmWriteCntpTval(*data_buf);
+        write_cntp_tval_el0(*data_buf);
       break;
 
     case CntpCtl:
       if (effective_e2h)
-        ArmWriteCntpCtl02(*data_buf);
+        write_cntp_ctl_el02(*data_buf);
       else
-        ArmWriteCntpCtl(*data_buf);
+        write_cntp_ctl_el0(*data_buf);
       break;
 
     case CntvTval:
       if (effective_e2h)
-        ArmWriteCntvTval02(*data_buf);
+        write_cntv_tval_el02(*data_buf);
       else
-        ArmWriteCntvTval(*data_buf);
+        write_cntv_tval_el0(*data_buf);
       break;
 
     case CntvCtl:
       if (effective_e2h)
-        ArmWriteCntvCtl02(*data_buf);
+        write_cntv_ctl_el02(*data_buf);
       else
-        ArmWriteCntvCtl(*data_buf);
+        write_cntv_ctl_el0(*data_buf);
       break;
 
     case CntvCt:
-       val_print(ACS_PRINT_TEST, "Can't write to Read Only Register: CNTVCT\n", 0);
+       val_print(INFO, "Can't write to Read Only Register: CNTVCT\n");
       break;
 
     case CntpCval:
-      ArmWriteCntpCval(*data_buf);
+      write_cntp_cval_el0(*data_buf);
       break;
 
     case CntvCval:
-      ArmWriteCntvCval(*data_buf);
+      write_cntv_cval_el0(*data_buf);
       break;
 
     case CntvOff:
-      ArmWriteCntvOff(*data_buf);
+      write_cntvoff_el2(*data_buf);
       break;
 
     case CnthpTval:
-      ArmWriteCnthpTval(*data_buf);
+      write_cnthp_tval_el2(*data_buf);
       break;
     case CnthpCtl:
-      ArmWriteCnthpCtl(*data_buf);
+      write_cnthp_ctl_el2(*data_buf);
       break;
     case CnthvTval:
-      ArmWriteCnthvTval(*data_buf);
+      write_cnthv_tval_el2(*data_buf);
       break;
     case CnthvCtl:
-      ArmWriteCnthvCtl(*data_buf);
+      write_cnthv_ctl_el2(*data_buf);
       break;
     case CnthCtl:
     case CnthpCval:
-      val_print(ACS_PRINT_TEST, "The register is related to Hypervisor Mode. \
-      Can't perform requested operation\n", 0);
+      val_print(INFO, "The register is related to Hypervisor Mode. \
+      Can't perform requested operation\n");
       break;
 
     default:
-      val_print(ACS_PRINT_TEST, "Unknown ARM Generic Timer register %x.\n ", Reg);
+      val_print(INFO, "Unknown ARM Generic Timer register %x.\n ", Reg);
     }
 }

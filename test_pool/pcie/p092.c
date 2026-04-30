@@ -63,7 +63,7 @@ payload(void *arg)
   {
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
       dp_type = val_pcie_device_port_type(bdf);
-      val_print(ACS_PRINT_INFO, "\n       BDF - 0x%x", bdf);
+      val_print(TRACE, "\n       BDF - 0x%x", bdf);
 
       if ((dp_type == iEP_EP) || (dp_type == iEP_RP))
       {
@@ -85,7 +85,7 @@ payload(void *arg)
                   if (status == PCIE_CAP_NOT_FOUND)
                   {
                       test_fails++;
-                      val_print(ACS_PRINT_ERR, "\n       No Sec PCI ECS found for BDF: 0x%x", bdf);
+                      val_print(ERROR, "\n       No Sec PCI ECS found for BDF: 0x%x", bdf);
                   }
               }
               continue;
@@ -99,7 +99,7 @@ payload(void *arg)
                   if (status == PCIE_CAP_NOT_FOUND)
                   {
                       test_fails++;
-                      val_print(ACS_PRINT_ERR,
+                      val_print(ERROR,
                                             "\n       No DL feature ECS found for BDF: 0x%x", bdf);
                   }
                   continue;
@@ -111,7 +111,7 @@ payload(void *arg)
                   if (status == PCIE_CAP_NOT_FOUND)
                   {
                       test_fails++;
-                      val_print(ACS_PRINT_ERR,
+                      val_print(ERROR,
                                             "\n       No PL 16GT/s ECS found for BDF: 0x%x", bdf);
                   }
                   else if (status == PCIE_SUCCESS)
@@ -120,21 +120,21 @@ payload(void *arg)
                       if (reg_value != 0)
                       {
                           test_fails++;
-                          val_print(ACS_PRINT_ERR, "\n       16GT/s LDP not 0 for BDF: 0x%x", bdf);
+                          val_print(ERROR, "\n       16GT/s LDP not 0 for BDF: 0x%x", bdf);
                       }
 
                       val_pcie_read_cfg(bdf, cap_base + 0x14, &reg_value);
                       if (reg_value != 0)
                       {
                           test_fails++;
-                          val_print(ACS_PRINT_ERR, "\n       16GT/s FRDP not 0 for BDF: 0x%x", bdf);
+                          val_print(ERROR, "\n       16GT/s FRDP not 0 for BDF: 0x%x", bdf);
                       }
 
                       val_pcie_read_cfg(bdf, cap_base + 0x18, &reg_value);
                       if (reg_value != 0)
                       {
                           test_fails++;
-                          val_print(ACS_PRINT_ERR, "\n       16GT/s SRDP not 0 for BDF: 0x%x", bdf);
+                          val_print(ERROR, "\n       16GT/s SRDP not 0 for BDF: 0x%x", bdf);
                       }
                   }
                   continue;
@@ -146,7 +146,7 @@ payload(void *arg)
                   if (status == PCIE_CAP_NOT_FOUND)
                   {
                       test_fails++;
-                      val_print(ACS_PRINT_ERR, "\n       No LM at Rx EC found for BDF: 0x%x", bdf);
+                      val_print(ERROR, "\n       No LM at Rx EC found for BDF: 0x%x", bdf);
                   }
                   else if (status == PCIE_SUCCESS)
                   {
@@ -155,7 +155,7 @@ payload(void *arg)
                       if (driver_sw != 0)
                       {
                           test_fails++;
-                          val_print(ACS_PRINT_ERR,
+                          val_print(ERROR,
                                             "\n       Margining drv sw not 0 for BDF: 0x%x", bdf);
                       }
                   }
@@ -166,14 +166,14 @@ payload(void *arg)
   }
 
   if (test_skip == 1) {
-      val_print(ACS_PRINT_DEBUG,
-            "\n       No target device type with required extended cap found. Skipping test", 0);
-      val_set_status(pe_index, RESULT_SKIP(test_data->test_num, 01));
+      val_print(DEBUG,
+            "\n       No target device type with required extended cap found. Skipping test");
+      val_set_status(pe_index, RESULT_SKIP(01));
   }
   else if (test_fails)
-      val_set_status(pe_index, RESULT_FAIL(test_data->test_num, test_fails));
+      val_set_status(pe_index, RESULT_FAIL(test_fails));
   else
-      val_set_status(pe_index, RESULT_PASS(test_data->test_num, 01));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

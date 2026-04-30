@@ -268,9 +268,9 @@ createInfoTable(
 {
     uint64_t      *InfoTable;
 
-    val_print(ACS_PRINT_DEBUG, "\n Allocating memory for ", 0);
-    val_print(ACS_PRINT_DEBUG, table_name, 0);
-    val_print(ACS_PRINT_DEBUG, " info table", 0);
+    val_print(DEBUG, "\n Allocating memory for ");
+    val_print(DEBUG, table_name);
+    val_print(DEBUG, " info table");
 
     InfoTable = val_aligned_alloc(SIZE_4K, info_table_size);
 

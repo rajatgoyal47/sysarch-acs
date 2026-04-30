@@ -60,14 +60,14 @@ static uint32_t test_sequence_check(uint32_t instance)
   for (idx = 0; idx < sizeof(transaction_order)/sizeof(transaction_order[0]); idx++) {
       val_exerciser_get_param(TRANSACTION_TYPE, &idx, &transaction_type, instance);
       if (transaction_type !=  transaction_order[idx]) {
-          val_print(ACS_PRINT_ERR, "\n       Exerciser %d arrival order check failed", instance);
+          val_print(ERROR, "\n       Exerciser %d arrival order check failed", instance);
           return 1;
       }
   }
 
   /* Get number of transactions captured from exerciser */
   if (num_transactions != idx) {
-      val_print(ACS_PRINT_ERR, "\n       Exerciser %d gathering check failed", instance);
+      val_print(ERROR, "\n       Exerciser %d gathering check failed", instance);
       return 1;
   }
 
@@ -88,7 +88,7 @@ static uint32_t test_sequence_1B(uint8_t *addr, uint8_t increment_addr, uint32_t
 
   /* Start monitoring exerciser transactions */
   if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
-      val_print(ACS_PRINT_DEBUG,
+      val_print(DEBUG,
                "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
       return ACS_STATUS_SKIP;
   }
@@ -129,7 +129,7 @@ static uint32_t test_sequence_2B(uint16_t *addr, uint8_t increment_addr, uint32_
 
   /* Start monitoring exerciser transactions */
   if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
-      val_print(ACS_PRINT_DEBUG,
+      val_print(DEBUG,
                "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
       return ACS_STATUS_SKIP;
   }
@@ -168,7 +168,7 @@ static uint32_t test_sequence_4B(uint32_t *addr, uint8_t increment_addr, uint32_
 
   /* Start monitoring exerciser transactions */
   if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
-      val_print(ACS_PRINT_DEBUG,
+      val_print(DEBUG,
                "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
       return ACS_STATUS_SKIP;
   }
@@ -208,7 +208,7 @@ static uint32_t test_sequence_8B(uint64_t *addr, uint8_t increment_addr, uint32_
 
   /* Start monitoring exerciser transactions */
   if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
-      val_print(ACS_PRINT_DEBUG,
+      val_print(DEBUG,
                "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
       return ACS_STATUS_SKIP;
   }
@@ -297,7 +297,7 @@ cfgspace_transactions_order_check(void)
     if ((dp_type != RCiEP) && (dp_type != iEP_EP))
         continue;
 
-    val_print(ACS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", bdf);
+    val_print(DEBUG, "\n       Exerciser BDF - 0x%x", bdf);
 
     /* If exerciser doesn't have PCI_CAP skip the bdf */
     if (val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS, &cid_offset) == PCIE_CAP_NOT_FOUND)
@@ -315,8 +315,8 @@ cfgspace_transactions_order_check(void)
     }
 
     if (status) {
-        val_print(ACS_PRINT_DEBUG, "\n       Failed in config ioremap for instance 0x%x", instance);
-        val_print(ACS_PRINT_DEBUG, "   Status :0x%x", status);
+        val_print(DEBUG, "\n       Failed in config ioremap for instance 0x%x", instance);
+        val_print(DEBUG, "   Status :0x%x", status);
         continue;
     }
 
@@ -329,8 +329,8 @@ cfgspace_transactions_order_check(void)
     status = val_memory_ioremap((void *)bdf_addr, 512, DEVICE_nGnRE, (void **)&baseptr);
 
     if (status) {
-        val_print(ACS_PRINT_DEBUG, "\n       Failed in config ioremap for instance 0x%x", instance);
-        val_print(ACS_PRINT_DEBUG, "   Status :0x%x", status);
+        val_print(DEBUG, "\n       Failed in config ioremap for instance 0x%x", instance);
+        val_print(DEBUG, "   Status :0x%x", status);
         continue;
     }
 
@@ -375,10 +375,10 @@ barspace_transactions_order_check(void)
     /* Get BAR 0 details for this instance */
     status = val_exerciser_get_data(EXERCISER_DATA_MMIO_SPACE, &e_data, instance);
     if (status == NOT_IMPLEMENTED) {
-        val_print(ACS_PRINT_ERR, "\n       pal_exerciser_get_data() for MMIO not implemented", 0);
+        val_print(ERROR, "\n       pal_exerciser_get_data() for MMIO not implemented");
         continue;
     } else if (status) {
-        val_print(ACS_PRINT_ERR, "\n       Exerciser %d data read error     ", instance);
+        val_print(ERROR, "\n       Exerciser %d data read error     ", instance);
         continue;
     }
 
@@ -397,8 +397,8 @@ barspace_transactions_order_check(void)
     }
 
     if (status) {
-        val_print(ACS_PRINT_ERR, "\n       Failed in BAR ioremap for instance %x", instance);
-        val_print(ACS_PRINT_ERR, "   Status :0x%x", status);
+        val_print(ERROR, "\n       Failed in BAR ioremap for instance %x", instance);
+        val_print(ERROR, "   Status :0x%x", status);
         continue;
     }
 
@@ -409,8 +409,8 @@ barspace_transactions_order_check(void)
     status = val_memory_ioremap((void *)e_data.bar_space.base_addr, 512, DEVICE_nGnRE,
                                 (void **)&baseptr);
     if (status) {
-        val_print(ACS_PRINT_ERR, "\n       Failed in BAR ioremap for instance %x", instance);
-        val_print(ACS_PRINT_ERR, "   Status :0x%x", status);
+        val_print(ERROR, "\n       Failed in BAR ioremap for instance %x", instance);
+        val_print(ERROR, "   Status :0x%x", status);
         continue;
     }
 
@@ -436,17 +436,17 @@ payload(void)
   barspace_transactions_order_check();
 
   if (warn_cnt) {
-    val_set_status(pe_index, RESULT_WARN(TEST_NUM, 1));
+    val_set_status(pe_index, RESULT_WARNING(1));
     return;
   } else if (!run_flag) {
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_SKIP(01));
       return;
   }
 
   if (fail_cnt)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, fail_cnt));
+      val_set_status(pe_index, RESULT_FAIL(fail_cnt));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t
@@ -460,7 +460,7 @@ e021_entry(uint32_t num_pe)
   status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
   if (status != ACS_STATUS_SKIP) {
       if (val_exerciser_test_init() != ACS_STATUS_PASS)
-          return TEST_SKIP_VAL;
+          return RESULT_SKIP(0);
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
   }
 

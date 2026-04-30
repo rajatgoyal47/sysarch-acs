@@ -46,7 +46,7 @@ static uint64_t check_number_of_bits(uint32_t index, uint64_t data)
             return ((uint64_t)0x1 << (int)52);
          else
          {
-            val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+            val_set_status(index, RESULT_FAIL(1));
            return 0;
          }
 }
@@ -68,11 +68,11 @@ payload()
   if (addr < value)
   {
       /* PE can access the Non-Secure address space*/
-      val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(index, RESULT_PASS);
       return;
   }
 
-  val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+  val_set_status(index, RESULT_FAIL(2));
   return;
 }
 

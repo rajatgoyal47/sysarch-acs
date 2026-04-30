@@ -55,7 +55,7 @@ payload(void)
 
       if ((dp_type == RP) || (dp_type == iEP_RP))
       {
-          val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
+          val_print(DEBUG, "\n       BDF - 0x%x", bdf);
 
           /* Retrieve the addr of Downstream Port Containment (1Dh) and check if the
           * capability structure is supported.
@@ -80,8 +80,8 @@ payload(void)
           val_pcie_read_cfg(bdf, cap_base + DPC_CTRL_OFFSET, &new_reg_value);
 
           if (new_reg_value != reg_value) {
-              val_print(ACS_PRINT_ERR, "\n       Failed. BDF - 0x%x ", bdf);
-              val_print(ACS_PRINT_ERR, "RP Extension for DPC has incorrect access permission", 0);
+              val_print(ERROR, "\n       Failed. BDF - 0x%x ", bdf);
+              val_print(ERROR, "RP Extension for DPC has incorrect access permission");
               test_fails++;
           }
       }
@@ -89,14 +89,14 @@ payload(void)
 
 
   if (test_skip == 1) {
-      val_print(ACS_PRINT_DEBUG,
-               "\n       Found no RP with DPC Capability. Skipping test", 0);
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 02));
+      val_print(DEBUG,
+               "\n       Found no RP with DPC Capability. Skipping test");
+      val_set_status(pe_index, RESULT_SKIP(02));
   }
   else if (test_fails)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, test_fails));
+      val_set_status(pe_index, RESULT_FAIL(test_fails));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

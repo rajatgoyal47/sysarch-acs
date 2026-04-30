@@ -31,15 +31,10 @@
 [Sources.common]
   src/AArch64/PeRegSysSupport.S
   src/AArch64/PeTestSupport.S
-  src/AArch64/ArchTimerSupport.S
-  src/AArch64/GicSupport.S
-  src/AArch64/MpamSupport.S
-  src/AArch64/RasSupport.S
-  src/AArch64/PmuRegSupport.S
   src/AArch64/Drtm.S
   src/AArch64/SystemReg.S
-  src/AArch64/generic_sysreg_support.S
   src/acs_status.c
+  src/val_status.c
   src/acs_pe.c
   src/acs_pe_infra.c
   src/acs_gic.c
@@ -68,6 +63,8 @@
   src/acs_msc_error.c
   src/acs_tpm.c
   src/acs_cxl.c
+  src/acs_execution_policy.c
+  src/acs_run_request.c
   driver/smmu_v3/smmu_v3.c
   driver/gic/gic.c
   driver/gic/acs_exception.c
@@ -88,10 +85,12 @@
   src/rule_enum_string_map.c
   src/rule_lookup.c
   src/test_wrappers.c
+  src/val_logger.c
+  src/val_libc.c
 
 [Packages]
   MdePkg/MdePkg.dec
 
 [BuildOptions]
   GCC:*_*_*_ASM_FLAGS  =  -march=armv8.6-a+sve+profile
-  GCC:*_*_*_CC_FLAGS   =  $(ACS_CORE_INCLUDE_FLAGS) $(ACS_GIC_INCLUDE_FLAGS) $(ACS_PCIE_INCLUDE_FLAGS) -DTARGET_UEFI -DCOMPILE_RB_EXE
+  GCC:*_*_*_CC_FLAGS   =  -march=armv8.6-a+sve+profile+lse $(ACS_CORE_INCLUDE_FLAGS) $(ACS_GIC_INCLUDE_FLAGS) $(ACS_PCIE_INCLUDE_FLAGS) -DTARGET_UEFI -DCOMPILE_RB_EXE

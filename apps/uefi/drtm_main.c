@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,7 +30,6 @@
 
 extern VOID* g_acs_log_file_handle;
 
-UINT32  g_print_level;
 UINT32  g_acs_tests_pass;
 UINT32  g_acs_tests_fail;
 UINT32  *g_skip_test_num;
@@ -39,7 +38,6 @@ UINT64  g_stack_pointer;
 UINT64  g_exception_ret_addr;
 UINT64  g_ret_addr;
 UINT32  g_wakeup_timeout;
-UINT32  g_print_mmio;
 UINT32  g_curr_module;
 UINT32  g_enable_module;
 UINT32  *g_execute_tests;
@@ -49,6 +47,7 @@ UINT32  g_num_modules = 0;
 UINT32  g_acs_tests_total;
 
 SHELL_FILE_HANDLE g_acs_log_file_handle;
+SHELL_FILE_HANDLE g_dtb_log_file_handle;
 
 VOID
 HelpMsg (
@@ -102,6 +101,10 @@ command_init ()
   UINT32             Status;
   UINT32             i;
   UINT32             ReadVerbosity;
+  acs_execution_policy_t *policy;
+
+  acs_reset_execution_policy();
+  policy = acs_get_execution_policy_mut();
 
   //
   // Process Command Line arguments
@@ -149,16 +152,16 @@ command_init ()
     // Options with Values
   CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-v");
   if (CmdLineArg == NULL) {
-    g_print_level = 3;
+    policy->print_level = 3;
   } else {
     ReadVerbosity = StrDecimalToUintn(CmdLineArg);
     while (ReadVerbosity/10) {
       g_enable_module |= (1 << ReadVerbosity%10);
       ReadVerbosity /= 10;
     }
-    g_print_level = ReadVerbosity;
-    if (g_print_level > 5) {
-      g_print_level = 3;
+    policy->print_level = ReadVerbosity;
+    if (policy->print_level > 5) {
+      policy->print_level = 3;
     }
   }
 
@@ -301,12 +304,12 @@ execute_tests()
 {
   UINT32             Status;
 
-  val_print(ACS_PRINT_TEST, "\n\n DRTM Architecture Compliance Suite", 0);
-  val_print(ACS_PRINT_TEST, "\n          Version %d.", DRTM_ACS_MAJOR_VER);
-  val_print(ACS_PRINT_TEST, "%d\n", DRTM_ACS_MINOR_VER);
+  val_print(INFO, "\n\n DRTM Architecture Compliance Suite");
+  val_print(INFO, "\n          Version %d.", DRTM_ACS_MAJOR_VER);
+  val_print(INFO, "%d\n", DRTM_ACS_MINOR_VER);
 
-  val_print(ACS_PRINT_TEST, "\n Starting tests with print level : %2d\n\n", g_print_level);
-  val_print(ACS_PRINT_TEST, "\n Creating Platform Information Tables\n", 0);
+  val_print(INFO, "\n Starting tests with print level : %2d\n\n", acs_policy_get_print_level());
+  val_print(INFO, "\n Creating Platform Information Tables\n");
 
   Status = createPeInfoTable();
   if (Status)
@@ -329,15 +332,15 @@ execute_tests()
   Status |= val_drtm_execute_dl_tests(val_pe_get_num());
 
   /* Print Summary */
-  val_print(ACS_PRINT_ERR, "\n     -------------------------------------------------------\n", 0);
-  val_print(ACS_PRINT_ERR, "     Total Tests run  = %4d", g_acs_tests_total);
-  val_print(ACS_PRINT_ERR, "  Tests Passed  = %4d", g_acs_tests_pass);
-  val_print(ACS_PRINT_ERR, "  Tests Failed = %4d\n", g_acs_tests_fail);
-  val_print(ACS_PRINT_ERR, "     -------------------------------------------------------\n", 0);
+  val_print(INFO, "\n     -------------------------------------------------------\n");
+  val_print(INFO, "     Total Tests run  = %4d", g_acs_tests_total);
+  val_print(INFO, "  Tests Passed  = %4d", g_acs_tests_pass);
+  val_print(INFO, "  Tests Failed = %4d\n", g_acs_tests_fail);
+  val_print(INFO, "     -------------------------------------------------------\n");
 
   freeBsaAcsMem();
 
-  val_print(ACS_PRINT_ERR, "\n      *** DRTM tests complete. *** \n\n", 0);
+  val_print(INFO, "\n      *** DRTM tests complete. *** \n\n");
 
   if (g_acs_log_file_handle) {
     ShellCloseFile(&g_acs_log_file_handle);

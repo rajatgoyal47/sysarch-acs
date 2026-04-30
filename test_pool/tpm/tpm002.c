@@ -42,29 +42,29 @@ payload()
     /* Step 1: Check TPM presence */
     tpm_present = val_tpm2_get_info(TPM2_INFO_IS_PRESENT);
     if (tpm_present == 0) {
-        val_print(ACS_PRINT_ERR, "\n       TPM not present", 0);
-        val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+        val_print(ERROR, "\n       TPM not present");
+        val_set_status(pe_index, RESULT_FAIL(01));
         return;
     }
 
     /* Step 2: Get TPM interface type from ACPI TPM2 table */
     tpm_start_method = val_tpm2_get_info(TPM2_INFO_INTERFACE_TYPE);
-    val_print(ACS_PRINT_INFO, "\n       TPM interface type: 0x%llx", tpm_start_method);
+    val_print(TRACE, "\n       TPM interface type: 0x%llx", tpm_start_method);
 
 
     /* Step 3: Reject interfaces that are known to support only locality 0 */
     if (tpm_start_method == TPM_IF_START_METHOD_ACPI ||
         tpm_start_method == TPM_IF_START_METHOD_CRB_SMC ||
         tpm_start_method == TPM_IF_START_METHOD_CRB_FFA) {
-        val_print(ACS_PRINT_INFO,
-          "\n       Skipping test: TPM locality not accessible at current privilege level", 0);
-        val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+        val_print(TRACE,
+          "\n       Skipping test: TPM locality not accessible at current privilege level");
+        val_set_status(pe_index, RESULT_SKIP(01));
         return;
     }
 
     /* Step 4: Get TPM base address from ACPI TPM2 table */
     tpm_base_addr = val_tpm2_get_info(TPM2_INFO_BASE_ADDR);
-    val_print(ACS_PRINT_INFO, "\n       TPM Base Address: 0x%llx", tpm_base_addr);
+    val_print(TRACE, "\n       TPM Base Address: 0x%llx", tpm_base_addr);
 
     /* Step 5: Handle FIFO (TIS) interface */
     if (tpm_start_method == TPM_IF_START_METHOD_TIS) {
@@ -78,22 +78,22 @@ payload()
              */
             tpm_base_addr = TPM_FIFO_BASE_ADDRESS;
             val_mmu_update_entry(tpm_base_addr, TPM_MMIO_MAP_SIZE, DEVICE_nGnRnE);
-            val_print(ACS_PRINT_WARN, "\n       ACPI base address is 0, "
+            val_print(WARN, "\n       ACPI base address is 0, "
                                       "Using default FIFO base: 0x%llx", tpm_base_addr);
         }
 
         interface_id_addr = tpm_base_addr + TPM_FIFO_INTERFACE_ID_OFFSET;
-        val_print(ACS_PRINT_INFO, "\n       Tpm_fifo_interface_id_0 address: 0x%llx",
+        val_print(TRACE, "\n       Tpm_fifo_interface_id_0 address: 0x%llx",
                                                                          interface_id_addr);
 
         interface_id_val = val_mmio_read64(interface_id_addr);
-        val_print(ACS_PRINT_INFO, "\n       Tpm_fifo_interface_id_0 Value : 0x%llx",
+        val_print(TRACE, "\n       Tpm_fifo_interface_id_0 Value : 0x%llx",
                                                                          interface_id_val);
 
         cap_locality = VAL_EXTRACT_BITS(interface_id_val, 8, 8); /* CapLocality is bit[8] */
         if (cap_locality == 0) {
-            val_print(ACS_PRINT_ERR, "\n       TPM FIFO interface supports only locality 0", 0);
-            val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 03));
+            val_print(ERROR, "\n       TPM FIFO interface supports only locality 0");
+            val_set_status(pe_index, RESULT_FAIL(03));
             return;
         }
     }
@@ -107,30 +107,30 @@ payload()
                                                 TPM_MMIO_MAP_SIZE, DEVICE_nGnRnE);
         interface_id_addr = (tpm_base_addr - TPM_CRB_CONTROL_AREA_OFFSET) +
                                              TPM_CRB_INTERFACE_ID_OFFSET;
-         val_print(ACS_PRINT_INFO, "\n       Tpm_fifo_interface_id_0 address: 0x%llx",
+         val_print(TRACE, "\n       Tpm_fifo_interface_id_0 address: 0x%llx",
                                                                          interface_id_addr);
 
         interface_id_val = val_mmio_read64(interface_id_addr);
-        val_print(ACS_PRINT_INFO, "\n       Tpm_fifo_interface_id_0 Value : 0x%llx",
+        val_print(TRACE, "\n       Tpm_fifo_interface_id_0 Value : 0x%llx",
                                                                          interface_id_val);
 
         cap_locality = VAL_EXTRACT_BITS(interface_id_val, 8, 8); /* CapLocality is bit[8] */
         if (cap_locality == 0) {
-            val_print(ACS_PRINT_ERR, "\n       TPM CRB interface supports only locality 0", 0);
-            val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 04));
+            val_print(ERROR, "\n       TPM CRB interface supports only locality 0");
+            val_set_status(pe_index, RESULT_FAIL(04));
             return;
         }
     }
 
     /* Step 7: Catch any unknown/unhandled interface types */
     else {
-        val_print(ACS_PRINT_ERR, "\n       Invalid TPM interface type per TPM2 spec", 0);
-        val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 05));
+        val_print(ERROR, "\n       Invalid TPM interface type per TPM2 spec");
+        val_set_status(pe_index, RESULT_FAIL(05));
         return;
     }
 
     /* Interface supports localities 0 - 4 */
-    val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+    val_set_status(pe_index, RESULT_PASS);
     return;
 }
 

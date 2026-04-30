@@ -77,16 +77,16 @@ payload(void)
 
     /* Check if LLC is valid */
     if (llc_idx == CACHE_TABLE_EMPTY) {
-        val_print(ACS_PRINT_DEBUG, "\n       LLC not present, Skipping test", 0);
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+        val_print(DEBUG, "\n       LLC not present, Skipping test");
+        val_set_status(index, RESULT_SKIP(1));
         return;
     }
 
     /* Get the LLC Cache ID */
     cache_identifier = val_cache_get_info(CACHE_ID, llc_idx);
     if (cache_identifier == INVALID_CACHE_INFO) {
-        val_print(ACS_PRINT_DEBUG, "\n       Invalid LLC ID, skipping test", 0);
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+        val_print(DEBUG, "\n       Invalid LLC ID, skipping test");
+        val_set_status(index, RESULT_SKIP(2));
         return;
     }
 
@@ -96,7 +96,7 @@ payload(void)
 
         /* Check if the MSC supports PARTID Disable feature (MPAMCFG.HAS_ENDIS bit) */
         if (!val_mpam_msc_supports_partid_endis(msc_index)) {
-            val_print(ACS_PRINT_DEBUG,
+            val_print(DEBUG,
                       "\n       MSC index %d does not support PARTID Enable/Disable, skipping...",
                       msc_index);
             continue;
@@ -120,7 +120,7 @@ payload(void)
                 val_mpam_memory_configure_ris_sel(msc_index, rsrc_index);
 
             if (val_mpam_get_max_partid(msc_index) < partid_y) {
-                val_print(ACS_PRINT_DEBUG,
+                val_print(DEBUG,
                     "\n       MSC %d does not support required PARTIDs, skipping MSC", msc_index);
                 continue;
             }
@@ -135,7 +135,7 @@ payload(void)
                 num_mon = val_mpam_get_csumon_count(msc_index);
 
             if (num_mon == 0) {
-                val_print(ACS_PRINT_DEBUG,
+                val_print(DEBUG,
                     "\n       MSC %d does not have CSU monitors, skipping MSC", msc_index);
                 continue;
             }
@@ -144,7 +144,7 @@ payload(void)
                Select Cache partitioning scheme based on the support */
             if (val_mpam_supports_cpor(msc_index)) {
                 cpart_flag = 1;
-                val_print(ACS_PRINT_DEBUG, "\n       MSC %d supports CPOR partitioning", msc_index);
+                val_print(DEBUG, "\n       MSC %d supports CPOR partitioning", msc_index);
 
                 /* The test uses CPOR as cache partitioning scheme. Disable CCAP settings */
                 val_mpam_configure_ccap(msc_index, partid_x, 0, 100);
@@ -153,14 +153,14 @@ payload(void)
             } else
             if (val_mpam_supports_ccap(msc_index)) {
                 cpart_flag = 2;
-                val_print(ACS_PRINT_DEBUG, "\n       MSC %d supports CCAP partitioning", msc_index);
+                val_print(DEBUG, "\n       MSC %d supports CCAP partitioning", msc_index);
 
                 /* The test uses CCAP as cache partitioning scheme. Disable CPOR settings */
                 val_mpam_configure_cpor(msc_index, partid_x, 100);
                 val_mpam_configure_cpor(msc_index, partid_y, 100);
 
             } else {
-                val_print(ACS_PRINT_DEBUG,
+                val_print(DEBUG,
                     "\n       MSC %d does not support CPOR/CCAP partitioning, skipping...",
                     msc_index);
                 continue;
@@ -171,8 +171,8 @@ payload(void)
             dest_buf = (void *)val_aligned_alloc(MEM_ALIGN_4K, BUFFER_SIZE);
 
             if ((src_buf == NULL) || (dest_buf == NULL)) {
-                val_print(ACS_PRINT_ERR, "\n       Mem allocation failed", 0);
-                val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+                val_print(ERROR, "\n       Mem allocation failed");
+                val_set_status(index, RESULT_FAIL(01));
                 if (dest_buf != NULL)
                     val_memory_free_aligned(dest_buf);
                 if (src_buf != NULL)
@@ -206,11 +206,11 @@ payload(void)
 
             status = val_mpam_program_el2(partid_x, DEFAULT_PMG);
             if (status) {
-                val_print(ACS_PRINT_ERR, "\n       MPAM2_EL2 programming failed", 0);
+                val_print(ERROR, "\n       MPAM2_EL2 programming failed");
                 /* Free the buffers to the heap manager */
                 val_memory_free_aligned(src_buf);
                 val_memory_free_aligned(dest_buf);
-                val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
+                val_set_status(index, RESULT_FAIL(02));
                 return;
             }
 
@@ -227,11 +227,11 @@ payload(void)
 
             /* Step 6 */
             counter[0] = end_count;
-            val_print(ACS_PRINT_TEST, "\n       PARTID_X Counter (Scenario 1)= 0x%lx", counter[0]);
+            val_print(INFO, "\n       PARTID_X Counter (Scenario 1)= 0x%lx", counter[0]);
 
             /* Counter should be non-zero */
             if (counter[0] == 0) {
-                val_print(ACS_PRINT_ERR,
+                val_print(ERROR,
                 "\n       Scenario 1: PARTID_X counter is zero, test failed for MSC %d", msc_index);
                 test_fail++;
                 goto cleanup;
@@ -262,7 +262,7 @@ payload(void)
 
             status = val_mpam_program_el2(partid_y, DEFAULT_PMG);
             if (status) {
-                val_print(ACS_PRINT_ERR, "\n       MPAM2_EL2 programming failed", 0);
+                val_print(ERROR, "\n       MPAM2_EL2 programming failed");
                 /* Free the buffers to the heap manager */
                 val_pe_cache_invalidate_range((uint64_t)src_buf, BUFFER_SIZE);
                 val_pe_cache_invalidate_range((uint64_t)dest_buf, BUFFER_SIZE);
@@ -270,7 +270,7 @@ payload(void)
 
                 val_memory_free_aligned(src_buf);
                 val_memory_free_aligned(dest_buf);
-                val_set_status(index, RESULT_FAIL(TEST_NUM, 03));
+                val_set_status(index, RESULT_FAIL(03));
                 return;
             }
 
@@ -294,14 +294,14 @@ payload(void)
             val_mpam_csumon_disable(msc_index);
 
             counter[1] = end_count;
-            val_print(ACS_PRINT_TEST, "\n       PARTID_X Counter (Scenario 2)= 0x%lx", counter[1]);
+            val_print(INFO, "\n       PARTID_X Counter (Scenario 2)= 0x%lx", counter[1]);
 
             /* Step 10: Validate Value B < Value A */
             /* Txn tagged with PARTID_Y but monitor counts PARTID X. PARTID_X is disabled, so
             cache lines occupied previously by PARTID_X should have highest eviction priority.
             Buffer tagged with PARTID_Y should evict PARTID_X cache lines */
             if (counter[1] >= counter[0]) {
-                val_print(ACS_PRINT_ERR,
+                val_print(ERROR,
                 "\n       Scenario 2: Counter more than S1, test failed for MSC %d", msc_index);
                 test_fail++;
                 goto cleanup;
@@ -323,7 +323,7 @@ payload(void)
             /* Step 12: Program MPAM2_EL2 with PARTID_X and perform bufcopy */
             status = val_mpam_program_el2(partid_x, DEFAULT_PMG);
             if (status) {
-                val_print(ACS_PRINT_ERR, "\n       MPAM2_EL2 programming failed", 0);
+                val_print(ERROR, "\n       MPAM2_EL2 programming failed");
                 /* Free the buffers to the heap manager */
                 val_pe_cache_invalidate_range((uint64_t)src_buf, BUFFER_SIZE);
                 val_pe_cache_invalidate_range((uint64_t)dest_buf, BUFFER_SIZE);
@@ -331,7 +331,7 @@ payload(void)
 
                 val_memory_free_aligned(src_buf);
                 val_memory_free_aligned(dest_buf);
-                val_set_status(index, RESULT_FAIL(TEST_NUM, 04));
+                val_set_status(index, RESULT_FAIL(04));
                 return;
             }
 
@@ -357,13 +357,13 @@ payload(void)
             val_mpam_csumon_disable(msc_index);
 
             counter[2] = end_count;
-            val_print(ACS_PRINT_TEST, "\n       PARTID_X Counter (Scenario 3)= 0x%lx", counter[2]);
+            val_print(INFO, "\n       PARTID_X Counter (Scenario 3)= 0x%lx", counter[2]);
 
             /* With PARTID_Y disabled and PARTID_X enabled, CPOR settings of PARTID_X must be
                restored by the H/W. PARTID_Y cache lines should be evicted by txn tagged with
                PARTID_X */
             if (counter[1] >= counter[2]) {
-                val_print(ACS_PRINT_ERR,
+                val_print(ERROR,
                     "\n       Scenario 3: Counter less than S2, test failed for MSC %d", msc_index);
                 test_fail++;
                 goto cleanup;
@@ -384,11 +384,11 @@ cleanup:
     }
 
     if (test_skip)
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 3));
+        val_set_status(index, RESULT_SKIP(3));
     else if (test_fail)
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 5));
+        val_set_status(index, RESULT_FAIL(5));
     else
-        val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+        val_set_status(index, RESULT_PASS);
 
     return;
 }

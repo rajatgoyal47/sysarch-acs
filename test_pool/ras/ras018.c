@@ -39,7 +39,7 @@ esr(uint64_t interrupt_type, void *context)
     /* Update the ELR to return to test specified address */
     val_pe_update_elr(context, (uint64_t)branch_to_test);
 
-    val_print(ACS_PRINT_ERR, "\n       Received exception of type: 0x%llx", interrupt_type);
+    val_print(ERROR, "\n       Received exception of type: 0x%llx", interrupt_type);
 }
 
 static
@@ -68,27 +68,25 @@ payload()
     /* Read ID_AA64MMFR3_EL1.ADERR[59:56] == 0b0010 or 0b0011 indicate FEAT_ADERR support */
     aderr = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64MMFR3_EL1), 56, 59);
 
-    val_print(ACS_PRINT_INFO, "\n       ID_AA64MMFR3_EL1.ADERR field = 0x%llx", aderr);
+    val_print(TRACE, "\n       ID_AA64MMFR3_EL1.ADERR field = 0x%llx", aderr);
 
     if (aderr == FEAT_ADERR_VAL2 || aderr == FEAT_ADERR_VAL3) {
-        val_print(ACS_PRINT_INFO, "\n       FEAT_ADERR implemented.", 0);
-        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+        val_print(TRACE, "\n       FEAT_ADERR implemented.");
+        val_set_status(index, RESULT_PASS);
         return;
     }
 
-    val_print(ACS_PRINT_INFO,
+    val_print(TRACE,
           "\n       FEAT_ADERR not implemented. "
-          "Proceeding to synchronous Data Abort test.",
-          0);
+          "Proceeding to synchronous Data Abort test.");
 
     /* get number of nodes with RAS functionality */
     status = val_ras_get_info(RAS_INFO_NUM_NODES, 0, &num_node);
     if (status || (num_node == 0)) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
           "\n       RAS nodes not found. "
-          "Firmware interface is missing. Please conduct a paper-based analysis.",
-          0);
-        val_set_status(index, RESULT_WARN(TEST_NUM, 01));
+          "Firmware interface is missing. Please conduct a paper-based analysis.");
+        val_set_status(index, RESULT_WARNING(01));
         return;
     }
 
@@ -101,8 +99,8 @@ payload()
         status |= val_ras_get_info(RAS_INFO_NUM_ERR_REC, node_index, &num_err);
 
         if (status || (intf_type != RAS_INTERFACE_MMIO) || (num_err == 0)) {
-            val_print(ACS_PRINT_DEBUG, "\n       intf_type: 0x%llx", intf_type);
-            val_print(ACS_PRINT_DEBUG, "\n       num_err: 0x%llx", num_err);
+            val_print(DEBUG, "\n       intf_type: 0x%llx", intf_type);
+            val_print(DEBUG, "\n       num_err: 0x%llx", num_err);
             continue;
         }
 
@@ -111,21 +109,21 @@ payload()
         dev_addr = val_memory_get_addr(MEM_TYPE_DEVICE, 0, &attr);
 
         if (!dev_addr) {
-            val_print(ACS_PRINT_ERR,
-                      "\n       Failed to obtain Device memory address.\n", 0);
-            val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+            val_print(ERROR,
+                      "\n       Failed to obtain Device memory address.\n");
+            val_set_status(index, RESULT_FAIL(01));
             return;
         }
 
-        val_print(ACS_PRINT_INFO,
+        val_print(TRACE,
                   "\n       Using Device memory address: 0x%llx\n", dev_addr);
 
         /* Install sync and async handlers to handle exceptions.*/
         status = val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
         status |= val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
         if (status) {
-            val_print(ACS_PRINT_ERR, "\n      Failed in installing the exception handler", 0);
-            val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
+            val_print(ERROR, "\n      Failed in installing the exception handler");
+            val_set_status(index, RESULT_FAIL(02));
             return;
         }
         branch_to_test = &&exception_return;
@@ -144,7 +142,7 @@ payload()
             warn_cnt++;
             break;
         } else if (status) {
-            val_print(ACS_PRINT_ERR, "\n       val_ras_setup_error failed, node %d", node_index);
+            val_print(ERROR, "\n       val_ras_setup_error failed, node %d", node_index);
             fail_cnt++;
             break;
         }
@@ -158,7 +156,7 @@ payload()
             warn_cnt++;
             break;
         } else if (status) {
-            val_print(ACS_PRINT_ERR, "\n       val_ras_inject_error failed, node %d", node_index);
+            val_print(ERROR, "\n       val_ras_inject_error failed, node %d", node_index);
             fail_cnt++;
             break;
         }
@@ -170,34 +168,34 @@ payload()
          * system to record the error with address syndrome in one of
          * the error records present for the current RAS node */
         read_data = val_mmio_read(dev_addr);
-        val_print(ACS_PRINT_DEBUG, "\n       Error injected address: 0x%llx", dev_addr);
-        val_print(ACS_PRINT_DEBUG, "\n       Data read: 0x%lx", read_data);
+        val_print(DEBUG, "\n       Error injected address: 0x%llx", dev_addr);
+        val_print(DEBUG, "\n       Data read: 0x%lx", read_data);
 
     exception_return:
-        val_print(ACS_PRINT_INFO, "\n       value esr_pending, %d", esr_pending);
+        val_print(TRACE, "\n       value esr_pending, %d", esr_pending);
         /* Check that a synchronous Data Abort was received */
         if (esr_pending) {
-            val_print(ACS_PRINT_DEBUG, "\n       Data abort Check Fail, for node %d", node_index);
+            val_print(DEBUG, "\n       Data abort Check Fail, for node %d", node_index);
             fail_cnt++;
             continue;
         }
     }
 
     if (usable_node_cnt == 0) {
-        val_print(ACS_PRINT_INFO,
-                  "\n       No usable MMIO RAS nodes -- skipping test.\n", 0);
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
+        val_print(TRACE,
+                  "\n       No usable MMIO RAS nodes -- skipping test.\n");
+        val_set_status(index, RESULT_SKIP(01));
         return;
     }
 
     if (fail_cnt)
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 03));
+        val_set_status(index, RESULT_FAIL(03));
     else if (warn_cnt)
-        val_set_status(index, RESULT_WARN(TEST_NUM, 01));
+        val_set_status(index, RESULT_WARNING(01));
     else if (test_skip)
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+        val_set_status(index, RESULT_SKIP(02));
     else
-        val_set_status(index, RESULT_PASS(TEST_NUM, 02));
+        val_set_status(index, RESULT_PASS);
 
     return;
 }

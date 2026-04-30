@@ -215,4 +215,4 @@
 
 [BuildOptions]
   GCC:*_*_*_ASM_FLAGS  =  -march=armv8.2-a
-  GCC:*_*_*_CC_FLAGS   = -g -gdwarf-4 $(ACS_CORE_INCLUDE_FLAGS) $(ACS_GIC_INCLUDE_FLAGS) $(ACS_PCIE_INCLUDE_FLAGS) -mstrict-align -march=armv8.2-a -O0 $(MEM_TEST_KVM_INCLUDE_FLAGS) $(MEM_TEST_DEFINE_FLAGS)
+  GCC:*_*_*_CC_FLAGS   = -g -gdwarf-4 $(ACS_CORE_INCLUDE_FLAGS) $(ACS_GIC_INCLUDE_FLAGS) $(ACS_PCIE_INCLUDE_FLAGS) -mstrict-align -march=armv8.6-a+sve+profile+lse -O0 $(MEM_TEST_KVM_INCLUDE_FLAGS) $(MEM_TEST_DEFINE_FLAGS)

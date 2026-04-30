@@ -32,7 +32,7 @@ static void payload(void)
     /* Read ID_AA64MMFR2_EL1[27:24] for enhanced Nested Virtualization support */
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64MMFR2_EL1), 24, 27);
     if (index == primary_pe_idx) {
-        val_print(ACS_PRINT_DEBUG, "\n       ID_AA64MMFR2_EL1.NV  = %llx", data);
+        val_print(DEBUG, "\n       ID_AA64MMFR2_EL1.NV  = %llx", data);
     }
 
     /* Read ID_AA64MMFR2_EL1.NV[27:24] == 2 indicates FEAT_NV2 support
@@ -40,11 +40,11 @@ static void payload(void)
      * Value 0 indicates nested virtualization not supported
      */
     if (data == 0)
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+        val_set_status(index, RESULT_SKIP(02));
     else if (data == 0x2)
-        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+        val_set_status(index, RESULT_PASS);
     else
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+        val_set_status(index, RESULT_FAIL(01));
 }
 
 uint32_t pe036_entry(uint32_t num_pe)

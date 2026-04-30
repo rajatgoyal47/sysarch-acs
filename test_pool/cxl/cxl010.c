@@ -38,15 +38,15 @@ payload(void)
 
   num_cxl_hb = val_cxl_get_info(CXL_INFO_NUM_DEVICES, 0);
   if (num_cxl_hb == 0) {
-      val_print(ACS_PRINT_DEBUG, "\n       No CXL devices discovered", 0);
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+      val_print(DEBUG, "\n       No CXL devices discovered");
+      val_set_status(pe_index, RESULT_SKIP(1));
       return;
   }
 
   for (index = 0; index < num_cxl_hb; index++) {
       if (val_cxl_check_persistent_memory(index)) {
-          val_print(ACS_PRINT_DEBUG, "\n       No Persistent memory supported", 0);
-          val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 2));
+          val_print(DEBUG, "\n       No Persistent memory supported");
+          val_set_status(pe_index, RESULT_SKIP(2));
           return;
       }
   }
@@ -54,10 +54,10 @@ payload(void)
   dpb_field = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64ISAR1_EL1), 0, 3);
 
   if ((dpb_field == 0x1) || (dpb_field == 0x2)) {
-    val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+    val_set_status(pe_index, RESULT_PASS);
   } else {
-    val_print(ACS_PRINT_ERR, "\n       ID_AA64ISAR1_EL1.DPB does not indicate PCMO support", 0);
-    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 1));
+    val_print(ERROR, "\n       ID_AA64ISAR1_EL1.DPB does not indicate PCMO support");
+    val_set_status(pe_index, RESULT_FAIL(1));
   }
 }
 

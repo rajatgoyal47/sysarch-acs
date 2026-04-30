@@ -37,22 +37,22 @@ payload()
 
   data_va_range = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64MMFR2_EL1), 16, 19);
   if (data_va_range == 0) {
-    val_print(ACS_PRINT_DEBUG, "\n       Large VA Not Supported by PE                        ", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+    val_print(DEBUG, "\n       Large VA Not Supported by PE                        ");
+    val_set_status(index, RESULT_SKIP(1));
     return;
   }
 
   num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
   if (num_smmu == 0) {
-    val_print(ACS_PRINT_ERR, "\n       No SMMU Controllers are discovered                  ", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+    val_print(ERROR, "\n       No SMMU Controllers are discovered                  ");
+    val_set_status(index, RESULT_SKIP(2));
     return;
   }
 
   while (num_smmu--) {
       if (val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 2) {
-          val_print(ACS_PRINT_WARN, "\n       Large VA Not Supported in SMMUv2", 0);
-          val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+          val_print(WARN, "\n       Large VA Not Supported in SMMUv2");
+          val_set_status(index, RESULT_FAIL(1));
           return;
       }
 
@@ -61,14 +61,14 @@ payload()
       /* If PE Supports Large VA Range then SMMU_IDR5.VAX = 0b01 */
       if (data_va_range == 1) {
           if (data_vax != 1) {
-              val_print(ACS_PRINT_ERR, "\n       Large VA Not Supported in SMMU %x", num_smmu);
-              val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+              val_print(ERROR, "\n       Large VA Not Supported in SMMU %x", num_smmu);
+              val_set_status(index, RESULT_FAIL(2));
               return;
           }
       }
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

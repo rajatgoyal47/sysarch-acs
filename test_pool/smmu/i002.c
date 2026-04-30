@@ -39,8 +39,8 @@ payload()
 
   num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
   if (num_smmu == 0) {
-      val_print(ACS_PRINT_ERR, "\n       No SMMU Controllers are discovered                  ", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+      val_print(ERROR, "\n       No SMMU Controllers are discovered                  ");
+      val_set_status(index, RESULT_SKIP(1));
       return;
   }
 
@@ -68,8 +68,8 @@ payload()
           /*PE FEAT_LPA2 is implemeted, SMMU must support 4KB granule size and 52-bit
            * addressing. i.e data_oas == 0x6*/
           if ((is_smmu_4k != 1) && (data_oas != 0x6)) {
-              val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
-              val_print(ACS_PRINT_ERR, "\n       PE supports 4kB granule and FEAT_LPA2 is "
+              val_set_status(index, RESULT_FAIL(1));
+              val_print(ERROR, "\n       PE supports 4kB granule and FEAT_LPA2 is "
                                        "implemented, but SMMU %x does not support 52 bit "
                                        "addressing", num_smmu);
               return;
@@ -83,8 +83,8 @@ payload()
           /*PE FEAT_LPA2 is implemeted, SMMU must support 16KB granule size and 52-bit
            * addressing. i.e data_oas == 0x6*/
           if ((is_smmu_16k != 1) && (data_oas != 0x6)) {
-              val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
-              val_print(ACS_PRINT_ERR, "\n       PE supports 16kB granule and FEAT_LPA2 is "
+              val_set_status(index, RESULT_FAIL(2));
+              val_print(ERROR, "\n       PE supports 16kB granule and FEAT_LPA2 is "
                                        "implemented, but SMMU %x does not support 52 bit "
                                        " addressing", num_smmu);
               return;
@@ -95,8 +95,8 @@ payload()
       if ((VAL_EXTRACT_BITS(data_pe_mmfr0, 28, 31) == 0x0) ||
           (VAL_EXTRACT_BITS(data_pe_mmfr0, 40, 43) == 0x2)) {
           if (is_smmu_4k != 1) {
-              val_set_status(index, RESULT_FAIL(TEST_NUM, 3));
-              val_print(ACS_PRINT_ERR, "\n       PE supports 4kB granules, "
+              val_set_status(index, RESULT_FAIL(3));
+              val_print(ERROR, "\n       PE supports 4kB granules, "
                                        "but SMMU %x does not", num_smmu);
               return;
           }
@@ -106,8 +106,8 @@ payload()
       if ((VAL_EXTRACT_BITS(data_pe_mmfr0, 20, 23) == 0x1) ||
           (VAL_EXTRACT_BITS(data_pe_mmfr0, 32, 35) == 0x2)) {
           if (is_smmu_16k != 1) {
-              val_set_status(index, RESULT_FAIL(TEST_NUM, 4));
-              val_print(ACS_PRINT_ERR, "\n       PE supports 16kB granules, "
+              val_set_status(index, RESULT_FAIL(4));
+              val_print(ERROR, "\n       PE supports 16kB granules, "
                                        "but SMMU %x does not", num_smmu);
               return;
           }
@@ -117,15 +117,15 @@ payload()
       if ((VAL_EXTRACT_BITS(data_pe_mmfr0, 24, 27) == 0x0) ||
           (VAL_EXTRACT_BITS(data_pe_mmfr0, 36, 39) == 0x2)) {
           if (is_smmu_64k != 1) {
-              val_set_status(index, RESULT_FAIL(TEST_NUM, 5));
-              val_print(ACS_PRINT_ERR, "\n       PE supports 64kB granules, "
+              val_set_status(index, RESULT_FAIL(5));
+              val_print(ERROR, "\n       PE supports 64kB granules, "
                                        "but SMMU %x does not", num_smmu);
               return;
           }
       }
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

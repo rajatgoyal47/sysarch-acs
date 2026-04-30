@@ -43,92 +43,50 @@ val_report_status(uint32_t index, uint32_t status, char8_t *ruleid)
     return;
 
   if (IS_TEST_FAIL(status)) {
-      val_print(ACS_PRINT_ERR, "\n       Failed on PE - %4d", index);
+      val_print(ERROR, "\nFailed on PE - %4d\n", index);
   }
 
   if (IS_TEST_SKIP(status)) {
-      val_print(ACS_PRINT_ERR, "\n       Skipped on PE - %4d", index);
+      val_print(ERROR, "\nSkipped on PE - %4d\n", index);
   }
 
   if (IS_TEST_PASS(status)) {
-      val_print(ACS_PRINT_DEBUG, "\n       ", 0);
-      val_print(ACS_PRINT_DEBUG, ruleid, 0);
-      val_print(ACS_PRINT_DEBUG, "\n                                  ", 0);
-      val_print(ACS_PRINT_TEST, "     : Result:  PASS\n", status);
+      val_print(DEBUG, "\n       ");
+      val_print(DEBUG, ruleid);
+      val_print(DEBUG, "\n                                  ");
+      val_print(INFO, "     : Result:  PASS\n", status);
   }
-  else if (IS_TEST_WARN(status)) {
-      val_print(ACS_PRINT_TEST, "     : Result:  WARN\n", 0);
+  else if (IS_TEST_WARNING(status)) {
+      val_print(INFO, "     : Result:  WARN\n", 0);
   }
   else
     if (IS_TEST_FAIL(status)) {
         if (ruleid) {
-            val_print(ACS_PRINT_ERR, "\n       ", 0);
-            val_print(ACS_PRINT_ERR, ruleid, 0);
-            val_print(ACS_PRINT_ERR, "\n       Checkpoint -- %2d                      ",
+            val_print(INFO, "\n       ");
+            val_print(INFO, ruleid);
+            val_print(ERROR, "\n       Checkpoint -- %2d    ",
                                                          status & STATUS_MASK);
         }
-        val_print(ACS_PRINT_ERR, "     : Result:  FAIL\n", 0);
+        val_print(ERROR, "     : Result:  FAIL\n");
     }
     else
       if (IS_TEST_SKIP(status)) {
           if (ruleid) {
-              val_print(ACS_PRINT_ERR, "\n       ", 0);
-              val_print(ACS_PRINT_ERR, ruleid, 0);
-              val_print(ACS_PRINT_WARN, "\n       Checkpoint -- %2d                      ",
+              val_print(INFO, "\n       ");
+              val_print(INFO, ruleid);
+              val_print(WARN, "\n       Checkpoint -- %2d    ",
                                                          status & STATUS_MASK);
           }
-          val_print(ACS_PRINT_WARN, "     : Result:  SKIPPED\n", 0);
+          val_print(WARN, "     : Result:  SKIPPED\n");
       }
       else
         if (IS_TEST_START(status))
-          val_print(ACS_PRINT_INFO, "\n       START", status);
+          val_print(INFO, "\n       START", status);
         else
           if (IS_TEST_END(status))
-            val_print(ACS_PRINT_INFO, "       END\n\n", status);
+            val_print(INFO, "       END\n\n", status);
           else
-            val_print(ACS_PRINT_ERR, ": Result:  %8x\n", status);
-
-}
-
-/**
-  @brief  Record the state and status of the test execution
-          1. Caller       - Test Suite
-          2. Prerequisite - val_allocate_shared_mem
-  @param  index  - index of the PE who is reporting this status.
-  @param  status - 32-bit value concatenated from state, level, error value
-
-  @return  none
-**/
-void
-val_set_status(uint32_t index, uint32_t status)
-{
-  volatile VAL_SHARED_MEM_t *mem;
-
-  mem = (VAL_SHARED_MEM_t *) pal_mem_get_shared_addr();
-  mem = mem + index;
-  mem->status = status;
-
-  val_data_cache_ops_by_va((addr_t)&mem->status, CLEAN_AND_INVALIDATE);
-}
-
-/**
-  @brief  Return the state and status for the  input PE index
-          1. Caller       - Test Suite
-          2. Prerequisite - val_allocate_shared_mem
-  @param  index  - index of the PE who is reporting this status.
-  @return 32-bit value concatenated from state, level, error value
-**/
-uint32_t
-val_get_status(uint32_t index)
-{
-  volatile VAL_SHARED_MEM_t *mem;
-
-  mem = (VAL_SHARED_MEM_t *) pal_mem_get_shared_addr();
-  mem = mem + index;
-
-  val_data_cache_ops_by_va((addr_t)&mem->status, INVALIDATE);
-
-  return (uint32_t)(mem->status);
+            val_print(INFO, ": Result:  %8x\n", status);
 
 }
 

@@ -265,7 +265,7 @@ v3_route_extended_interrupt(uint32_t int_id)
   /* Get the distributor base */
   gicd_base = val_get_gicd_base();
 
-  Mpidr = ArmReadMpidr();
+  Mpidr = read_mpidr_el1();
   cpuTarget = Mpidr & (PE_AFF0 | PE_AFF1 | PE_AFF2 | PE_AFF3);
 
   val_mmio_write64(gicd_base + GICD_IROUTERn + (int_id * 8), cpuTarget);
@@ -287,8 +287,8 @@ v3_extended_init(void)
   max_num_espi_interrupts = val_gic_max_espi_val();
   max_num_eppi_interrupts = val_gic_max_eppi_val();
 
-  val_print(ACS_PRINT_DEBUG, "\n GIC_INIT: Extended SPI Interrupts %d\n", max_num_espi_interrupts);
-  val_print(ACS_PRINT_DEBUG, "\n GIC_INIT: Extended PPI Interrupts %d\n", max_num_eppi_interrupts);
+  val_print(DEBUG, "\n GIC_INIT: Extended SPI Interrupts %d\n", max_num_espi_interrupts);
+  val_print(DEBUG, "\n GIC_INIT: Extended PPI Interrupts %d\n", max_num_eppi_interrupts);
 
 #if defined(TARGET_SIMULATION)
   /* Fast-sim: bulk disable in 32-interrupt chunks */

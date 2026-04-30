@@ -42,20 +42,20 @@ void payload(void)
     feat_ecv_impl = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64MMFR0_EL1), 60, 63);
     if (feat_ecv_impl) {
 
-        val_print_primary_pe(ACS_PRINT_DEBUG, "\n       FEAT_ECV is Implemented, Reading CntPctSS",
+        val_print_primary_pe(DEBUG, "\n       FEAT_ECV is Implemented, Reading CntPctSS",
                                                                                         0, index);
 
-        if (g_el1skiptrap_mask & EL1SKIPTRAP_CNTPCT)
+        if (acs_policy_get_el1skiptrap_mask() & EL1SKIPTRAP_CNTPCT)
             goto read_virt_ss_timer;
 
         while (iter) {
-            curr_value = ArmReadCntPctSS();
+            curr_value = read_cntpctss_el0();
             if (curr_value < prev_value) {
-                val_print_primary_pe(ACS_PRINT_ERR, "\n       CNTPCTSS_EL0 did not increment",
+                val_print_primary_pe(ERROR, "\n       CNTPCTSS_EL0 did not increment",
                                                                                         0, index);
-                val_print_primary_pe(ACS_PRINT_DEBUG, "\n       CNTPCTSS_EL0 Value: %lx",
+                val_print_primary_pe(DEBUG, "\n       CNTPCTSS_EL0 Value: %lx",
                                                                                 curr_value, index);
-                val_print_primary_pe(ACS_PRINT_DEBUG, "\n       Previous Value: %lx",
+                val_print_primary_pe(DEBUG, "\n       Previous Value: %lx",
                                                                                 prev_value, index);
                 test_fail = 1;
             }
@@ -65,19 +65,19 @@ void payload(void)
         }
 
 read_virt_ss_timer:
-        val_print_primary_pe(ACS_PRINT_DEBUG, "\n       FEAT_ECV is Implemented, Reading CntVctSS",
+        val_print_primary_pe(DEBUG, "\n       FEAT_ECV is Implemented, Reading CntVctSS",
                                                                                         0, index);
         prev_value = 0;
         iter = NUM_ITERATIONS;
 
         while (iter) {
-            curr_value = ArmReadCntVctSS();
+            curr_value = read_cntvctss_el0();
             if (curr_value < prev_value) {
-                val_print_primary_pe(ACS_PRINT_ERR, "\n       CNTVCTSS_EL0 did not increment",
+                val_print_primary_pe(ERROR, "\n       CNTVCTSS_EL0 did not increment",
                                                                                         0, index);
-                val_print_primary_pe(ACS_PRINT_DEBUG, "\n       CNTVCTSS_EL0 Value: %lx",
+                val_print_primary_pe(DEBUG, "\n       CNTVCTSS_EL0 Value: %lx",
                                                                                 curr_value, index);
-                val_print_primary_pe(ACS_PRINT_DEBUG, "\n       Previous Value: %lx",
+                val_print_primary_pe(DEBUG, "\n       Previous Value: %lx",
                                                                                 prev_value, index);
                 test_fail = 1;
             }
@@ -89,20 +89,20 @@ read_virt_ss_timer:
     }
     else {
 
-        if (g_el1skiptrap_mask & EL1SKIPTRAP_CNTPCT)
+        if (acs_policy_get_el1skiptrap_mask() & EL1SKIPTRAP_CNTPCT)
             goto read_virt_timer;
 
-        val_print_primary_pe(ACS_PRINT_DEBUG, "\n       FEAT_ECV isn't Implemented, Reading CntPct",
+        val_print_primary_pe(DEBUG, "\n       FEAT_ECV isn't Implemented, Reading CntPct",
                                                                                         0, index);
         while (iter) {
-            AA64IssueISB();
-            curr_value = ArmReadCntPct();
+            isb();
+            curr_value = read_cntpct_el0();
             if (curr_value < prev_value) {
-                val_print_primary_pe(ACS_PRINT_ERR, "\n       CNTPCT_EL0 did not increment",
+                val_print_primary_pe(ERROR, "\n       CNTPCT_EL0 did not increment",
                                                                                         0, index);
-                val_print_primary_pe(ACS_PRINT_DEBUG, "\n       CNTPCT_EL0 Value: %lx",
+                val_print_primary_pe(DEBUG, "\n       CNTPCT_EL0 Value: %lx",
                                                                                 curr_value, index);
-                val_print_primary_pe(ACS_PRINT_DEBUG, "\n       Previous Value: %lx",
+                val_print_primary_pe(DEBUG, "\n       Previous Value: %lx",
                                                                                 prev_value, index);
                 test_fail = 1;
             }
@@ -112,20 +112,20 @@ read_virt_ss_timer:
         }
 
 read_virt_timer:
-        val_print_primary_pe(ACS_PRINT_DEBUG, "\n       FEAT_ECV isn't Implemented, Reading CntVct",
+        val_print_primary_pe(DEBUG, "\n       FEAT_ECV isn't Implemented, Reading CntVct",
                                                                                         0, index);
         prev_value = 0;
         iter = NUM_ITERATIONS;
 
         while (iter) {
-            AA64IssueISB();
-            curr_value = ArmReadCntvCt();
+            isb();
+            curr_value = read_cntvct_el0();
             if (curr_value < prev_value) {
-                val_print_primary_pe(ACS_PRINT_ERR, "\n       CNTVCT_EL0 did not increment",
+                val_print_primary_pe(ERROR, "\n       CNTVCT_EL0 did not increment",
                                                                                         0, index);
-                val_print_primary_pe(ACS_PRINT_DEBUG, "\n       CNTVCT_EL0 Value: %lx",
+                val_print_primary_pe(DEBUG, "\n       CNTVCT_EL0 Value: %lx",
                                                                                 curr_value, index);
-                val_print_primary_pe(ACS_PRINT_DEBUG, "\n       Previous Value: %lx",
+                val_print_primary_pe(DEBUG, "\n       Previous Value: %lx",
                                                                                 prev_value, index);
                 test_fail = 1;
             }
@@ -136,11 +136,11 @@ read_virt_timer:
     }
 
     if (test_fail == 1) {
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+        val_set_status(index, RESULT_FAIL(1));
         return;
     }
 
-    val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+    val_set_status(index, RESULT_PASS);
 
 }
 

@@ -56,12 +56,12 @@ val_pcie_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data)
   uint32_t i = 0;
 
   if ((bus >= PCIE_MAX_BUS) || (dev >= PCIE_MAX_DEV) || (func >= PCIE_MAX_FUNC)) {
-     val_print(ACS_PRINT_ERR, "\n       Invalid Bus/Dev/Func  %x", bdf);
+     val_print(ERROR, "\n       Invalid Bus/Dev/Func  %x", bdf);
      return PCIE_NO_MAPPING;
   }
 
   if (g_pcie_info_table == NULL) {
-      val_print(ACS_PRINT_ERR, "\n       PCIe_CFG_RD PCIE info table is not created", 0);
+      val_print(ERROR, "\n       PCIe_CFG_RD PCIE info table is not created");
       return PCIE_NO_MAPPING;
   }
 
@@ -78,7 +78,7 @@ val_pcie_read_cfg(uint32_t bdf, uint32_t offset, uint32_t *data)
   }
 
   if (ecam_base == 0) {
-      val_print(ACS_PRINT_ERR, "\n       PCIe_CFG_RD ECAM Base is zero %.8x", bdf);
+      val_print(ERROR, "\n       PCIe_CFG_RD ECAM Base is zero %.8x", bdf);
       return PCIE_NO_MAPPING;
   }
 
@@ -132,12 +132,12 @@ val_pcie_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data)
 
 
   if ((bus >= PCIE_MAX_BUS) || (dev >= PCIE_MAX_DEV) || (func >= PCIE_MAX_FUNC)) {
-     val_print(ACS_PRINT_ERR, "\n       Invalid Bus/Dev/Func  %x", bdf);
+     val_print(ERROR, "\n       Invalid Bus/Dev/Func  %x", bdf);
      return;
   }
 
   if (g_pcie_info_table == NULL) {
-      val_print(ACS_PRINT_ERR, "\n       Write PCIe_CFG: PCIE info table is not created", 0);
+      val_print(ERROR, "\n       Write PCIe_CFG: PCIE info table is not created");
       return;
   }
 
@@ -154,7 +154,7 @@ val_pcie_write_cfg(uint32_t bdf, uint32_t offset, uint32_t data)
   }
 
   if (ecam_base == 0) {
-      val_print(ACS_PRINT_ERR, "\n       PCIe_CFG_WR ECAM Base is zero %.8x", bdf);
+      val_print(ERROR, "\n       PCIe_CFG_WR ECAM Base is zero %.8x", bdf);
       return;
   }
 
@@ -239,12 +239,12 @@ uint64_t val_pcie_get_bdf_config_addr(uint32_t bdf)
   uint32_t i = 0;
 
   if ((bus >= PCIE_MAX_BUS) || (dev >= PCIE_MAX_DEV) || (func >= PCIE_MAX_FUNC)) {
-     val_print(ACS_PRINT_ERR, "\n       Invalid Bus/Dev/Func  %x", bdf);
+     val_print(ERROR, "\n       Invalid Bus/Dev/Func  %x", bdf);
      return 0;
   }
 
   if (g_pcie_info_table == NULL) {
-      val_print(ACS_PRINT_ERR, "\n       PCIe_CFG: PCIE info table is not created", 0);
+      val_print(ERROR, "\n       PCIe_CFG: PCIE info table is not created");
       return 0;
   }
 
@@ -262,7 +262,7 @@ uint64_t val_pcie_get_bdf_config_addr(uint32_t bdf)
   }
 
   if (ecam_base == 0) {
-      val_print(ACS_PRINT_ERR, "\n       BDF config Read PCIe_CFG: ECAM Base is zero %x", bdf);
+      val_print(ERROR, "\n       BDF config Read PCIe_CFG: ECAM Base is zero %x", bdf);
       return 0;
   }
 
@@ -321,7 +321,7 @@ val_pcie_print_device_info(void)
 
   if (bdf_tbl_ptr->num_entries == 0)
   {
-    val_print(ACS_PRINT_ERR, " PCIE_INFO: No entries in BDF Table\n", 0);
+    val_print(ERROR, " PCIE_INFO: No entries in BDF Table\n");
     return;
   }
 
@@ -365,16 +365,16 @@ val_pcie_print_device_info(void)
       }
   }
 
-  val_print(ACS_PRINT_TEST, " PCIE_INFO: Number of RCiEP           : %4d\n", num_rciep);
-  val_print(ACS_PRINT_TEST, " PCIE_INFO: Number of RCEC            : %4d\n", num_rcec);
-  val_print(ACS_PRINT_TEST, " PCIE_INFO: Number of EP              : %4d\n", num_ep);
-  val_print(ACS_PRINT_TEST, " PCIE_INFO: Number of RP              : %4d\n", num_rp);
-  val_print(ACS_PRINT_TEST, " PCIE_INFO: Number of iEP_EP          : %4d\n", num_iep);
-  val_print(ACS_PRINT_TEST, " PCIE_INFO: Number of iEP_RP          : %4d\n", num_irp);
-  val_print(ACS_PRINT_TEST, " PCIE_INFO: Number of UP of switch    : %4d\n", num_up);
-  val_print(ACS_PRINT_TEST, " PCIE_INFO: Number of DP of switch    : %4d\n", num_dp);
-  val_print(ACS_PRINT_TEST, " PCIE_INFO: Number of PCI/PCIe Bridge : %4d\n", num_pci_pcie);
-  val_print(ACS_PRINT_TEST, " PCIE_INFO: Number of PCIe/PCI Bridge : %4d\n", num_pcie_pci);
+  val_print(INFO, " PCIE_INFO: Number of RCiEP           : %4d\n", num_rciep);
+  val_print(INFO, " PCIE_INFO: Number of RCEC            : %4d\n", num_rcec);
+  val_print(INFO, " PCIE_INFO: Number of EP              : %4d\n", num_ep);
+  val_print(INFO, " PCIE_INFO: Number of RP              : %4d\n", num_rp);
+  val_print(INFO, " PCIE_INFO: Number of iEP_EP          : %4d\n", num_iep);
+  val_print(INFO, " PCIE_INFO: Number of iEP_RP          : %4d\n", num_irp);
+  val_print(INFO, " PCIE_INFO: Number of UP of switch    : %4d\n", num_up);
+  val_print(INFO, " PCIE_INFO: Number of DP of switch    : %4d\n", num_dp);
+  val_print(INFO, " PCIE_INFO: Number of PCI/PCIe Bridge : %4d\n", num_pci_pcie);
+  val_print(INFO, " PCIE_INFO: Number of PCIe/PCI Bridge : %4d\n", num_pcie_pci);
 
   while (ecam_index < (uint32_t)val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0))
   {
@@ -384,8 +384,8 @@ val_pcie_print_device_info(void)
       tbl_index = 0;
       bdf_counter = 0;
 
-      val_print(ACS_PRINT_INFO, "\n  ECAM %d:", ecam_index);
-      val_print(ACS_PRINT_INFO, "  Base 0x%llx\n", ecam_base);
+      val_print(TRACE, "\n  ECAM %d:", ecam_index);
+      val_print(TRACE, "  Base 0x%llx\n", ecam_base);
 
       while (tbl_index < bdf_tbl_ptr->num_entries)
       {
@@ -416,17 +416,17 @@ val_pcie_print_device_info(void)
           {
               bdf_counter = 1;
               bdf = PCIE_CREATE_BDF(seg_num, bus_num, dev_num, func_num);
-              val_print(ACS_PRINT_INFO, "  BDF: 0x%x\n", bdf);
-              val_print(ACS_PRINT_INFO, "  Seg: 0x%x, ", seg_num);
-              val_print(ACS_PRINT_INFO, "Bus: 0x%02x, ", bus_num);
-              val_print(ACS_PRINT_INFO, "Dev: 0x%02x, ", dev_num);
-              val_print(ACS_PRINT_INFO, "Func: 0x%x, ", func_num);
-              val_print(ACS_PRINT_INFO, "Dev ID: 0x%04x, ", device_id);
-              val_print(ACS_PRINT_INFO, "Vendor ID: 0x%04x\n", vendor_id);
+              val_print(TRACE, "  BDF: 0x%x\n", bdf);
+              val_print(TRACE, "  Seg: 0x%x, ", seg_num);
+              val_print(TRACE, "Bus: 0x%02x, ", bus_num);
+              val_print(TRACE, "Dev: 0x%02x, ", dev_num);
+              val_print(TRACE, "Func: 0x%x, ", func_num);
+              val_print(TRACE, "Dev ID: 0x%04x, ", device_id);
+              val_print(TRACE, "Vendor ID: 0x%04x\n", vendor_id);
           }
       }
       if (bdf_counter == 0)
-          val_print(ACS_PRINT_INFO, "  No BDF devices in ECAM region index %d\n", ecam_index);
+          val_print(TRACE, "  No BDF devices in ECAM region index %d\n", ecam_index);
 
       ecam_index++;
   }
@@ -447,17 +447,17 @@ val_pcie_create_info_table(uint64_t *pcie_info_table)
   uint32_t num_ecam;
 
   if (pcie_info_table == NULL) {
-      val_print(ACS_PRINT_ERR, "Input for Create Info table cannot be NULL\n", 0);
+      val_print(ERROR, "Input for Create Info table cannot be NULL\n");
       return;
   }
-  val_print(ACS_PRINT_INFO, " Creating PCIe INFO table\n", 0);
+  val_print(TRACE, " Creating PCIe INFO table\n");
 
   g_pcie_info_table = (PCIE_INFO_TABLE *)pcie_info_table;
 
   pal_pcie_create_info_table(g_pcie_info_table);
 
   num_ecam = (uint32_t)val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0);
-  val_print(ACS_PRINT_TEST, " PCIE_INFO: Number of ECAM regions    :    %ld\n", num_ecam);
+  val_print(INFO, " PCIE_INFO: Number of ECAM regions    :    %ld\n", num_ecam);
   if (num_ecam == 0)
       return;
 
@@ -465,14 +465,14 @@ val_pcie_create_info_table(uint64_t *pcie_info_table)
 
   /* Create the list of valid Pcie Device Functions */
   if (val_pcie_create_device_bdf_table()) {
-      val_print(ACS_PRINT_ERR, "   Create Bdf table failed.\n", 0);
+      val_print(ERROR, "   Create Bdf table failed.\n");
       return;
   }
 
   if (pal_pcie_check_device_list()) {
     pcie_bdf_table_list_flag = 1;
-    val_print(ACS_PRINT_ERR, "Pcie device list doesn't match \
-                with platform pcie device hierarchy\n", 0);
+    val_print(ERROR, "Pcie device list doesn't match \
+                with platform pcie device hierarchy\n");
   }
 
   val_pcie_print_device_info();
@@ -497,13 +497,13 @@ uint32_t val_pcie_populate_device_rootport(void)
   for (tbl_index = 0; tbl_index < bdf_tbl_ptr->num_entries; tbl_index++)
   {
       bdf = bdf_tbl_ptr->device[tbl_index].bdf;
-      val_print(ACS_PRINT_DEBUG, "  Dev bdf 0x%06x", bdf);
+      val_print(DEBUG, "  Dev bdf 0x%06x", bdf);
 
       /* Checks if the BDF has RootPort */
       val_pcie_get_rootport(bdf, &rp_bdf);
 
       bdf_tbl_ptr->device[tbl_index].rp_bdf = rp_bdf;
-      val_print(ACS_PRINT_DEBUG, " RP bdf 0x%06x\n", rp_bdf);
+      val_print(DEBUG, " RP bdf 0x%06x\n", rp_bdf);
   }
   return 0;
 }
@@ -543,8 +543,8 @@ val_pcie_create_device_bdf_table()
                                                                  PCIE_DEVICE_BDF_TABLE_SZ);
   if (!g_pcie_bdf_table)
   {
-      val_print(ACS_PRINT_ERR,
-        "       PCIe BDF table memory allocation failed\n", 0);
+      val_print(ERROR,
+        "       PCIe BDF table memory allocation failed\n");
       return 1;
   }
 
@@ -554,7 +554,7 @@ val_pcie_create_device_bdf_table()
   num_ecam = (uint32_t)val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0);
   if (num_ecam == 0)
   {
-      val_print(ACS_PRINT_ERR, "       No ECAMs discovered\n ", 0);
+      val_print(ERROR, "       No ECAMs discovered\n ");
       return 1;
   }
 
@@ -569,7 +569,7 @@ val_pcie_create_device_bdf_table()
       for (bus_index = start_bus; bus_index <= end_bus; bus_index++)
       {
           if (pal_pcie_check_bus_valid(bus_index)) {
-              val_print(ACS_PRINT_DEBUG,
+              val_print(DEBUG,
                "       Bus 0x%x marked as invalid in Platform API...Skipping\n", bus_index);
               continue;
           }
@@ -585,7 +585,7 @@ val_pcie_create_device_bdf_table()
                   if (val_pcie_read_cfg(bdf, TYPE01_VIDR, &reg_value) == PCIE_NO_MAPPING)
                   {
                       /* Return if there is a bdf mapping issue */
-                      val_print(ACS_PRINT_ERR, "\n       BDF 0x%x mapping issue", bdf);
+                      val_print(ERROR, "\n       BDF 0x%x mapping issue", bdf);
                       return 1;
                   }
 
@@ -594,7 +594,7 @@ val_pcie_create_device_bdf_table()
                   {
                       /* Skip if the device is a host bridge */
                       if (val_pcie_is_host_bridge(bdf)) {
-                          val_print(ACS_PRINT_DEBUG,
+                          val_print(DEBUG,
                                      "       BDF 0x%x is a Host Bridge...Skipping\n", bdf);
                           continue;
                       }
@@ -616,14 +616,14 @@ val_pcie_create_device_bdf_table()
                         &cid_offset);
 
                       if (p_cap != PCIE_SUCCESS) {
-                          val_print(ACS_PRINT_DEBUG,
+                          val_print(DEBUG,
                           "       BDF 0x%x PCI Express capability not present...Skipping\n", bdf);
                           continue;
                       }
 
                       status = pal_pcie_check_device_valid(bdf);
                       if (status) {
-                          val_print(ACS_PRINT_DEBUG,
+                          val_print(DEBUG,
                            "       BDF 0x%x Marked as invalid in Platform API...Skipping\n", bdf);
                           continue;
                       }
@@ -653,7 +653,7 @@ val_pcie_create_device_bdf_table()
   /* Sanity Check : Confirm all EP (normal, integrated) have a rootport */
   val_pcie_populate_device_rootport();
 
-  val_print(ACS_PRINT_TEST,
+  val_print(INFO,
     " PCIE_INFO: Number of BDFs found      :    %d\n", g_pcie_bdf_table->num_entries);
 
   return 0;
@@ -742,8 +742,8 @@ val_pcie_free_info_table(void)
         g_pcie_info_table = NULL;
     }
     else {
-      val_print(ACS_PRINT_DEBUG,
-                  "\n g_pcie_info_table pointer is already NULL", 0);
+      val_print(DEBUG,
+                  "\n g_pcie_info_table pointer is already NULL");
     }
 }
 
@@ -762,13 +762,13 @@ val_pcie_get_info(PCIE_INFO_e type, uint32_t index)
 {
 
   if (g_pcie_info_table == NULL) {
-      val_print(ACS_PRINT_ERR, "GET_PCIe_INFO: PCIE info table is not created\n", 0);
+      val_print(ERROR, "GET_PCIe_INFO: PCIE info table is not created\n");
       return 0;
   }
 
   if (index >= g_pcie_info_table->num_entries) {
       if (g_pcie_info_table->num_entries != 0)
-          val_print(ACS_PRINT_ERR, "Invalid index %d > num of entries\n", index);
+          val_print(ERROR, "Invalid index %d > num of entries\n", index);
       return 0;
   }
 
@@ -784,7 +784,7 @@ val_pcie_get_info(PCIE_INFO_e type, uint32_t index)
       case PCIE_INFO_SEGMENT:
           return g_pcie_info_table->block[index].segment_num;
       default:
-          val_print(ACS_PRINT_ERR, "This PCIE info option not supported %d\n", type);
+          val_print(ERROR, "This PCIE info option not supported %d\n", type);
           break;
   }
 
@@ -1127,7 +1127,7 @@ val_pcie_enable_dpc(uint32_t bdf, uint32_t err_type)
   status = val_pcie_find_capability(bdf, PCIE_ECAP, ECID_DPC, &dpc_cap_base);
   if (status == PCIE_CAP_NOT_FOUND)
   {
-      val_print(ACS_PRINT_DEBUG, "DPC Capability not supported \n", 0);
+      val_print(DEBUG, "DPC Capability not supported \n");
       return;
   }
 
@@ -1154,7 +1154,7 @@ val_pcie_disable_dpc(uint32_t bdf)
   status = val_pcie_find_capability(bdf, PCIE_ECAP, ECID_DPC, &dpc_cap_base);
   if (status == PCIE_CAP_NOT_FOUND)
   {
-      val_print(ACS_PRINT_DEBUG, "DPC Capability not supported \n", 0);
+      val_print(DEBUG, "DPC Capability not supported \n");
       return;
   }
 
@@ -1340,14 +1340,14 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
           id = bf_entry->ecap_id;
           break;
       default:
-          val_print(ACS_PRINT_ERR, "\n       Invalid reg_type  0x%x  ", bf_entry->reg_type);
+          val_print(ERROR, "\n       Invalid reg_type  0x%x  ", bf_entry->reg_type);
           return 1;
   }
 
   if (status != PCIE_SUCCESS)
   {
-      val_print(ACS_PRINT_ERR, "\n       PCIe Capability 0x%x", id);
-      val_print(ACS_PRINT_ERR, " not found for BDF 0x%x", bdf);
+      val_print(ERROR, "\n       PCIe Capability 0x%x", id);
+      val_print(ERROR, " not found for BDF 0x%x", bdf);
       return status;
   }
 
@@ -1364,10 +1364,10 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
   /* Check if bit-field value is proper */
   if (bf_value != bf_entry->cfg_value)
   {
-      val_print(ACS_PRINT_ERR, "\n       BDF 0x%x  ", bdf);
-      val_print(ACS_PRINT_ERR, bf_entry->err_str1, 0);
-      val_print(ACS_PRINT_ERR, " 0x%x", bf_value);
-      val_print(ACS_PRINT_ERR, " instead of 0x%x", bf_entry->cfg_value);
+      val_print(ERROR, "\n       BDF 0x%x  ", bdf);
+      val_print(ERROR, bf_entry->err_str1);
+      val_print(ERROR, " 0x%x", bf_value);
+      val_print(ERROR, " instead of 0x%x", bf_entry->cfg_value);
       if (!val_strncmp(bf_entry->err_str1, "WARNING", WARN_STR_LEN))
           return 0;
       return 1;
@@ -1415,17 +1415,17 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
           val_pcie_write_cfg(bdf, cap_base + reg_offset, temp_reg_value);
           break;
       default:
-          val_print(ACS_PRINT_ERR, "\n       Invalid Attribute  0x%x  ", bf_entry->attr);
+          val_print(ERROR, "\n       Invalid Attribute  0x%x  ", bf_entry->attr);
           return 1;
   }
 
   if (reg_overwrite_value != reg_value)
   {
-      val_print(ACS_PRINT_ERR, "\n       BDF 0x%x  ", bdf);
-      val_print(ACS_PRINT_ERR, bf_entry->err_str2, 0);
-      val_print(ACS_PRINT_ERR, " 0x%x",
+      val_print(ERROR, "\n       BDF 0x%x  ", bdf);
+      val_print(ERROR, bf_entry->err_str2);
+      val_print(ERROR, " 0x%x",
                           reg_overwrite_value >> REG_SHIFT(alignment_byte_cnt, bf_entry->start));
-      val_print(ACS_PRINT_ERR, " instead of 0x%x",
+      val_print(ERROR, " instead of 0x%x",
                           reg_value >> REG_SHIFT(alignment_byte_cnt, bf_entry->start));
       if (!val_strncmp(bf_entry->err_str2, "WARNING", WARN_STR_LEN))
           return 0;
@@ -1433,7 +1433,7 @@ uint32_t val_pcie_bitfield_check(uint32_t bdf, uint64_t *bitfield_entry)
   }
 
   /* Return pass status */
-  val_print(ACS_PRINT_INFO, "\n       BDF 0x%x  PASS", bdf);
+  val_print(TRACE, "\n       BDF 0x%x  PASS", bdf);
   return 0;
 }
 
@@ -1451,7 +1451,7 @@ val_pcie_register_bitfields_check(uint64_t *bf_info_table, uint32_t num_bitfield
 {
 
   uint32_t bdf;
-  uint32_t dp_type;
+  uint32_t dp_type = 0;
   uint32_t tbl_index;
   uint32_t num_fails;
   uint32_t num_pass;
@@ -1460,7 +1460,7 @@ val_pcie_register_bitfields_check(uint64_t *bf_info_table, uint32_t num_bitfield
 
   num_fails = num_pass = tbl_index = 0;
 
-  val_print(ACS_PRINT_INFO, "\n       Number of bit-field entries to check %d",
+  val_print(TRACE, "\n       Number of bit-field entries to check %d",
             num_bitfield_entries);
 
   while (tbl_index < g_pcie_bdf_table->num_entries)
@@ -1503,7 +1503,7 @@ val_pcie_register_bitfields_check(uint64_t *bf_info_table, uint32_t num_bitfield
   if (num_pass > 0 || num_fails > 0)
       return num_fails;
   else {
-      val_print(ACS_PRINT_ERR, "\n       No PCIe device of type %d present", dp_type);
+      val_print(ERROR, "\n       No PCIe device of type %d present", dp_type);
       return ACS_STATUS_SKIP;
   }
 }
@@ -1556,7 +1556,7 @@ val_pcie_get_mmio_bar(uint32_t bdf, void *base)
       status = pal_exerciser_get_data(EXERCISER_DATA_MMIO_SPACE, &data, bdf, ecam);
       if (status == NOT_IMPLEMENTED)
       {
-          val_print(ACS_PRINT_ERR, "\n       pal_exerciser_get_data() not implemented", 0);
+          val_print(ERROR, "\n       pal_exerciser_get_data() not implemented");
       }
 
       /* data.bar_space.base_addr will be zero if no MMIO bar are present for the function */
@@ -1713,7 +1713,7 @@ val_pcie_get_rootport(uint32_t bdf, uint32_t *rp_bdf)
 
   dp_type = val_pcie_device_port_type(bdf);
 
-  val_print(ACS_PRINT_INFO, " type 0x%02x", dp_type);
+  val_print(TRACE, " type 0x%02x", dp_type);
 
   /* If the device is RP or iEP_RP, set its rootport value to same */
   if ((dp_type == RP) || (dp_type == iEP_RP))
@@ -1752,7 +1752,7 @@ val_pcie_get_rootport(uint32_t bdf, uint32_t *rp_bdf)
   }
 
   /* Return failure */
-  val_print(ACS_PRINT_ERR, "   PCIe Hierarchy fail: RP of bdf 0x%x not found\n", bdf);
+  val_print(ERROR, "   PCIe Hierarchy fail: RP of bdf 0x%x not found\n", bdf);
   *rp_bdf = 0;
   return 1;
 
@@ -1907,8 +1907,8 @@ void val_pcie_read_acsctrl(uint32_t arr[][1])
       val_pcie_read_cfg(bdf, cap_base + ACSCR_OFFSET, &reg_value);
       arr[tbl_index][0] = reg_value;
 
-      val_print(ACS_PRINT_INFO, "\n       ACS Control Reg value read for BDF 0x%x is", bdf);
-      val_print(ACS_PRINT_INFO, " %llx", arr[tbl_index][0]);
+      val_print(TRACE, "\n       ACS Control Reg value read for BDF 0x%x is", bdf);
+      val_print(TRACE, " %llx", arr[tbl_index][0]);
       tbl_index++;
   }
 
@@ -1940,8 +1940,8 @@ void val_pcie_write_acsctrl(uint32_t arr[][1])
       val_pcie_find_capability(bdf, PCIE_ECAP, ECID_ACS, &cap_base);
       val_pcie_write_cfg(bdf, cap_base + ACSCR_OFFSET, arr[tbl_index][0]);
 
-      val_print(ACS_PRINT_INFO, "\n       ACS Control Reg value written for BDF 0x%x is", bdf);
-      val_print(ACS_PRINT_INFO, " %llx", arr[tbl_index][0]);
+      val_print(TRACE, "\n       ACS Control Reg value written for BDF 0x%x is", bdf);
+      val_print(TRACE, " %llx", arr[tbl_index][0]);
       tbl_index++;
   }
 
@@ -2010,28 +2010,28 @@ val_pcie_link_cap_support(uint32_t bdf)
   val_pcie_read_cfg(bdf, pciecs_base + LCAPR_OFFSET, &reg_value);
 
   if (reg_value != 0) {
-     val_print(ACS_PRINT_ERR, "\n       Link Capabilities reg check failed", 0);
+     val_print(ERROR, "\n       Link Capabilities reg check failed");
      return 1;
   }
 
   reg_value = 0xFFFFFFFF;
   val_pcie_read_cfg(bdf, pciecs_base + LCTRLR_OFFSET, &reg_value);
   if (reg_value != 0) {
-     val_print(ACS_PRINT_ERR, "\n       Link Capabilities control and status check failed", 0);
+     val_print(ERROR, "\n       Link Capabilities control and status check failed");
      return 1;
   }
 
   reg_value = 0xFFFFFFFF;
   val_pcie_read_cfg(bdf, pciecs_base + LCAP2R_OFFSET, &reg_value);
   if (reg_value != 0) {
-     val_print(ACS_PRINT_ERR, "\n       Link Capabilities 2 reg check failed", 0);
+     val_print(ERROR, "\n       Link Capabilities 2 reg check failed");
      return 1;
   }
 
   reg_value = 0xFFFFFFFF;
   val_pcie_read_cfg(bdf, pciecs_base + LCTL2R_OFFSET, &reg_value);
   if (reg_value != 0) {
-     val_print(ACS_PRINT_ERR, "\n       Link Capabilities 2 control and status check failed", 0);
+     val_print(ERROR, "\n       Link Capabilities 2 control and status check failed");
      return 1;
   }
 
@@ -2404,8 +2404,8 @@ pcie_bdf_list_t *val_pcie_get_pcie_peripheral_bdf_list(void)
   }
 
   if (peri_count == 0) {
-    val_print(ACS_PRINT_DEBUG, "\n       No peripherals detected not "
-                             "creating pcie_pheripherals_bdf_list", 0);
+    val_print(DEBUG, "\n       No peripherals detected not "
+                             "creating pcie_pheripherals_bdf_list");
     return NULL;
   }
 
@@ -2415,22 +2415,22 @@ pcie_bdf_list_t *val_pcie_get_pcie_peripheral_bdf_list(void)
 
   /* Check if memory allocated */
   if (pcie_pheripherals_bdf_list == NULL) {
-      val_print(ACS_PRINT_ERR, "\n       Failed to allocate memory for pcie_pheripherals_bdf_list."
-                , 0);
+      val_print(ERROR, "\n       Failed to allocate memory for pcie_pheripherals_bdf_list."
+                );
       return NULL;
   }
 
   /* Init the bdf count */
   pcie_pheripherals_bdf_list->count = 0;
 
-  val_print(ACS_PRINT_DEBUG, "\n       Creating pcie_pheripherals_bdf_list ...", 0);
+  val_print(DEBUG, "\n       Creating pcie_pheripherals_bdf_list ...");
   for (i = 0; i < peri_count; i++) {
       dev_bdf = (uint32_t)val_peripheral_get_info (ANY_BDF, i);
 
       if (dev_bdf == 0)
           continue;
 
-      val_print(ACS_PRINT_DEBUG, "\n       Dev bdf 0x%x", dev_bdf);
+      val_print(DEBUG, "\n       Dev bdf 0x%x", dev_bdf);
 
       dev_type = val_pcie_get_device_type(dev_bdf);
       /* 1: Normal PCIe device, 2: PCIe Host bridge, 3: PCIe bridge device, else: INVALID */
@@ -2441,7 +2441,7 @@ pcie_bdf_list_t *val_pcie_get_pcie_peripheral_bdf_list(void)
       }
 
       if (!val_pcie_device_driver_present(dev_bdf)) {
-        val_print(ACS_PRINT_DEBUG, "\n       Driver not present for bdf 0x%x", dev_bdf);
+        val_print(DEBUG, "\n       Driver not present for bdf 0x%x", dev_bdf);
         continue;
       }
 
@@ -2472,7 +2472,7 @@ val_is_transaction_pending_set(uint32_t bdf)
   status = val_pcie_read_cfg(bdf, pciecs_base + DCTLR_OFFSET, &reg_value);
 
   if (status) {
-      val_print(ACS_PRINT_ERR, "\n       Error in reading transaction pending bit", 0);
+      val_print(ERROR, "\n       Error in reading transaction pending bit");
       return 1;
   }
 
@@ -2540,13 +2540,13 @@ uint32_t val_pcie_ari_forwarding_support(uint32_t bdf)
 
     /* Locate PCI Express Capability */
     if (val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS, &cap_base) != PCIE_SUCCESS) {
-        val_print(ACS_PRINT_ERR, "\n       PCI Capability not found for bdf 0x%x", bdf);
+        val_print(ERROR, "\n       PCI Capability not found for bdf 0x%x", bdf);
         return NOT_IMPLEMENTED;
     }
 
     /* Read Device Capabilities 2 register (offset 0x24 from PCIe Cap base) */
     if (val_pcie_read_cfg(bdf, cap_base + DCAP2R_OFFSET, &reg_value)) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
                     "\n       Failed to read Device Capabilities 2 register for bdf 0x%x", bdf);
         return NOT_IMPLEMENTED;
     }

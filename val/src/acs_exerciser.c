@@ -67,7 +67,7 @@ uint32_t val_exerciser_create_info_table(void)
   num_ecam = (uint32_t)val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0);
   if (num_ecam == 0)
   {
-      val_print(ACS_PRINT_ERR, "       No ECAMs discovered\n ", 0);
+      val_print(ERROR, "       No ECAMs discovered\n ");
       return 1;
   }
 
@@ -75,7 +75,7 @@ uint32_t val_exerciser_create_info_table(void)
   /* if no bdf table ptr return error */
   if (bdf_table->num_entries == 0)
   {
-      val_print(ACS_PRINT_DEBUG, "\n       No BDFs discovered            ", 0);
+      val_print(DEBUG, "\n       No BDFs discovered            ");
       return 1;
   }
 
@@ -88,7 +88,7 @@ uint32_t val_exerciser_create_info_table(void)
       if (val_pcie_read_cfg(Bdf, TYPE01_VIDR, &reg_value) == PCIE_NO_MAPPING)
       {
           /* Return if there is a bdf mapping issue */
-          val_print(ACS_PRINT_ERR, "\n      BDF 0x%x mapping issue", Bdf);
+          val_print(ERROR, "\n      BDF 0x%x mapping issue", Bdf);
           return 1;
       }
 
@@ -101,15 +101,15 @@ uint32_t val_exerciser_create_info_table(void)
           g_exerciser_info_table.e_info[num_exerciser_info++].initialized = 0;
           vendor_id = (reg_value >> TYPE01_VIDR_SHIFT) & TYPE01_VIDR_MASK;
           vendor_name = lookup_vendor_name(vendor_id);
-          val_print(ACS_PRINT_DEBUG, "    exerciser Bdf %x\n", Bdf);
-          val_print(ACS_PRINT_DEBUG, "    Vendor ID: 0x%04x, ", vendor_id);
-          val_print(ACS_PRINT_DEBUG, "Vendor Name: ", 0);
-          val_print(ACS_PRINT_DEBUG, vendor_name, 0);
-          val_print(ACS_PRINT_DEBUG, "\n\n", 0);
+          val_print(DEBUG, "    exerciser Bdf %x\n", Bdf);
+          val_print(DEBUG, "    Vendor ID: 0x%04x, ", vendor_id);
+          val_print(DEBUG, "Vendor Name: ");
+          val_print(DEBUG, vendor_name);
+          val_print(DEBUG, "\n\n");
       }
   }
   g_exerciser_info_table.num_exerciser = num_exerciser_info;
-  val_print(ACS_PRINT_TEST, "\n     PCIE_INFO: Number of exerciser cards  %4d \n",
+  val_print(INFO, "\n     PCIE_INFO: Number of exerciser cards  %4d \n",
                                                              g_exerciser_info_table.num_exerciser);
   return 0;
 }
@@ -219,7 +219,7 @@ uint32_t val_exerciser_init(uint32_t instance)
   {
       Bdf = g_exerciser_info_table.e_info[instance].bdf;
       if (val_exerciser_get_state(&state, instance) || (state != EXERCISER_ON)) {
-          val_print(ACS_PRINT_ERR, "\n   Exerciser Bdf %lx not ready", Bdf);
+          val_print(ERROR, "\n   Exerciser Bdf %lx not ready", Bdf);
           return 1;
       }
 
@@ -237,7 +237,7 @@ uint32_t val_exerciser_init(uint32_t instance)
       g_exerciser_info_table.e_info[instance].initialized = 1;
   }
   else
-           val_print(ACS_PRINT_INFO, "\n       Already initialized %2d",
+           val_print(TRACE, "\n       Already initialized %2d",
                                                                     instance);
   return 0;
 }
@@ -326,7 +326,7 @@ uint32_t val_get_exerciser_err_info(EXERCISER_ERROR_CODE type)
     case UNCORR_PTLP_EGR_BLK:
          return UNCORR_PTLP_EGR_BLK_OFFSET;
     default:
-         val_print(ACS_PRINT_ERR, "\n   Invalid error offset ", 0);
+         val_print(ERROR, "\n   Invalid error offset ");
          return 0;
     }
 }
@@ -403,36 +403,35 @@ uint32_t val_exerciser_test_init(void)
 
     /* Build BDF table for all PCIe devices */
     if (val_pcie_create_device_bdf_table()) {
-        val_print(ACS_PRINT_WARN,
-                  "\n     Create BDF Table Failed, Skipping Exerciser tests...\n", 0);
+        val_print(WARN,
+                  "\n     Create BDF Table Failed, Skipping Exerciser tests...\n");
         status = ACS_STATUS_SKIP;
         return status;
     }
 
     if (pcie_bdf_table_list_flag == 1) {
-        val_print(ACS_PRINT_WARN,
+        val_print(WARN,
                   "\n     *** Created device list with valid bdf doesn't match with the"
-                  " platform pcie device hierarchy, Skipping exerciser tests ***\n",
-                  0);
+                  " platform pcie device hierarchy, Skipping exerciser tests ***\n");
         status = ACS_STATUS_SKIP;
         return status;
     }
 
-    val_print(ACS_PRINT_INFO, "\n      Starting Exerciser Setup\n", 0);
+    val_print(TRACE, "\n      Starting Exerciser Setup\n");
     /* Create exerciser info table */
     val_exerciser_create_info_table();
     num_instances = val_exerciser_get_info(EXERCISER_NUM_CARDS);
     if (num_instances == 0) {
-        val_print(ACS_PRINT_WARN,
-                  "\n     No Exerciser Devices Found, Skipping Exerciser tests...\n", 0);
+        val_print(WARN,
+                  "\n     No Exerciser Devices Found, Skipping Exerciser tests...\n");
         status = ACS_STATUS_SKIP;
         return status;
     }
 
     /* Initialize SMMU and disable all contexts initially */
-    val_print(ACS_PRINT_INFO, "\n      Initializing SMMU\n", 0);
+    val_print(TRACE, "\n      Initializing SMMU\n");
     if (val_smmu_init() == ACS_STATUS_ERR) {
-        val_print(ACS_PRINT_ERR, "\n     val_smmu_init() failed \n", 0);
+        val_print(ERROR, "\n     val_smmu_init() failed \n");
         status = ACS_STATUS_SKIP;
         return status;
     }
@@ -444,9 +443,9 @@ uint32_t val_exerciser_test_init(void)
 
     /* Configure ITS once */
     if (g_its_init != 1) {
-        val_print(ACS_PRINT_INFO, "\n      Initializing ITS\n", 0);
+        val_print(TRACE, "\n      Initializing ITS\n");
         if (val_gic_its_configure() == ACS_STATUS_ERR) {
-            val_print(ACS_PRINT_ERR, "\n     val_gic_its_configure() failed \n", 0);
+            val_print(ERROR, "\n     val_gic_its_configure() failed \n");
             status = ACS_STATUS_SKIP;
             return status;
         }

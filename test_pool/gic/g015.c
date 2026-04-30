@@ -37,25 +37,25 @@ payload(void)
 
 
   gic_version = val_gic_get_info(GIC_INFO_VERSION);
-  val_print(ACS_PRINT_INFO, "\n       Received GIC Major version = %4d      ", gic_version);
+  val_print(TRACE, "\n       Received GIC Major version = %4d      ", gic_version);
 
 
   /* Check the Major Version of GIC */
   if (gic_version < 4) {
-      val_print(ACS_PRINT_ERR,
+      val_print(ERROR,
                 "\n       Expected GICv4 or higher major version", gic_version);
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+      val_set_status(index, RESULT_FAIL(01));
       return;
   }
 
   num_gicr_rd = val_gic_get_info(GIC_INFO_NUM_GICR_GICRD);
-  val_print(ACS_PRINT_INFO, "\n       Redistributor count: %llx", num_gicr_rd);
+  val_print(TRACE, "\n       Redistributor count: %llx", num_gicr_rd);
 
   for (i = 0; i < num_gicr_rd; i++)
   {
       gicrd_base = val_get_gicr_base(&gicrd_length, i);
       if (gicrd_base == 0) {
-          val_print(ACS_PRINT_INFO, "\n       Invalid gicrd Base Address: %llx", gicrd_base);
+          val_print(TRACE, "\n       Invalid gicrd Base Address: %llx", gicrd_base);
           continue;
       }
 
@@ -64,14 +64,14 @@ payload(void)
 
       if (gicrd_rvpeid == 0x1)
       {
-        val_print(ACS_PRINT_INFO,
-                "\n       Interrupt controller is compliant with Gicv4.1 or higher", 0);
-        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+        val_print(TRACE,
+                "\n       Interrupt controller is compliant with Gicv4.1 or higher");
+        val_set_status(index, RESULT_PASS);
         return;
       }
   }
 
-  val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
+  val_set_status(index, RESULT_FAIL(02));
   return;
 }
 

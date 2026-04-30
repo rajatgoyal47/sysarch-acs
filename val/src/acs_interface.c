@@ -257,10 +257,10 @@ int64_t val_drtm_lock_tcb_hashes(void)
 uint32_t val_drtm_reserved_bits_check_is_zero(uint32_t reserved_bits)
 {
     if (reserved_bits != VAL_DRTM_RESERVED_BYTE_ZERO) {
-        val_print(ACS_PRINT_ERR, "\n       CHECK RSVD BITS: FAILED [0x%08x]", reserved_bits);
+        val_print(ERROR, "\n       CHECK RSVD BITS: FAILED [0x%08x]", reserved_bits);
         return ACS_STATUS_FAIL;
     } else
-        val_print(ACS_PRINT_DEBUG, "\n       CHECK RSVD BITS: PASSED", 0);
+        val_print(DEBUG, "\n       CHECK RSVD BITS: PASSED");
     return ACS_STATUS_PASS;
 }
 
@@ -275,7 +275,7 @@ uint32_t val_drtm_get_psci_ver(void)
 
     pal_pe_call_smc(&smc_args, CONDUIT_SMC);
 
-    val_print(ACS_PRINT_DEBUG, "\n       PSCI VERSION = %X", smc_args.Arg0);
+    val_print(DEBUG, "\n       PSCI VERSION = %X", smc_args.Arg0);
 
     return smc_args.Arg0;
 }
@@ -291,7 +291,7 @@ uint32_t val_drtm_get_smccc_ver(void)
 
     pal_pe_call_smc(&smc_args, CONDUIT_SMC);
 
-    val_print(ACS_PRINT_DEBUG, "\n       SMCCC VERSION = %X", smc_args.Arg0);
+    val_print(DEBUG, "\n       SMCCC VERSION = %X", smc_args.Arg0);
 
     return smc_args.Arg0;
 }
@@ -306,7 +306,7 @@ uint32_t create_mem_prot_table(uint64_t *mem_prot_table_address, uint64_t *mem_p
     /* Check max number of regions */
     max_mem_regions = VAL_EXTRACT_BITS(g_drtm_features.dma_prot_features.value, 8, 23);
     if (max_mem_regions < 1) {
-      val_print(ACS_PRINT_ERR, "\n    Maximum Region is 0 for Memory Descriptor Table", 0);
+      val_print(ERROR, "\n    Maximum Region is 0 for Memory Descriptor Table");
       return ACS_STATUS_FAIL;
     }
 
@@ -317,7 +317,7 @@ uint32_t create_mem_prot_table(uint64_t *mem_prot_table_address, uint64_t *mem_p
     mem_desc_table = (DRTM_MEMORY_REGION_DESCRIPTOR_TABLE *)
                         ((uint64_t)val_aligned_alloc(DRTM_SIZE_4K, mem_desc_table_size));
     if (!mem_desc_table) {
-      val_print(ACS_PRINT_ERR, "\n    Failed to allocate memory for Memory Descriptor Table", 0);
+      val_print(ERROR, "\n    Failed to allocate memory for Memory Descriptor Table");
       return ACS_STATUS_FAIL;
     }
 
@@ -358,7 +358,7 @@ int64_t val_drtm_init_drtm_params(DRTM_PARAMETERS *drtm_params)
     uint64_t mem_prot_table_size = 0;
 
     if (!drtm_params) {
-        val_print(ACS_PRINT_ERR, "\n    Invalid DRTM Params pointer", 0);
+        val_print(ERROR, "\n    Invalid DRTM Params pointer");
         return ACS_STATUS_FAIL;
     }
 
@@ -371,7 +371,7 @@ int64_t val_drtm_init_drtm_params(DRTM_PARAMETERS *drtm_params)
     /* Get Memory Protection Type */
     if (g_drtm_features.dma_prot_features.status > DRTM_ACS_SUCCESS) {
       mem_prot_type = VAL_EXTRACT_BITS(g_drtm_features.dma_prot_features.value, 0, 7);
-      val_print(ACS_PRINT_DEBUG, "\n       Protection Type from Features : %x", mem_prot_type);
+      val_print(DEBUG, "\n       Protection Type from Features : %x", mem_prot_type);
 
       if (mem_prot_type == DRTM_DMA_FEATURES_DMA_PROTECTION_ALL)
           launch_feat_mem_prot = DRTM_LAUNCH_FEAT_MEM_PROT_ALL_SUPP <<
@@ -380,7 +380,7 @@ int64_t val_drtm_init_drtm_params(DRTM_PARAMETERS *drtm_params)
           launch_feat_mem_prot = DRTM_LAUNCH_FEAT_MEM_PROT_REGION_SUPP <<
                      DRTM_LAUNCH_FEATURES_SHIFT_MEM_PROTECTION;
 
-      val_print(ACS_PRINT_DEBUG, "\n       Setting DRTM Params Protection Type : %x",
+      val_print(DEBUG, "\n       Setting DRTM Params Protection Type : %x",
                                 launch_feat_mem_prot);
     }
 
@@ -399,14 +399,14 @@ int64_t val_drtm_init_drtm_params(DRTM_PARAMETERS *drtm_params)
 
     dlme_base_addr = (uint64_t)val_aligned_alloc(DRTM_SIZE_4K, dlme_region_size);
     if (!dlme_base_addr) {
-        val_print(ACS_PRINT_ERR, "\n    Failed to allocate memory for DLME region", 0);
+        val_print(ERROR, "\n    Failed to allocate memory for DLME region");
         return ACS_STATUS_FAIL;
     }
 
     status = val_memory_set_wb_executable((void *)(dlme_base_addr + free_space_1_size),
                                           dlme_image_size);
     if (status) {
-        val_print(ACS_PRINT_ERR, "\n    Failed to Set executable memory for DLME Image", 0);
+        val_print(ERROR, "\n    Failed to Set executable memory for DLME Image");
         return ACS_STATUS_FAIL;
     }
 
@@ -416,7 +416,7 @@ int64_t val_drtm_init_drtm_params(DRTM_PARAMETERS *drtm_params)
     if (mem_prot_type == DRTM_DMA_FEATURES_DMA_PROTECTION_REGION) {
       status = create_mem_prot_table(&mem_prot_table_address, &mem_prot_table_size);
       if (status) {
-        val_print(ACS_PRINT_ERR, "\n    Could Not Fill Memory Region Descriptor Table", 0);
+        val_print(ERROR, "\n    Could Not Fill Memory Region Descriptor Table");
         return ACS_STATUS_FAIL;
       }
     }
@@ -485,16 +485,16 @@ int64_t val_drtm_check_dl_result(uint64_t dlme_base_addr, uint64_t dlme_data_off
     /* in the dlme x1 should have dlme_data_offset */
     /* If both condition are met then PASS */
     if (g_drtm_acs_dl_result->x0 != dlme_base_addr) {
-        val_print(ACS_PRINT_ERR, "\n    Invalid x0 after dynamic launch", 0);
-        val_print(ACS_PRINT_ERR, "\n    Expected 0x%lx,", dlme_base_addr);
-        val_print(ACS_PRINT_ERR, " got 0x%lx", g_drtm_acs_dl_result->x0);
+        val_print(ERROR, "\n    Invalid x0 after dynamic launch");
+        val_print(ERROR, "\n    Expected 0x%lx,", dlme_base_addr);
+        val_print(ERROR, " got 0x%lx", g_drtm_acs_dl_result->x0);
         status = ACS_STATUS_FAIL;
     }
 
     if (g_drtm_acs_dl_result->x1 != dlme_data_offset) {
-        val_print(ACS_PRINT_ERR, "\n    Invalid x1 after dynamic launch", 0);
-        val_print(ACS_PRINT_ERR, "\n    Expected 0x%lx,", dlme_data_offset);
-        val_print(ACS_PRINT_ERR, " got 0x%lx", g_drtm_acs_dl_result->x1);
+        val_print(ERROR, "\n    Invalid x1 after dynamic launch");
+        val_print(ERROR, "\n    Expected 0x%lx,", dlme_data_offset);
+        val_print(ERROR, " got 0x%lx", g_drtm_acs_dl_result->x1);
         status = ACS_STATUS_FAIL;
     }
     return status;

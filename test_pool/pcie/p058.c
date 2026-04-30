@@ -20,8 +20,6 @@
 #include "val_interface.h"
 #include "acs_pcie.h"
 
-extern bool g_pcie_skip_dp_nic_ms;
-
 static const
 test_config_t test_entries[] = {
     { ACS_PCIE_TEST_NUM_BASE + 58, "Check MSE, CapPtr & BIST: RCiEP, RCEC ", "RE_REG_1"},
@@ -49,8 +47,8 @@ esr(uint64_t interrupt_type, void *context)
   /* Update the ELR to return to test specified address */
   val_pe_update_elr(context, (uint64_t)branch_to_test);
 
-  val_print(ACS_PRINT_DEBUG, "\n       Received exception of type: %d", interrupt_type);
-  val_set_status(pe_index, RESULT_PASS(test_num, 01));
+  val_print(DEBUG, "\n       Received exception of type: %d", interrupt_type);
+  val_set_status(pe_index, RESULT_PASS);
 }
 
 
@@ -90,12 +88,12 @@ get_dsf_bdf(uint32_t rp_bdf, uint32_t *target_bdf)
 
       if ((dev_seg == rp_seg) && (dev_bus >= rp_sec_bus) && (dev_bus <= rp_sub_bus)) {
           val_pcie_read_cfg(dev_bdf, TYPE01_RIDR, &reg_value);
-          val_print(ACS_PRINT_DEBUG, "\n       Downstream class code is 0x%x", reg_value);
+          val_print(DEBUG, "\n       Downstream class code is 0x%x", reg_value);
           base_cc = reg_value >> TYPE01_BCC_SHIFT;
-          if (g_pcie_skip_dp_nic_ms &&
+          if (acs_policy_get_pcie_skip_dp_nic_ms() &&
               ((base_cc == UNCLAS_CC) || (base_cc == CNTRL_CC)
               || (base_cc == DP_CNTRL_CC) || (base_cc == MAS_CC))) {
-              val_print(ACS_PRINT_DEBUG, "\n       Skipping downstream BDF 0x%x", dev_bdf);
+              val_print(DEBUG, "\n       Skipping downstream BDF 0x%x", dev_bdf);
               continue;
           }
           *target_bdf = dev_bdf;
@@ -136,8 +134,8 @@ payload(void *arg)
   status |= val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
   if (status)
   {
-      val_print(ACS_PRINT_ERR, "\n       Failed in installing the exception handler", 0);
-      val_set_status(pe_index, RESULT_FAIL(test_num, 01));
+      val_print(ERROR, "\n       Failed in installing the exception handler");
+      val_set_status(pe_index, RESULT_FAIL(01));
       return;
   }
 
@@ -150,7 +148,7 @@ payload(void *arg)
   while (tbl_index < bdf_tbl_ptr->num_entries)
   {
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
-      val_print(ACS_PRINT_DEBUG, "\n       tbl_index %x", tbl_index - 1);
+      val_print(DEBUG, "\n       tbl_index %x", tbl_index - 1);
 
       dp_type = val_pcie_device_port_type(bdf);
 
@@ -158,7 +156,7 @@ payload(void *arg)
       if ((dp_type != test_data->dev_type1) && (dp_type != test_data->dev_type2))
           continue;
 
-      val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
+      val_print(DEBUG, "\n       BDF - 0x%x", bdf);
 
       /* Get BIST register value */
       reg_value = val_pcie_get_bist(bdf);
@@ -168,8 +166,8 @@ payload(void *arg)
       if (((reg_value & BIST_BC_MASK) == 0x00) &&
          (((reg_value & BIST_CC_MASK) != 0x00) || ((reg_value & BIST_SB_MASK) != 0x00)))
       {
-          val_print(ACS_PRINT_ERR, "\n       BDF - 0x%x", bdf);
-          val_print(ACS_PRINT_ERR, " BIST Reg Value : %d", reg_value);
+          val_print(ERROR, "\n       BDF - 0x%x", bdf);
+          val_print(ERROR, " BIST Reg Value : %d", reg_value);
           test_fails++;
       }
 
@@ -179,8 +177,8 @@ payload(void *arg)
       /* Check Capabilities Pointer is not NULL and is between 40h and FCh */
       if (!((reg_value != 0x00) && ((reg_value >= 0x40) && (reg_value <= 0xFC))))
       {
-          val_print(ACS_PRINT_ERR, "\n       BDF 0x%x", bdf);
-          val_print(ACS_PRINT_ERR, " Cap Ptr Value: 0x%x", reg_value);
+          val_print(ERROR, "\n       BDF 0x%x", bdf);
+          val_print(ERROR, " Cap Ptr Value: 0x%x", reg_value);
           test_fails++;
       }
 
@@ -198,12 +196,12 @@ payload(void *arg)
           val_pcie_get_mmio_bar(dsf_bdf, &bar_base);
       } else {
           val_pcie_read_cfg(bdf, TYPE01_RIDR, &reg_value);
-          val_print(ACS_PRINT_DEBUG, "\n       Class code is 0x%x", reg_value);
+          val_print(DEBUG, "\n       Class code is 0x%x", reg_value);
           base_cc = reg_value >> TYPE01_BCC_SHIFT;
-          if (g_pcie_skip_dp_nic_ms &&
+          if (acs_policy_get_pcie_skip_dp_nic_ms() &&
               ((base_cc == UNCLAS_CC) || (base_cc == CNTRL_CC)
               || (base_cc == DP_CNTRL_CC) || (base_cc == MAS_CC))) {
-              val_print(ACS_PRINT_DEBUG, "\n       Skipping for BDF 0x%x", bdf);
+              val_print(DEBUG, "\n       Skipping for BDF 0x%x", bdf);
               continue;
           }
 
@@ -211,7 +209,7 @@ payload(void *arg)
       }
 
       /* Skip this function if it doesn't have mmio BAR */
-      val_print(ACS_PRINT_DEBUG, "       Bar Base %x", bar_base);
+      val_print(DEBUG, "       Bar Base %x", bar_base);
       if (!bar_base)
          continue;
 
@@ -233,7 +231,7 @@ payload(void *arg)
       val_pcie_disable_msa(bdf);
 
       /* Set test status as FAIL, update to PASS in exception handler */
-      val_set_status(pe_index, RESULT_FAIL(test_num, 02));
+      val_set_status(pe_index, RESULT_FAIL(02));
 
       /* If test runs for atleast an endpoint */
       test_skip = 0;
@@ -254,11 +252,11 @@ exception_return:
        *   - All 1's response received
        *   - Abort is not received.
        */
-      val_print(ACS_PRINT_DEBUG, "       bar_data %x ", bar_data);
+      val_print(DEBUG, "       bar_data %x ", bar_data);
       if (!(IS_TEST_PASS(val_get_status(pe_index)) || (bar_data == PCIE_UNKNOWN_RESPONSE)
             || (val_pcie_is_urd(bdf))))
       {
-          val_print(ACS_PRINT_ERR, "\n       BDF %x MSE functionality failure", bdf);
+          val_print(ERROR, "\n       BDF %x MSE functionality failure", bdf);
           test_fails++;
       }
 
@@ -270,14 +268,14 @@ exception_return:
   }
 
   if (test_skip == 1) {
-      val_print(ACS_PRINT_DEBUG,
-        "\n       Found no target device type with MMIO BAR. Skipping test.", 0);
-      val_set_status(pe_index, RESULT_SKIP(test_num, 01));
+      val_print(DEBUG,
+        "\n       Found no target device type with MMIO BAR. Skipping test.");
+      val_set_status(pe_index, RESULT_SKIP(01));
   }
   else if (test_fails)
-      val_set_status(pe_index, RESULT_FAIL(test_num, test_fails));
+      val_set_status(pe_index, RESULT_FAIL(test_fails));
   else
-      val_set_status(pe_index, RESULT_PASS(test_num, 01));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

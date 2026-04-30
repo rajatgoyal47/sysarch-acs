@@ -138,7 +138,7 @@ check_error_overwrite(void)
   result->first_call_x0 = (int64_t)val_pfdi_fw_check(NULL, NULL, NULL, NULL);
   val_data_cache_ops_by_va((addr_t)result, CLEAN_AND_INVALIDATE);
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 }
 
 /* Validate error injection overwrite behavior across all PEs */
@@ -153,8 +153,8 @@ payload_check_error_overwrite(void *arg)
   g_results = (pfdi_error_injection_results *)
       val_memory_calloc(num_pe * PFDI_FN_MAX_IDX, sizeof(pfdi_error_injection_results));
   if (g_results == NULL) {
-    val_print(ACS_PRINT_ERR, "\n       Allocation for results Failed", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+    val_print(ERROR, "\n       Allocation for results Failed");
+    val_set_status(index, RESULT_FAIL(1));
     return;
   }
 
@@ -170,8 +170,8 @@ payload_check_error_overwrite(void *arg)
       while ((--timeout) && (IS_RESULT_PENDING(val_get_status(i))));
 
       if (timeout == 0) {
-        val_print(ACS_PRINT_ERR, "\n       **Timed out** for PE index = %d", i);
-        val_set_status(i, RESULT_FAIL(TEST_NUM, 2));
+        val_print(ERROR, "\n       **Timed out** for PE index = %d", i);
+        val_set_status(i, RESULT_FAIL(2));
         goto free_results;
       }
     }
@@ -190,55 +190,55 @@ payload_check_error_overwrite(void *arg)
 
       /* Validate first FORCE_ERROR call status */
       if (result->first_error_x0 == PFDI_ACS_ERROR) {
-        val_print(ACS_PRINT_WARN, "\n       FORCE_ERROR first %a error; skipping checks",
+        val_print(WARN, "\n       FORCE_ERROR first %a error; skipping checks",
                   (uint64_t)pfdi_fn_names[j]);
-        val_print(ACS_PRINT_WARN, " on PE index %d", i);
+        val_print(WARN, " on PE index %d", i);
         test_skip++;
         continue;
       }
       if (result->first_error_x0 != PFDI_ACS_SUCCESS) {
-        val_print(ACS_PRINT_ERR, "\n       PFDI force_error %a ", (uint64_t)pfdi_fn_names[j]);
-        val_print(ACS_PRINT_ERR, "first injection failed err %ld ",
+        val_print(ERROR, "\n       PFDI force_error %a ", (uint64_t)pfdi_fn_names[j]);
+        val_print(ERROR, "first injection failed err %ld ",
                   (int64_t)result->first_error_x0);
-        val_print(ACS_PRINT_ERR, "on PE index %d", i);
+        val_print(ERROR, "on PE index %d", i);
         test_fail++;
       }
 
       /* Validate second FORCE_ERROR call status */
       if (result->second_error_x0 == PFDI_ACS_ERROR) {
-        val_print(ACS_PRINT_WARN, "\n       FORCE_ERROR second %a error; skipping checks",
+        val_print(WARN, "\n       FORCE_ERROR second %a error; skipping checks",
                   (uint64_t)pfdi_fn_names[j]);
-        val_print(ACS_PRINT_WARN, " on PE index %d", i);
+        val_print(WARN, " on PE index %d", i);
         test_skip++;
         continue;
       }
       if (result->second_error_x0 != PFDI_ACS_SUCCESS) {
-        val_print(ACS_PRINT_ERR, "\n       PFDI force_error %a ", (uint64_t)pfdi_fn_names[j]);
-        val_print(ACS_PRINT_ERR, "second injection failed err %ld ",
+        val_print(ERROR, "\n       PFDI force_error %a ", (uint64_t)pfdi_fn_names[j]);
+        val_print(ERROR, "second injection failed err %ld ",
                   (int64_t)result->second_error_x0);
-        val_print(ACS_PRINT_ERR, "on PE index %d", i);
+        val_print(ERROR, "on PE index %d", i);
         test_fail++;
       }
 
       /* Validate first call returns second injected error (overwrite behavior) */
       if (result->first_call_x0 != PFDI_ACS_INVALID_PARAMETERS) {
-        val_print(ACS_PRINT_ERR, "\n       PFDI return %a ", (uint64_t)pfdi_fn_names[j]);
-        val_print(ACS_PRINT_ERR, "overwrite check failed err %ld ",
+        val_print(ERROR, "\n       PFDI return %a ", (uint64_t)pfdi_fn_names[j]);
+        val_print(ERROR, "overwrite check failed err %ld ",
                   (int64_t)result->first_call_x0);
-        val_print(ACS_PRINT_ERR, "expected %ld ", (int64_t)PFDI_ACS_INVALID_PARAMETERS);
-        val_print(ACS_PRINT_ERR, "on PE index %d", i);
+        val_print(ERROR, "expected %ld ", (int64_t)PFDI_ACS_INVALID_PARAMETERS);
+        val_print(ERROR, "on PE index %d", i);
         if (result->first_call_x0 == PFDI_ACS_NOT_SUPPORTED)
-          val_print(ACS_PRINT_ERR, " (second error did not overwrite first)", 0);
+          val_print(ERROR, " (second error did not overwrite first)");
         test_fail++;
       }
     }
 
     if (test_fail)
-      val_set_status(i, RESULT_FAIL(TEST_NUM, 3));
+      val_set_status(i, RESULT_FAIL(3));
     else if (test_skip)
-      val_set_status(i, RESULT_SKIP(TEST_NUM, 1));
+      val_set_status(i, RESULT_SKIP(1));
     else
-      val_set_status(i, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(i, RESULT_PASS);
   }
 
 free_results:

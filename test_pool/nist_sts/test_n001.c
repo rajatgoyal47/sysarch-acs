@@ -68,7 +68,7 @@ check_prerequisite_nist(void)
       snprintf(file_name[i], 20, "tmp_%d.txt", i);
       fp[i] = fopen(file_name[i], "wb");
       if (fp[i] == NULL) {
-          val_print(ACS_PRINT_ERR, "\nMax # of opened files has been reached. "
+          val_print(ERROR, "\nMax # of opened files has been reached. "
                                    "NIST prerequistite failed: %d", i);
           status = ACS_STATUS_FAIL;
           break;
@@ -82,7 +82,7 @@ check_prerequisite_nist(void)
   }
 
   remove(result_file);
-  val_print(ACS_PRINT_INFO, "\nAll NIST Prerequistite were met", 0);
+  val_print(TRACE, "\nAll NIST Prerequistite were met");
   return status;
 }
 
@@ -99,7 +99,7 @@ print_nist_result(void)
   fptr = fopen(filename, "r");
   if (fptr == NULL)
   {
-      val_print(ACS_PRINT_ERR, "Cannot open file\n", 0);
+      val_print(ERROR, "Cannot open file\n");
       return ACS_STATUS_FAIL;
   }
 
@@ -115,7 +115,7 @@ print_nist_result(void)
 
       /* Print line read on cosole*/
       //ToDo: Print using val_print
-      //val_print(ACS_PRINT_TEST, "%s\n", buffer);
+      //val_print(INFO, "%s\n", buffer);
       printf("%s\n", buffer);
   }
 
@@ -136,7 +136,7 @@ create_random_file(void)
   fp = fopen(str, "wb");
   if (fp == NULL)
   {
-      val_print(ACS_PRINT_ERR, "\n       Unable to create file", 0);
+      val_print(ERROR, "\n       Unable to create file");
       return ACS_STATUS_FAIL;
   }
 
@@ -145,13 +145,13 @@ create_random_file(void)
       /* Get a 32-bit random number */
       status = val_nist_generate_rng(&buffer);
       if (status == NOT_IMPLEMENTED) {
-          val_print(ACS_PRINT_ERR, "\n       PAL API pal_nist_generate_rng is unimplemented", 0);
-          val_print(ACS_PRINT_ERR, "\n       Implement the PAL API for the test to run", 0);
+          val_print(ERROR, "\n       PAL API pal_nist_generate_rng is unimplemented");
+          val_print(ERROR, "\n       Implement the PAL API for the test to run");
           return ACS_STATUS_SKIP;
       }
 
       if (status != ACS_STATUS_PASS) {
-          val_print(ACS_PRINT_ERR, "\n       Random number generation failed", 0);
+          val_print(ERROR, "\n       Random number generation failed");
           fclose(fp);
           return ACS_STATUS_FAIL;
       }
@@ -169,7 +169,7 @@ create_random_file(void)
   }
 
   fclose(fp);
-  val_print(ACS_PRINT_INFO, "\nA random file with sequence of ASCII 0's and 1's created", 0);
+  val_print(TRACE, "\nA random file with sequence of ASCII 0's and 1's created");
   return ACS_STATUS_PASS;
 }
 static
@@ -187,13 +187,13 @@ payload()
   if (status != ACS_STATUS_PASS) {
       /* Omitting tests 8, 9 and 13 */
       test_select = MIN_NIST_TEST;
-      val_print(ACS_PRINT_INFO, "\nSkipping test 8, 9 and 13 of NIST test suite", 0);
+      val_print(TRACE, "\nSkipping test 8, 9 and 13 of NIST test suite");
   }
 
   /* Generate a Random file with binary ASCII values */
   status = create_random_file();
   if (status != ACS_STATUS_PASS) {
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+      val_set_status(index, RESULT_SKIP(02));
       return;
   }
 
@@ -232,12 +232,12 @@ payload()
   dirname = "experiments/AlgorithmTesting/Universal";
   status |= mkdir(dirname, 0777);
   if (status != ACS_STATUS_PASS) {
-      val_print(ACS_PRINT_ERR, "\n       Directory not created", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 03));
+      val_print(ERROR, "\n       Directory not created");
+      val_set_status(index, RESULT_SKIP(03));
       return;
   }
   else
-      val_print(ACS_PRINT_INFO, "\n       Directory created", 0);
+      val_print(TRACE, "\n       Directory created");
 
   if (test_select == MIN_NIST_TEST) {
       /* Run the NIST test suite 1 and 2 as the prerequisite conditions
@@ -247,9 +247,9 @@ payload()
           test_select = test_list[i];
           status = main(argc, argv);    // NIST STS
           if (status == ACS_STATUS_NIST_PASS) {
-              val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+              val_set_status(index, RESULT_PASS);
           } else {
-              val_set_status(index, RESULT_SKIP(TEST_NUM, 04));
+              val_set_status(index, RESULT_SKIP(04));
               return;
           }
       }
@@ -260,9 +260,9 @@ payload()
        */
       status = main(argc, argv);    // NIST STS
       if (status == ACS_STATUS_NIST_PASS) {
-          val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+          val_set_status(index, RESULT_PASS);
       } else {
-          val_set_status(index, RESULT_SKIP(TEST_NUM, 05));
+          val_set_status(index, RESULT_SKIP(05));
           return;
       }
   }

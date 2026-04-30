@@ -37,9 +37,9 @@ static void payload(void)
      *   MTPMU = 0x1: Implement the ARMv8.6-MTPMU extension.
      */
     if ((VAL_EXTRACT_BITS(data, 48, 51) == 0xF) || (VAL_EXTRACT_BITS(data, 48, 51) == 0x1))
-        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+        val_set_status(index, RESULT_PASS);
     else
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+        val_set_status(index, RESULT_FAIL(01));
 
     return;
 }

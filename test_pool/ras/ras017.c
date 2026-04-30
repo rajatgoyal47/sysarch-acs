@@ -41,21 +41,21 @@ payload(void)
 
     /* Check that the PE implements RAS System Architecture v2 */
     ras_field = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 28, 31);
-    val_print(ACS_PRINT_DEBUG, "\n       ID_AA64PFR0_EL1.RAS : %x", ras_field);
+    val_print(DEBUG, "\n       ID_AA64PFR0_EL1.RAS : %x", ras_field);
 
     if (ras_field < RAS_VERSION_2) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
                   "\n       RASv2 not implemented (ID_AA64PFR0_EL1.RAS = 0x%x).",
                   ras_field);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+        val_set_status(index, RESULT_FAIL(1));
         return;
     }
 
     /* Get number of RAS nodes */
     status = val_ras_get_info(RAS_INFO_NUM_NODES, 0, &num_nodes);
     if (status || (num_nodes == 0)) {
-        val_print(ACS_PRINT_ERR, "\n       RAS Nodes not found. ", 0);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+        val_print(ERROR, "\n       RAS Nodes not found. ");
+        val_set_status(index, RESULT_FAIL(2));
         return;
     }
 
@@ -64,7 +64,7 @@ payload(void)
         /* Get Node Type */
         status = val_ras_get_info(RAS_INFO_NODE_TYPE, node_index, &value);
         if (status) {
-            val_print(ACS_PRINT_DEBUG, "\n       Node Type not found index %d", node_index);
+            val_print(DEBUG, "\n       Node Type not found index %d", node_index);
             fail_cnt++;
             break;
         }
@@ -76,7 +76,7 @@ payload(void)
         if (value == NODE_TYPE_PE) {
             status = val_ras_get_info(RAS_INFO_PE_RES_TYPE, node_index, &value);
             if (status) {
-                val_print(ACS_PRINT_DEBUG, "\n       PE Resource type not found index %d",
+                val_print(DEBUG, "\n       PE Resource type not found index %d",
                             node_index);
                 fail_cnt++;
                 break;
@@ -88,7 +88,7 @@ payload(void)
         /* Get first record index for this node */
         status = val_ras_get_info(RAS_INFO_START_INDEX, node_index, &rec_index);
         if (status) {
-            val_print(ACS_PRINT_DEBUG, "\n       Could not get Start Index for index %d",
+            val_print(DEBUG, "\n       Could not get Start Index for index %d",
                         node_index);
             fail_cnt++;
             continue;
@@ -97,7 +97,7 @@ payload(void)
         /* Read ERR<start_rec_index>FR */
         regval = val_ras_reg_read(node_index, RAS_ERR_FR, rec_index);
         if (regval == INVALID_RAS_REG_VAL) {
-            val_print(ACS_PRINT_ERR,
+            val_print(ERROR,
                       "\n       Couldn't read ERR<%d>FR register.", rec_index);
             fail_cnt++;
             continue;
@@ -107,7 +107,7 @@ payload(void)
         if ((regval & ERR_FR_CEC_MASK) != 0) {
             /* CED field [30] must be nonzero */
             if ((regval & ERR_FR_CED_MASK) == 0) {
-                val_print(ACS_PRINT_ERR,
+                val_print(ERROR,
                         "\n       Node %d: FEAT_RASSA_CED not implemented.",
                         node_index);
                 fail_cnt++;
@@ -120,7 +120,7 @@ payload(void)
         if (fi_field == 2 || fi_field == 3) {
             /* DFI field [27:26] must be nonzero */
             if ((regval & ERR_FR_DFI_MASK) == 0) {
-                val_print(ACS_PRINT_ERR,
+                val_print(ERROR,
                           "\n       Node %d: FEAT_RASSA_DFI not implemented (FR bits[27:26] == 0).",
                           node_index);
                 fail_cnt++;
@@ -129,9 +129,9 @@ payload(void)
     }
 
     if (fail_cnt)
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 3));
+        val_set_status(index, RESULT_FAIL(3));
     else
-        val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+        val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

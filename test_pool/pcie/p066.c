@@ -59,7 +59,7 @@ payload(void)
       /* Check entry is iRP endpoint */
       if (dp_type == iEP_RP)
       {
-          val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
+          val_print(DEBUG, "\n       BDF - 0x%x", bdf);
           iep_rp_found = 1;
 
           /* If rootport invovled in transaction forwarding, move to next */
@@ -80,9 +80,9 @@ payload(void)
           /* CTRS and CTDS bit is handwired to 0, if transaction forwarding not support */
           if ((ctrs_value != 0) || (ctds_value !=0))
           {
-              val_print(ACS_PRINT_ERR, "\n       CTRS and/or CTDS bits not hardwired to 0", 0);
-              val_print(ACS_PRINT_DEBUG, " ctrs %d", ctrs_value);
-              val_print(ACS_PRINT_DEBUG, " ctds %d", ctds_value);
+              val_print(ERROR, "\n       CTRS and/or CTDS bits not hardwired to 0");
+              val_print(DEBUG, " ctrs %d", ctrs_value);
+              val_print(DEBUG, " ctds %d", ctds_value);
               test_fails++;
           }
      }
@@ -90,17 +90,17 @@ payload(void)
 
   /* Skip the test if no iEP_RP found */
   if (iep_rp_found == 0) {
-      val_print(ACS_PRINT_DEBUG, "\n       No iEP_RP type device found. Skipping test", 0);
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+      val_print(DEBUG, "\n       No iEP_RP type device found. Skipping test");
+      val_set_status(pe_index, RESULT_SKIP(01));
       return;
   }
 
   if (test_skip == 1)
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_SKIP(01));
   else if (test_fails)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, test_fails));
+      val_set_status(pe_index, RESULT_FAIL(test_fails));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

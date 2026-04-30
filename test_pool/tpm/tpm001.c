@@ -36,21 +36,21 @@ payload()
   /* Check if TPM is present */
   tpm_is_present = val_tpm2_get_info(TPM2_INFO_IS_PRESENT);
   if (tpm_is_present == 0) {
-      val_print(ACS_PRINT_ERR, "\n       TPM not present", 0);
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+      val_print(ERROR, "\n       TPM not present");
+      val_set_status(pe_index, RESULT_FAIL(01));
       return;
   }
 
   /* Retrieve TPM version via family identifier (e.g., "2.0", "1.2") */
   tpm_family_version = val_tpm2_get_version();
   if (tpm_family_version != 2) {
-      val_print(ACS_PRINT_ERR, "\n       TPM version is not 2.0", 0);
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
+      val_print(ERROR, "\n       TPM version is not 2.0");
+      val_set_status(pe_index, RESULT_FAIL(02));
       return;
   }
 
   /* TPM is present and version is 2.0 */
-  val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+  val_set_status(pe_index, RESULT_PASS);
   return;
 }
 

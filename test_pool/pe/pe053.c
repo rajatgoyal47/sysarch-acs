@@ -30,9 +30,9 @@ static void payload(void)
     uint32_t data2 = val_pe_reg_read(ID_AA64ISAR2_EL1);
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       ID_AA64ISAR1_EL1.APA[7:4]    = %llx",
+    val_print_primary_pe(DEBUG, "\n       ID_AA64ISAR1_EL1.APA[7:4]    = %llx",
                          VAL_EXTRACT_BITS(data1, 4, 7), index);
-    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       ID_AA64ISAR2_EL1.APA3[15:12] = %llx",
+    val_print_primary_pe(DEBUG, "\n       ID_AA64ISAR2_EL1.APA3[15:12] = %llx",
                          VAL_EXTRACT_BITS(data2, 12, 15), index);
 
     /* Read ID_AA64ISAR1_EL1.APA[7:4] and ID_AA64ISAR2_EL1.APA3[15:12] == 0b0101 or 0b0110
@@ -40,9 +40,9 @@ static void payload(void)
      */
     if (((VAL_EXTRACT_BITS(data1, 4, 7) == 5) || (VAL_EXTRACT_BITS(data1, 4, 7) == 6)) ||
         ((VAL_EXTRACT_BITS(data2, 12, 15) == 5) || (VAL_EXTRACT_BITS(data2, 12, 15) == 6)))
-        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+        val_set_status(index, RESULT_PASS);
     else
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+        val_set_status(index, RESULT_FAIL(01));
 }
 
 uint32_t pe053_entry(uint32_t num_pe)

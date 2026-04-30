@@ -39,9 +39,9 @@ payload_check_el3_support()
   /* Check if PE implements EL3 AArch64 execution state, ID_AA64PFR0_EL1[15:12] should be non-zero
      value */
   if (feat_el3)
-	val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+	val_set_status(index, RESULT_PASS);
   else
-	val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+	val_set_status(index, RESULT_FAIL(1));
 
   return;
 }
@@ -65,10 +65,10 @@ payload_check_secure_state_support()
 
   /* Pass the test if Secure state is implemented via EL3 or SEL2 */
   if (feat_sel2 || feat_el3) {
-      val_set_status(index, RESULT_PASS(TEST_NUM1, 1));
+      val_set_status(index, RESULT_PASS);
       return;
   } else {
-      val_set_status(index, RESULT_FAIL(TEST_NUM1, 1));
+      val_set_status(index, RESULT_FAIL(1));
       return;
   }
 

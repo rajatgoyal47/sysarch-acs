@@ -52,14 +52,14 @@ payload (void)
   count = val_peripheral_get_info (NUM_ALL, 0);
 
   if (!count) {
-     val_set_status(index, RESULT_SKIP (TEST_NUM, 1));
+     val_set_status(index, RESULT_SKIP(1));
      return;
   }
 
   irq_map = val_aligned_alloc(MEM_ALIGN_4K, sizeof(PERIPHERAL_IRQ_MAP));
   if (!irq_map) {
-    val_print(ACS_PRINT_ERR, "\n       Memory allocation error", 0);
-    val_set_status(index, RESULT_FAIL (TEST_NUM, 1));
+    val_print(ERROR, "\n       Memory allocation error");
+    val_set_status(index, RESULT_FAIL(1));
     return;
   }
 
@@ -70,8 +70,8 @@ payload (void)
       dev_bdf = val_peripheral_get_info (ANY_BDF, count);
 
       if (dev_bdf == 0) {
-        val_print(ACS_PRINT_INFO,
-                  "\n       Skipping legacy IRQ check for peripheral without BDF", 0);
+        val_print(TRACE,
+                  "\n       Skipping legacy IRQ check for peripheral without BDF");
         continue;
       }
 
@@ -81,34 +81,34 @@ payload (void)
       case 0:
         break;
       case 1:
-        val_print(ACS_PRINT_WARN, "\n       Unable to access PCI bridge device", 0);
+        val_print(WARN, "\n       Unable to access PCI bridge device");
         break;
       case 2:
-        val_print(ACS_PRINT_WARN, "\n       Unable to fetch _PRT ACPI handle", 0);
+        val_print(WARN, "\n       Unable to fetch _PRT ACPI handle");
         /* Not a fatal error, just skip this device */
         status = 0;
         continue;
       case 3:
-        val_print(ACS_PRINT_WARN, "\n       Unable to access _PRT ACPI object", 0);
+        val_print(WARN, "\n       Unable to access _PRT ACPI object");
         /* Not a fatal error, just skip this device */
         status = 0;
         continue;
       case 4:
-        val_print(ACS_PRINT_WARN, "\n       Interrupt hard-wire error", 0);
+        val_print(WARN, "\n       Interrupt hard-wire error");
         /* Not a fatal error, just skip this device */
         status = 0;
         continue;
       case 5:
-        val_print(ACS_PRINT_ERR, "\n       Legacy interrupt out of range", 0);
+        val_print(ERROR, "\n       Legacy interrupt out of range");
         break;
       case 6:
-        val_print(ACS_PRINT_ERR, "\n       Maximum number of interrupts has been reached", 0);
+        val_print(ERROR, "\n       Maximum number of interrupts has been reached");
         break;
       default:
         if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED)
             warn_cnt++;
         else
-            val_print (ACS_PRINT_ERR, "\n       Unknown error", 0);
+            val_print (ERROR, "\n       Unknown error");
         break;
       }
 
@@ -125,14 +125,14 @@ payload (void)
                 if (irq_map->legacy_irq_map[current_irq_pin].irq_list[ccnt] ==
                     irq_map->legacy_irq_map[next_irq_pin].irq_list[ncnt]) {
                   status = 7;
-                  val_print(ACS_PRINT_ERR, "\n        BDF : %x", dev_bdf);
-                  val_print(ACS_PRINT_ERR, " Legacy interrupt %c",
+                  val_print(ERROR, "\n        BDF : %x", dev_bdf);
+                  val_print(ERROR, " Legacy interrupt %c",
                                              pin_name(current_irq_pin));
-                  val_print(ACS_PRINT_ERR, "(%d) routing", current_irq_pin);
+                  val_print(ERROR, "(%d) routing", current_irq_pin);
 
-                  val_print(ACS_PRINT_ERR, "\n        is same as the %c",
+                  val_print(ERROR, "\n        is same as the %c",
                                              pin_name(next_irq_pin));
-                  val_print(ACS_PRINT_ERR, "(%d) routing", next_irq_pin);
+                  val_print(ERROR, "(%d) routing", next_irq_pin);
                 }
               }
             }
@@ -149,13 +149,13 @@ payload (void)
   val_memory_free_aligned(irq_map);
 
   if (warn_cnt)
-    val_set_status(index, RESULT_WARN (TEST_NUM, 1));
+    val_set_status(index, RESULT_WARNING (1));
   else if (test_skip)
-    val_set_status(index, RESULT_SKIP (TEST_NUM, 2));
+    val_set_status(index, RESULT_SKIP (2));
   else if (!status)
-    val_set_status(index, RESULT_PASS (TEST_NUM, 1));
+    val_set_status(index, RESULT_PASS);
   else
-    val_set_status(index, RESULT_FAIL (TEST_NUM, status));
+    val_set_status(index, RESULT_FAIL (status));
 
   return;
 }

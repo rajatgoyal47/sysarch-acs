@@ -38,7 +38,7 @@ esr(uint64_t interrupt_type, void *context)
   /* Update the ELR to return to test specified address */
   val_pe_update_elr(context, (uint64_t)branch_to_test);
 
-  val_print(ACS_PRINT_DEBUG, "\n       Received exception of type: %d", interrupt_type);
+  val_print(DEBUG, "\n       Received exception of type: %d", interrupt_type);
   exception = 1;
 }
 
@@ -69,8 +69,8 @@ payload()
   status |= val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
   if (status)
   {
-      val_print(ACS_PRINT_ERR, "\n       Failed in installing the exception handler", 0);
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+      val_print(ERROR, "\n       Failed in installing the exception handler");
+      val_set_status(pe_index, RESULT_FAIL(01));
       return;
   }
 
@@ -83,7 +83,7 @@ payload()
           continue;
 
       e_bdf = val_exerciser_get_bdf(instance);
-      val_print(ACS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
+      val_print(DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
 
       val_pcie_enable_eru(e_bdf);
 
@@ -94,17 +94,17 @@ payload()
 
       status = val_exerciser_set_bar_response(instance);
       if (status == NOT_IMPLEMENTED) {
-          val_print(ACS_PRINT_DEBUG, "\n       System doesn't trigger an external abort", 0);
-          val_print(ACS_PRINT_DEBUG, "\n       Skipping for bdf %x", e_bdf);
-          val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+          val_print(DEBUG, "\n       System doesn't trigger an external abort");
+          val_print(DEBUG, "\n       Skipping for bdf %x", e_bdf);
+          val_set_status(pe_index, RESULT_SKIP(01));
           return;
       }
 
       ras_node = val_exerciser_get_pcie_ras_compliant_err_node(e_bdf, erp_bdf);
       if (ras_node == NOT_IMPLEMENTED) {
-          val_print(ACS_PRINT_DEBUG, "\n       No RAS compliant node to record PCIe Error", 0);
-          val_print(ACS_PRINT_DEBUG, "\n       Skippping RAS check for BDF  - 0x%x", e_bdf);
-          val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 02));
+          val_print(DEBUG, "\n       No RAS compliant node to record PCIe Error");
+          val_print(DEBUG, "\n       Skippping RAS check for BDF  - 0x%x", e_bdf);
+          val_set_status(pe_index, RESULT_SKIP(02));
           return;
       }
 
@@ -115,10 +115,10 @@ payload()
       /* Get BAR 0 details for this instance */
       status = val_exerciser_get_data(EXERCISER_DATA_BAR0_SPACE, &e_data, instance);
       if (status == NOT_IMPLEMENTED) {
-          val_print(ACS_PRINT_ERR, "\n       pal_exerciser_get_data() for MMIO not implemented", 0);
+          val_print(ERROR, "\n       pal_exerciser_get_data() for MMIO not implemented");
           continue;
       } else if (status) {
-          val_print(ACS_PRINT_ERR, "\n       Exerciser %d data read error", instance);
+          val_print(ERROR, "\n       Exerciser %d data read error", instance);
           continue;
       }
 
@@ -127,7 +127,7 @@ payload()
       val_pcie_disable_msa(e_bdf);
 
       /* Set test status as FAIL, update to PASS in exception handler */
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
+      val_set_status(pe_index, RESULT_FAIL(02));
 
       /* Test runs for atleast one endpoint */
       test_skip = 0;
@@ -140,16 +140,16 @@ exception_return:
       /*
        * Check if abort isn't received.
        */
-      val_print(ACS_PRINT_DEBUG, "       bar_data %x ", bar_data);
+      val_print(DEBUG, "       bar_data %x ", bar_data);
       if (!(exception)) {
-          val_print(ACS_PRINT_ERR, "\n       External Abort isnt recieved, BDF %x", e_bdf);
-          val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 03));
+          val_print(ERROR, "\n       External Abort isnt recieved, BDF %x", e_bdf);
+          val_set_status(pe_index, RESULT_FAIL(03));
       }
 
       /* Get the RAS Error Status register value of the RAS node implemented*/
       data = val_exerciser_get_ras_status(ras_node, e_bdf, erp_bdf);
       if (data == NOT_IMPLEMENTED) {
-          val_print(ACS_PRINT_ERR, "\n       Couldn't read ERR STATUS reg for node %x", ras_node);
+          val_print(ERROR, "\n       Couldn't read ERR STATUS reg for node %x", ras_node);
           fail_cnt++;
 
           /* Enable memory space access to decode BAR addresses */
@@ -159,31 +159,31 @@ exception_return:
 
       /* SERR code to be 0x19 for PCIe error */
       if ((data & SERR_MASK) != 0x19) {
-          val_print(ACS_PRINT_ERR, "\n       SERR bits did not record PCIe error, bdf %x", e_bdf);
+          val_print(ERROR, "\n       SERR bits did not record PCIe error, bdf %x", e_bdf);
           fail_cnt++;
       }
 
       /* PN bit to be 0 as Poisoned value is not detected */
       if ((data >> PN_SHIFT) & PN_MASK) {
-          val_print(ACS_PRINT_ERR, "\n       Poisoned(PN) bit set, bdf %x", e_bdf);
+          val_print(ERROR, "\n       Poisoned(PN) bit set, bdf %x", e_bdf);
           fail_cnt++;
       }
 
       /* UE and ER bit to be set indicating Error is undeferred and reported */
       if (((data >> UE_ER_SHIFT) & UE_ER_MASK) != 0x3) {
-          val_print(ACS_PRINT_ERR, "\n       ER and UE bit not set, bdf %x", e_bdf);
+          val_print(ERROR, "\n       ER and UE bit not set, bdf %x", e_bdf);
           fail_cnt++;
       }
 
       /* UET to be 3 for PCIe error Uncorrected error, Signaled or Recoverable error*/
       if (((data >> UET_SHIFT) & UET_MASK) != 0x3) {
-          val_print(ACS_PRINT_ERR, "\n       UET not received, bdf %x", e_bdf);
+          val_print(ERROR, "\n       UET not received, bdf %x", e_bdf);
           fail_cnt++;
       }
 
       /* DE bit to be 0 indicating that no errors was deferred*/
       if ((data >> DE_SHIFT) & DE_MASK) {
-          val_print(ACS_PRINT_ERR, "\n       DE bit must not be set, bdf %x", e_bdf);
+          val_print(ERROR, "\n       DE bit must not be set, bdf %x", e_bdf);
           fail_cnt++;
       }
 
@@ -192,11 +192,11 @@ exception_return:
   }
 
   if (test_skip)
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 03));
+      val_set_status(pe_index, RESULT_SKIP(03));
   else if (fail_cnt)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 04));
+      val_set_status(pe_index, RESULT_FAIL(04));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS);
 
   return;
 }
@@ -212,7 +212,7 @@ e029_entry(uint32_t num_pe)
   status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
   if (status != ACS_STATUS_SKIP) {
       if (val_exerciser_test_init() != ACS_STATUS_PASS)
-          return TEST_SKIP_VAL;
+          return TEST_SKIP;
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
   }
 

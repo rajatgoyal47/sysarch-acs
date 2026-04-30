@@ -46,7 +46,7 @@ payload(void)
   while (tbl_index < bdf_tbl_ptr->num_entries)
   {
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
-      val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
+      val_print(DEBUG, "\n       BDF - 0x%x", bdf);
       dp_type = val_pcie_device_port_type(bdf);
 
       /* Check entry is RP/EP/DP/UP. Else move to next BDF. */
@@ -70,18 +70,18 @@ payload(void)
       if (((reg_value & BIST_BC_MASK) == 0x00) &&
          (((reg_value & BIST_CC_MASK) != 0x00) || ((reg_value & BIST_SB_MASK) != 0x00)))
       {
-          val_print(ACS_PRINT_ERR, "\n       BDF 0x%x", bdf);
-          val_print(ACS_PRINT_ERR, " BIST Reg Value : %d", reg_value);
+          val_print(ERROR, "\n       BDF 0x%x", bdf);
+          val_print(ERROR, " BIST Reg Value : %d", reg_value);
           test_fails++;
       }
   }
 
   if (test_skip == 1)
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+      val_set_status(pe_index, RESULT_SKIP(1));
   else if (test_fails)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, test_fails));
+      val_set_status(pe_index, RESULT_FAIL(test_fails));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

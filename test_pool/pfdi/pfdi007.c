@@ -49,7 +49,7 @@ pfdi_test_run(void)
   if (test_parts < PFDI_ACS_SUCCESS) {
     pfdi_range->x0 = test_parts;
     val_pfdi_invalidate_ret_params(pfdi_range);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 6));
+    val_set_status(index, RESULT_FAIL(6));
     return;
   }
 
@@ -59,7 +59,7 @@ pfdi_test_run(void)
                     &pfdi_range->x1, &pfdi_range->x2, &pfdi_range->x3, &pfdi_range->x4);
   val_pfdi_invalidate_ret_params(pfdi_range);
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 }
 
 static void payload_run(void *arg)
@@ -74,16 +74,16 @@ static void payload_run(void *arg)
   g_pfdi_range_status =
       (PFDI_RET_PARAMS *) val_memory_calloc(num_pe, sizeof(PFDI_RET_PARAMS));
   if (g_pfdi_range_status == NULL) {
-    val_print(ACS_PRINT_ERR, "\n       Allocation for g_pfdi_range_status Failed", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+    val_print(ERROR, "\n       Allocation for g_pfdi_range_status Failed");
+    val_set_status(index, RESULT_FAIL(1));
     return;
   }
 
   g_pfdi_all_parts_status =
       (PFDI_RET_PARAMS *) val_memory_calloc(num_pe, sizeof(PFDI_RET_PARAMS));
   if (g_pfdi_all_parts_status == NULL) {
-    val_print(ACS_PRINT_ERR, "\n       Allocation for g_pfdi_all_parts_status Failed", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+    val_print(ERROR, "\n       Allocation for g_pfdi_all_parts_status Failed");
+    val_set_status(index, RESULT_FAIL(2));
     goto free_pfdi_details_range;
   }
 
@@ -102,8 +102,8 @@ static void payload_run(void *arg)
 
       while ((--timeout) && (IS_RESULT_PENDING(val_get_status(i))));
       if (timeout == 0) {
-        val_print(ACS_PRINT_ERR, "\n       **Timed out** for PE index = %d", i);
-        val_set_status(i, RESULT_FAIL(TEST_NUM, 3));
+        val_print(ERROR, "\n       **Timed out** for PE index = %d", i);
+        val_set_status(i, RESULT_FAIL(3));
         goto free_pfdi_details_both;
       }
     }
@@ -120,50 +120,50 @@ static void payload_run(void *arg)
     /* All-parts validation */
     if (pfdi_all_parts_buffer->x0 == PFDI_ACS_SUCCESS) {
       if (pfdi_all_parts_buffer->x1 != 0) {
-        val_print(ACS_PRINT_ERR, "\n       X1 not zero for SUCCESS (all-parts): x1=0x%llx",
+        val_print(ERROR, "\n       X1 not zero for SUCCESS (all-parts): x1=0x%llx",
                   pfdi_all_parts_buffer->x1);
-        val_print(ACS_PRINT_ERR, " on PE %d", i);
+        val_print(ERROR, " on PE %d", i);
         test_fail++;
       }
 
     } else if (pfdi_all_parts_buffer->x0 == PFDI_ACS_FAULT_FOUND) {
       /* FAULT_FOUND: x1 contains the faulty test part index (zero is valid) */
       if (pfdi_all_parts_buffer->x1 == PFDI_ACS_UNKNOWN) {
-        val_print(ACS_PRINT_ERR, "\n       Fault in test part (all-parts) on PE %d ", i);
-        val_print(ACS_PRINT_ERR, "cannot be identified", 0);
+        val_print(ERROR, "\n       Fault in test part (all-parts) on PE %d ", i);
+        val_print(ERROR, "cannot be identified");
       } else {
-        val_print(ACS_PRINT_ERR, "\n       Test part %lld (all-parts) ", pfdi_all_parts_buffer->x1);
-        val_print(ACS_PRINT_ERR, "triggered the fault on PE %d", i);
+        val_print(ERROR, "\n       Test part %lld (all-parts) ", pfdi_all_parts_buffer->x1);
+        val_print(ERROR, "triggered the fault on PE %d", i);
       }
 
     } else if (pfdi_all_parts_buffer->x0 == PFDI_ACS_ERROR) {
       if (pfdi_all_parts_buffer->x1 != 0) {
-        val_print(ACS_PRINT_ERR, "\n       X1 not zero for ERROR (all-parts): x1=0x%llx",
+        val_print(ERROR, "\n       X1 not zero for ERROR (all-parts): x1=0x%llx",
                   pfdi_all_parts_buffer->x1);
-        val_print(ACS_PRINT_ERR, " on PE %d", i);
+        val_print(ERROR, " on PE %d", i);
         test_fail++;
       }
-      val_print(ACS_PRINT_ERR, "\n       All-parts execution failed on PE index %d", i);
+      val_print(ERROR, "\n       All-parts execution failed on PE index %d", i);
 
     } else {
-      val_print(ACS_PRINT_ERR, "\n       All-parts run returned unexpected x0 on PE index %d", i);
+      val_print(ERROR, "\n       All-parts run returned unexpected x0 on PE index %d", i);
       test_fail++;
     }
 
     /* Check X2-X4 are zero for all-parts execution */
     if (pfdi_all_parts_buffer->x2 || pfdi_all_parts_buffer->x3 ||
         pfdi_all_parts_buffer->x4) {
-      val_print(ACS_PRINT_ERR, "\n       X2-X4 not zero (all-parts):", 0);
-      val_print(ACS_PRINT_ERR, " x2=0x%llx", pfdi_all_parts_buffer->x2);
-      val_print(ACS_PRINT_ERR, " x3=0x%llx", pfdi_all_parts_buffer->x3);
-      val_print(ACS_PRINT_ERR, " x4=0x%llx", pfdi_all_parts_buffer->x4);
-      val_print(ACS_PRINT_ERR, " on PE %d", i);
+      val_print(ERROR, "\n       X2-X4 not zero (all-parts):");
+      val_print(ERROR, " x2=0x%llx", pfdi_all_parts_buffer->x2);
+      val_print(ERROR, " x3=0x%llx", pfdi_all_parts_buffer->x3);
+      val_print(ERROR, " x4=0x%llx", pfdi_all_parts_buffer->x4);
+      val_print(ERROR, " on PE %d", i);
       test_fail++;
     }
 
     /* Check if test part count acquisition failed on this PE */
     if (IS_TEST_FAIL(val_get_status(i))) {
-      val_print(ACS_PRINT_ERR, "\n       Failed to get Test Part count on PE %d ", i);
+      val_print(ERROR, "\n       Failed to get Test Part count on PE %d ", i);
       test_fail++;
       continue;
     }
@@ -171,51 +171,51 @@ static void payload_run(void *arg)
     /* Range validation */
     if (pfdi_range_buffer->x0 == PFDI_ACS_SUCCESS) {
       if (pfdi_range_buffer->x1 != 0) {
-        val_print(ACS_PRINT_ERR, "\n       X1 not zero for SUCCESS (range): x1=0x%llx",
+        val_print(ERROR, "\n       X1 not zero for SUCCESS (range): x1=0x%llx",
                   pfdi_range_buffer->x1);
-        val_print(ACS_PRINT_ERR, " on PE %d", i);
+        val_print(ERROR, " on PE %d", i);
         test_fail++;
       }
 
     } else if (pfdi_range_buffer->x0 == PFDI_ACS_FAULT_FOUND) {
       /* FAULT_FOUND: x1 contains the faulty test part index (zero is valid) */
       if (pfdi_range_buffer->x1 == PFDI_ACS_UNKNOWN) {
-        val_print(ACS_PRINT_ERR, "\n       Fault in test part (range) on PE %d ", i);
-        val_print(ACS_PRINT_ERR, "cannot be identified", 0);
+        val_print(ERROR, "\n       Fault in test part (range) on PE %d ", i);
+        val_print(ERROR, "cannot be identified");
       } else {
-        val_print(ACS_PRINT_ERR, "\n       Test part %lld (range) ", pfdi_range_buffer->x1);
-        val_print(ACS_PRINT_ERR, "triggered the fault on PE %d", i);
+        val_print(ERROR, "\n       Test part %lld (range) ", pfdi_range_buffer->x1);
+        val_print(ERROR, "triggered the fault on PE %d", i);
       }
 
     } else if (pfdi_range_buffer->x0 == PFDI_ACS_ERROR) {
       if (pfdi_range_buffer->x1 != 0) {
-        val_print(ACS_PRINT_ERR, "\n       X1 not zero for ERROR (range): x1=0x%llx",
+        val_print(ERROR, "\n       X1 not zero for ERROR (range): x1=0x%llx",
                   pfdi_range_buffer->x1);
-        val_print(ACS_PRINT_ERR, " on PE %d", i);
+        val_print(ERROR, " on PE %d", i);
         test_fail++;
       }
-      val_print(ACS_PRINT_ERR, "\n       Range execution failed to complete on PE %d", i);
+      val_print(ERROR, "\n       Range execution failed to complete on PE %d", i);
 
     } else {
-      val_print(ACS_PRINT_ERR, "\n       Range run returned unexpected x0 on PE %d", i);
+      val_print(ERROR, "\n       Range run returned unexpected x0 on PE %d", i);
       test_fail++;
     }
 
     /* Check X2-X4 are zero for range execution */
     if (pfdi_range_buffer->x2 || pfdi_range_buffer->x3 ||
         pfdi_range_buffer->x4) {
-      val_print(ACS_PRINT_ERR, "\n       X2-X4 not zero (range):", 0);
-      val_print(ACS_PRINT_ERR, " x2=0x%llx", pfdi_range_buffer->x2);
-      val_print(ACS_PRINT_ERR, " x3=0x%llx", pfdi_range_buffer->x3);
-      val_print(ACS_PRINT_ERR, " x4=0x%llx", pfdi_range_buffer->x4);
-      val_print(ACS_PRINT_ERR, " on PE %d", i);
+      val_print(ERROR, "\n       X2-X4 not zero (range):");
+      val_print(ERROR, " x2=0x%llx", pfdi_range_buffer->x2);
+      val_print(ERROR, " x3=0x%llx", pfdi_range_buffer->x3);
+      val_print(ERROR, " x4=0x%llx", pfdi_range_buffer->x4);
+      val_print(ERROR, " on PE %d", i);
       test_fail++;
     }
 
     if (test_fail)
-      val_set_status(i, RESULT_FAIL(TEST_NUM, 5));
+      val_set_status(i, RESULT_FAIL(5));
     else
-      val_set_status(i, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(i, RESULT_PASS);
   }
 
 free_pfdi_details_both:

@@ -48,14 +48,14 @@ static void payload(void)
 
         if (BITFIELD_READ(IDR_HAS_EXTD_ESR, idr_value) == 0) {
           /* Fail The Test */
-          val_print(ACS_PRINT_ERR, "\n       MPAMF_IDR.HAS_EXTD_ESR value is 0", 0);
-          val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+          val_print(ERROR, "\n       MPAMF_IDR.HAS_EXTD_ESR value is 0");
+          val_set_status(pe_index, RESULT_FAIL(01));
           return;
         }
       }
     }
 
-    val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+    val_set_status(pe_index, RESULT_PASS);
     return;
 }
 

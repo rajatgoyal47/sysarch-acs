@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2021,2023-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2021,2023-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,7 +43,7 @@ ArmGicSetItsConfigTableBase(
   Address = (uint64_t)val_aligned_alloc(SIZE_4KB, PAGES_TO_SIZE(Pages));
 
   if (!Address) {
-    val_print(ACS_PRINT_ERR,  "ITS : Could Not get Mem Config Table. Test may not pass.\n", 0);
+    val_print(ERROR,  "ITS : Could Not get Mem Config Table. Test may not pass.\n");
     return 1;
   }
 
@@ -89,7 +89,7 @@ ArmGicSetItsPendingTableBase(
   Address = (uint64_t)val_aligned_alloc(SIZE_64KB, PAGES_TO_SIZE(Pages));
 
   if (!Address) {
-    val_print(ACS_PRINT_ERR, "ITS : Could Not get Memory Pending Table. Test may not pass.\n", 0);
+    val_print(ERROR, "ITS : Could Not get Memory Pending Table. Test may not pass.\n");
     return 1;
   }
 

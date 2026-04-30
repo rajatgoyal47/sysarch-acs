@@ -36,17 +36,17 @@ payload(void)
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   gic_version = val_gic_get_info(GIC_INFO_VERSION);
-  val_print(ACS_PRINT_INFO, "\n       Received GIC version = %4d      ", gic_version);
+  val_print(TRACE, "\n       Received GIC version = %4d      ", gic_version);
 
   if (gic_version < 3) {
-      val_print(ACS_PRINT_ERR,
+      val_print(ERROR,
                 "\n       GIC version is %3x, expected GICv3 or higher version",
                 gic_version);
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
+      val_set_status(index, RESULT_FAIL(02));
       return;
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+  val_set_status(index, RESULT_PASS);
 
 }
 

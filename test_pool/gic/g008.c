@@ -35,9 +35,9 @@ payload()
     intid = val_pe_get_gmain_gsiv(index);
     /*Recommended GIC maintenance interrupt ID is 25 as per BSA*/
     if (intid != 25) {
-       val_print(ACS_PRINT_ERR,
+       val_print(ERROR,
                  "\n       GIC Maintenance interrupt not mapped to PPI ID 25, id %d", intid);
-       val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+       val_set_status(index, RESULT_FAIL(1));
        return;
     }
 
@@ -45,9 +45,9 @@ payload()
     intid = val_timer_get_info(TIMER_INFO_PHY_EL2_INTID, 0);
     /*Recommended EL2 physical timer interrupt ID is 26 as per BSA*/
     if (intid != 26) {
-        val_print(ACS_PRINT_DEBUG,
+        val_print(DEBUG,
               "\n       NS EL2 physical timer not mapped to PPI id 26, INTID: %d ", intid);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+        val_set_status(index, RESULT_FAIL(1));
         return;
     }
 
@@ -55,9 +55,9 @@ payload()
     intid = val_timer_get_info(TIMER_INFO_VIR_EL1_INTID, 0);
     /*Recommended non-secure virtual timer interrupt ID is 27 as per BSA*/
     if (intid != 27) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
             "\n       EL0-Virtual timer not mapped to PPI ID 27, INTID: %d   ", intid);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+        val_set_status(index, RESULT_FAIL(1));
         return;
     }
 
@@ -65,9 +65,9 @@ payload()
     intid = val_timer_get_info(TIMER_INFO_VIR_EL2_INTID, 0);
     /*Recommended EL2 virtual timer interrupt ID is 28 as per BSA*/
     if (intid != 28) {
-       val_print(ACS_PRINT_ERR, "\n       NS EL2 virtual timer not mapped to PPI ID 28, id %d",
+       val_print(ERROR, "\n       NS EL2 virtual timer not mapped to PPI ID 28, id %d",
                                                                 intid);
-       val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+       val_set_status(index, RESULT_FAIL(1));
        return;
     }
 
@@ -75,13 +75,13 @@ payload()
     intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
     /*Recommended non-secure physical timer interrupt ID is 30 as per BSA*/
     if (intid != 30) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
             "\n       EL0-Phy timer not mapped to PPI ID 30, INTID: %d   ", intid);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+        val_set_status(index, RESULT_FAIL(1));
         return;
     }
 
-    val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+    val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

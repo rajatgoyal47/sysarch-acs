@@ -48,11 +48,11 @@ static void payload_check_mpam_ext_support(void)
 
     /* PEs must implement FEAT_MPAM */
     if (!is_feat_mpam_implemented()) {
-            val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+            val_set_status(pe_index, RESULT_FAIL(01));
             return;
     }
 
-    val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+    val_set_status(pe_index, RESULT_PASS);
 }
 
 static void payload_check_mpam_part_id_count(void)
@@ -65,7 +65,7 @@ static void payload_check_mpam_part_id_count(void)
 
     /* Initial check: FEAT_MPAM must be implemented before accessing MPAMIDR_EL1 */
     if (!is_feat_mpam_implemented()) {
-        val_set_status(pe_index, RESULT_FAIL(TEST_NUM1, 01));
+        val_set_status(pe_index, RESULT_FAIL(01));
         return;
     }
 
@@ -76,14 +76,14 @@ static void payload_check_mpam_part_id_count(void)
     must be >= 16 */
     data = VAL_EXTRACT_BITS(mpamidr_val, 0, 15);
     if (data < 16) {
-        val_set_status(pe_index, RESULT_FAIL(TEST_NUM1, 02));
+        val_set_status(pe_index, RESULT_FAIL(02));
         return;
     }
 
     /* check support for MPAM virtulization support indicated by MPAMIDR_EL1.HAS_HCR bit */
     data = VAL_EXTRACT_BITS(mpamidr_val, 17, 17);
     if (data == 0) {
-        val_set_status(pe_index, RESULT_FAIL(TEST_NUM1, 03));
+        val_set_status(pe_index, RESULT_FAIL(03));
         return;
     }
 
@@ -91,11 +91,11 @@ static void payload_check_mpam_part_id_count(void)
     MPAMIDR_EL1.VPMR_MAX must be > 0 */
     data = VAL_EXTRACT_BITS(mpamidr_val, 18, 20);
     if (data < 1) {
-        val_set_status(pe_index, RESULT_FAIL(TEST_NUM1, 04));
+        val_set_status(pe_index, RESULT_FAIL(04));
         return;
     }
 
-    val_set_status(pe_index, RESULT_PASS(TEST_NUM1, 01));
+    val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t mpam001_entry(uint32_t num_pe)

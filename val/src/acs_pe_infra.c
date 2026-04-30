@@ -57,22 +57,22 @@ val_pe_create_info_table(uint64_t *pe_info_table)
       return ACS_STATUS_ERR;
 
   if (gPsciConduit == CONDUIT_UNKNOWN) {
-      val_print(ACS_PRINT_WARN, " FADT not found, assuming SMC as PSCI conduit\n", 0);
+      val_print(WARN, " FADT not found, assuming SMC as PSCI conduit\n");
       gPsciConduit = CONDUIT_SMC;
   } else if (gPsciConduit == CONDUIT_NONE) {
-      val_print(ACS_PRINT_WARN, " PSCI not supported, assuming SMC as conduit for tests\n"
-                                " Multi-PE and wakeup tests likely to fail\n", 0);
+      val_print(WARN, " PSCI not supported, assuming SMC as conduit for tests\n");
+      val_print(WARN, " Multi-PE and wakeup tests likely to fail\n");
       gPsciConduit = CONDUIT_SMC;
   } else if (gPsciConduit == CONDUIT_HVC) {
-      val_print(ACS_PRINT_INFO, " Using HVC as PSCI conduit\n", 0);
+      val_print(TRACE, " Using HVC as PSCI conduit\n");
   } else {
-      val_print(ACS_PRINT_INFO, " Using SMC as PSCI conduit\n", 0);
+      val_print(TRACE, " Using SMC as PSCI conduit\n");
   }
 
-  val_print(ACS_PRINT_INFO, " Creating PE INFO table\n", 0);
+  val_print(TRACE, " Creating PE INFO table\n");
 
   if (pe_info_table == NULL) {
-      val_print(ACS_PRINT_ERR, "Input memory for PE Info table cannot be NULL\n", 0);
+      val_print(ERROR, "Input memory for PE Info table cannot be NULL\n");
       return ACS_STATUS_ERR;
   }
 
@@ -81,22 +81,22 @@ val_pe_create_info_table(uint64_t *pe_info_table)
   pal_pe_create_info_table(g_pe_info_table);
   val_data_cache_ops_by_va((addr_t)&g_pe_info_table, CLEAN_AND_INVALIDATE);
 
-  val_print(ACS_PRINT_TEST, " PE_INFO: Number of PE detected       : %4d\n", val_pe_get_num());
+  val_print(INFO, " PE_INFO: Number of PE detected       : %4d\n", val_pe_get_num());
 
   if (val_pe_get_num() == 0) {
-      val_print(ACS_PRINT_ERR, "\n *** CRITICAL ERROR: Num PE is 0x0 ***\n", 0);
+      val_print(ERROR, "\n *** CRITICAL ERROR: Num PE is 0x0 ***\n");
       return ACS_STATUS_ERR;
   }
 
 #ifndef TARGET_LINUX
-val_print(ACS_PRINT_TEST, " Primary PE: MIDR_EL1                 :    0x%llx \n",
+val_print(INFO, " Primary PE: MIDR_EL1                 :    0x%llx \n",
                                                                      val_pe_reg_read(MIDR_EL1));
 #endif
 
   /* store primary PE index for debug message printing purposes on
      multi PE tests */
   g_primary_pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
-  val_print(ACS_PRINT_DEBUG, " PE_INFO: Primary PE index       : %4d\n",
+  val_print(DEBUG, " PE_INFO: Primary PE index       : %4d\n",
             g_primary_pe_index);
 
   return ACS_STATUS_PASS;
@@ -117,8 +117,8 @@ val_pe_free_info_table(void)
         g_pe_info_table = NULL;
     }
     else {
-      val_print(ACS_PRINT_DEBUG,
-                  "\n g_pe_info_table pointer is already NULL", 0);
+      val_print(DEBUG,
+                  "\n g_pe_info_table pointer is already NULL");
     }
 }
 
@@ -176,7 +176,7 @@ val_pe_get_mpid_index(uint32_t index)
   PE_INFO_ENTRY *entry;
 
   if (index > g_pe_info_table->header.num_of_pe) {
-        val_report_status(index, RESULT_FAIL(0, 0xFF), NULL);
+        val_report_status(index, RESULT_FAIL(0xFF), NULL);
         return 0xFFFFFF;
   }
 
@@ -261,8 +261,8 @@ val_execute_on_pe(uint32_t index, void (*payload)(void), uint64_t test_input)
 
   int timeout = TIMEOUT_LARGE;
   if (index > g_pe_info_table->header.num_of_pe) {
-      val_print(ACS_PRINT_ERR, "Input Index exceeds Num of PE %x\n", index);
-      val_report_status(index, RESULT_FAIL(0, 0xFF), NULL);
+      val_print(ERROR, "Input Index exceeds Num of PE %x\n", index);
+      val_report_status(index, RESULT_FAIL(0xFF), NULL);
       return;
   }
 
@@ -279,23 +279,23 @@ val_execute_on_pe(uint32_t index, void (*payload)(void), uint64_t test_input)
   } while (g_smc_args.Arg0 == (uint64_t)ARM_SMC_PSCI_RET_ALREADY_ON && timeout--);
 
   if (g_smc_args.Arg0 == (uint64_t)ARM_SMC_PSCI_RET_ALREADY_ON) {
-      val_print(ACS_PRINT_ERR, "\n       PSCI_CPU_ON: cpu already on", 0);
-      val_print(ACS_PRINT_WARN, "\n       WARNING: Skipping test for PE index %d "
+      val_print(ERROR, "\n       PSCI_CPU_ON: cpu already on");
+      val_print(WARN, "\n       WARNING: Skipping test for PE index %d "
                               "since it is already on\n", index);
 
-      val_set_status(index, RESULT_SKIP(0, 0x120 - (int)g_smc_args.Arg0));
+      val_set_status(index, RESULT_SKIP(0x120 - (int)g_smc_args.Arg0));
       return;
   }
   else {
       if(g_smc_args.Arg0 == 0) {
-          val_print(ACS_PRINT_INFO, "\n       PSCI_CPU_ON: success", 0);
+          val_print(TRACE, "\n       PSCI_CPU_ON: success");
           return;
       }
       else
-          val_print(ACS_PRINT_ERR, "\n       PSCI_CPU_ON: failure[%d]", g_smc_args.Arg0);
+          val_print(ERROR, "\n       PSCI_CPU_ON: failure[%d]", g_smc_args.Arg0);
 
   }
-  val_set_status(index, RESULT_FAIL(0, 0x120 - (int)g_smc_args.Arg0));
+  val_set_status(index, RESULT_FAIL(0x120 - (int)g_smc_args.Arg0));
 }
 
 /**
@@ -312,7 +312,7 @@ val_pe_install_esr(uint32_t exception_type, void (*esr)(uint64_t, void *))
 {
 
   if (exception_type > 3) {
-      val_print(ACS_PRINT_ERR, "Invalid Exception type %x\n", exception_type);
+      val_print(ERROR, "Invalid Exception type %x\n", exception_type);
       return ACS_STATUS_ERR;
   }
 #ifndef TARGET_LINUX
@@ -383,27 +383,27 @@ void
 val_pe_default_esr(uint64_t interrupt_type, void *context)
 {
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
-    val_print(ACS_PRINT_WARN, "\n        Unexpected exception of type %d occurred", interrupt_type);
+    val_print(WARN, "\n        Unexpected exception of type %d occurred", interrupt_type);
 
 #ifndef TARGET_LINUX
     if (pal_target_is_dt()) {
-      val_print(ACS_PRINT_WARN, "\n        FAR reported = 0x%llx", bsa_gic_get_far());
-      val_print(ACS_PRINT_WARN, "\n        ESR reported = 0x%llx", bsa_gic_get_esr());
-      val_set_status(index, RESULT_FAIL(0, 1));
+      val_print(WARN, "\n        FAR reported = 0x%llx", bsa_gic_get_far());
+      val_print(WARN, "\n        ESR reported = 0x%llx", bsa_gic_get_esr());
+      val_set_status(index, RESULT_FAIL(1));
       val_pe_update_elr(context, g_exception_ret_addr);
       return;
     }
     if (pal_target_is_bm()) {
-      val_print(ACS_PRINT_WARN, "\n        FAR reported = 0x%llx", bsa_gic_get_far());
-      val_print(ACS_PRINT_WARN, "\n        ESR reported = 0x%llx", bsa_gic_get_esr());
+      val_print(WARN, "\n        FAR reported = 0x%llx", bsa_gic_get_far());
+      val_print(WARN, "\n        ESR reported = 0x%llx", bsa_gic_get_esr());
 
     } else {
-      val_print(ACS_PRINT_WARN, "\n        FAR reported = 0x%llx", val_pe_get_far(context));
-      val_print(ACS_PRINT_WARN, "\n        ESR reported = 0x%llx", val_pe_get_esr(context));
+      val_print(WARN, "\n        FAR reported = 0x%llx", val_pe_get_far(context));
+      val_print(WARN, "\n        ESR reported = 0x%llx", val_pe_get_esr(context));
     }
 #endif
 
-    val_set_status(index, RESULT_FAIL(0, 1));
+    val_set_status(index, RESULT_FAIL(1));
     val_pe_update_elr(context, g_exception_ret_addr);
 }
 
@@ -500,17 +500,17 @@ val_pe_get_primary_index(void)
 void
 val_smbios_create_info_table(uint64_t *smbios_info_table)
 {
-  val_print(ACS_PRINT_INFO, " Creating SMBIOS INFO table\n", 0);
+  val_print(TRACE, " Creating SMBIOS INFO table\n");
 
   if (smbios_info_table == NULL) {
-    val_print(ACS_PRINT_ERR, "Input memory for SMBIOS Info table cannot be NULL\n", 0);
+    val_print(ERROR, "Input memory for SMBIOS Info table cannot be NULL\n");
     return;
   }
 
   g_smbios_info_table = (PE_SMBIOS_PROCESSOR_INFO_TABLE *)smbios_info_table;
 
   pal_smbios_create_info_table(g_smbios_info_table);
-  val_print(ACS_PRINT_TEST, " SMBIOS: Num of slots                 : %4d\n",
+  val_print(INFO, " SMBIOS: Num of slots                 : %4d\n",
             g_smbios_info_table->slot_count);
 }
 
@@ -545,8 +545,8 @@ val_smbios_free_info_table()
       g_smbios_info_table = NULL;
   }
   else {
-    val_print(ACS_PRINT_DEBUG,
-       "\n g_smbios_info_table pointer is already NULL", 0);
+    val_print(DEBUG,
+       "\n g_smbios_info_table pointer is already NULL");
     }
 }
 #endif

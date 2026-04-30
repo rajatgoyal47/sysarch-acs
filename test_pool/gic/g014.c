@@ -40,26 +40,26 @@ static void payload(void)
   /* Check non-secure physical timer Private Peripheral Interrupt (PPI) assignment */
   intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
   if (intid != 30) {
-      val_print(ACS_PRINT_ERR,
+      val_print(ERROR,
           "\n       EL0-Phy timer not mapped to PPI ID 30, INTID: %d   ", intid);
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+      val_set_status(index, RESULT_FAIL(1));
       return;
   }
 
   /* Check non-secure virtual timer Private Peripheral Interrupt (PPI) assignment */
   intid = val_timer_get_info(TIMER_INFO_VIR_EL1_INTID, 0);
   if (intid != 27) {
-      val_print(ACS_PRINT_ERR,
+      val_print(ERROR,
           "\n       EL0-Virtual timer not mapped to PPI ID 27, INTID: %d   ", intid);
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+      val_set_status(index, RESULT_FAIL(2));
       return;
   }
 
   // Check Exception Level ie. EL1, EL2
   if (val_pe_reg_read(CurrentEL) == AARCH64_EL1) {
-      val_print(ACS_PRINT_DEBUG, "\n       Skipping. Test accesses EL2"
-                                    " Registers       ", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+      val_print(DEBUG, "\n       Skipping. Test accesses EL2"
+                                    " Registers       ");
+      val_set_status(index, RESULT_SKIP(2));
       return;
   }
 
@@ -69,8 +69,8 @@ static void payload(void)
   /* Check for EL2 virtual timer interrupt, if PE supports 8.1 or greater.
    * ID_AA64MMFR1_EL1 VH, bits [11:8] must be 0x1 */
   if (!((data >> 8) & 0xF)) {
-      val_print(ACS_PRINT_DEBUG, "\n       v8.1 VHE not supported on this PE ", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 3));
+      val_print(DEBUG, "\n       v8.1 VHE not supported on this PE ");
+      val_set_status(index, RESULT_SKIP(3));
       return;
   }
 
@@ -79,9 +79,9 @@ static void payload(void)
 
   /*Recommended EL2 virtual timer interrupt ID is 28 as per SBSA*/
   if (intid != 28) {
-      val_print(ACS_PRINT_ERR, "\n       NS EL2 virtual timer not mapped to PPI ID 28, id %d",
+      val_print(ERROR, "\n       NS EL2 virtual timer not mapped to PPI ID 28, id %d",
                                                                     intid);
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 3));
+      val_set_status(index, RESULT_FAIL(3));
       return;
   }
 
@@ -90,9 +90,9 @@ static void payload(void)
 
   /*Recommended EL2 physical timer interrupt ID is 26 as per SBSA*/
   if (intid != 26) {
-      val_print(ACS_PRINT_DEBUG,
+      val_print(DEBUG,
             "\n       NS EL2 physical timer not mapped to PPI id 26, INTID: %d ", intid);
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 4));
+      val_set_status(index, RESULT_FAIL(4));
       return;
    }
 
@@ -101,13 +101,13 @@ static void payload(void)
 
   /*Recommended GIC maintenance interrupt ID is 25 as per SBSA*/
   if (intid != 25) {
-      val_print(ACS_PRINT_ERR,
+      val_print(ERROR,
                  "\n       GIC Maintenance interrupt not mapped to PPI ID 25, id %d", intid);
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 5));
+      val_set_status(index, RESULT_FAIL(5));
       return;
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
   return;
 }
 

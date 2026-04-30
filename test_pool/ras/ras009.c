@@ -42,7 +42,7 @@ esr(uint64_t interrupt_type, void *context)
   /* Update the ELR to return to test specified address */
   val_pe_update_elr(context, (uint64_t)branch_to_test);
 
-  val_print(ACS_PRINT_ERR, "\n       Received exception of type: %d", interrupt_type);
+  val_print(ERROR, "\n       Received exception of type: %d", interrupt_type);
 }
 
 static
@@ -69,32 +69,31 @@ payload()
   /* Read ID_AA64MMFR3_EL1.ANERR[47:44] == 0b0010 or 0b0011 indicate FEAT_ANERR support */
   anerr = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64MMFR3_EL1), 44, 47);
 
-  val_print(ACS_PRINT_INFO, "\n       ID_AA64MMFR3_EL1.ANERR field = 0x%llx", anerr);
+  val_print(TRACE, "\n       ID_AA64MMFR3_EL1.ANERR field = 0x%llx", anerr);
 
   if (anerr == FEAT_ANERR_VAL2 || anerr == FEAT_ANERR_VAL3) {
-    val_print(ACS_PRINT_INFO, "\n       FEAT_ANERR implemented.", 0);
-    val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+    val_print(TRACE, "\n       FEAT_ANERR implemented.");
+    val_set_status(index, RESULT_PASS);
     return;
   }
 
-  val_print(ACS_PRINT_INFO,
+  val_print(TRACE,
             "\n       FEAT_ANERR not implemented."
-            " Proceeding to synchronous Data Abort test.\n",
-            0);
+            " Proceeding to synchronous Data Abort test.\n");
 
   /* get number of nodes with RAS functionality */
   status = val_ras_get_info(RAS_INFO_NUM_NODES, 0, &num_node);
   if (status || (num_node == 0)) {
-    val_print(ACS_PRINT_ERR, "\n       RAS nodes not found.", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+    val_print(ERROR, "\n       RAS nodes not found.");
+    val_set_status(index, RESULT_FAIL(01));
     return;
   }
 
   /* get number of MC nodes with RAS functionality */
   status = val_ras_get_info(RAS_INFO_NUM_MC, 0, &num_mc_node);
   if (status || (num_mc_node == 0)) {
-    val_print(ACS_PRINT_ERR, "\n       RAS MC nodes not found.", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
+    val_print(ERROR, "\n       RAS MC nodes not found.");
+    val_set_status(index, RESULT_FAIL(02));
     return;
   }
 
@@ -103,7 +102,7 @@ payload()
     /* check whether current node is memory controller node */
     status = val_ras_get_info(RAS_INFO_NODE_TYPE, node_index, &node_type);
     if (status) {
-      val_print(ACS_PRINT_ERR, "\n       Couldn't get node type for node : 0x%lx", node_index);
+      val_print(ERROR, "\n       Couldn't get node type for node : 0x%lx", node_index);
       fail_cnt++;
       continue;
     }
@@ -114,7 +113,7 @@ payload()
     /* Get proximity domain of RAS memory controller node */
     status = val_ras_get_info(RAS_INFO_MC_RES_PROX_DOMAIN, node_index, &mc_prox_domain);
     if (status) {
-      val_print(ACS_PRINT_ERR, "\n       Couldn't get MC prox domain for node : 0x%lx", node_index);
+      val_print(ERROR, "\n       Couldn't get MC prox domain for node : 0x%lx", node_index);
       fail_cnt++;
       continue;
     }
@@ -122,16 +121,16 @@ payload()
     /* Get base addr for proximity domain to inject error in platform defined method */
     prox_base_addr = val_srat_get_info(SRAT_MEM_BASE_ADDR, mc_prox_domain);
     if (prox_base_addr == SRAT_INVALID_INFO) {
-      val_print(ACS_PRINT_ERR, "\n       Invalid base for prox domain : 0x%lx", mc_prox_domain);
+      val_print(ERROR, "\n       Invalid base for prox domain : 0x%lx", mc_prox_domain);
       fail_cnt++;
       continue;
     }
 
     /* check if the address accessible to PE by trying to allocate the address */
     err_inj_addr = (uint64_t)val_mem_alloc_at_address(prox_base_addr, ONE_BYTE_BUFFER);
-    val_print(ACS_PRINT_ERR, "\n       err_inj_addr : 0x%lx", err_inj_addr);
+    val_print(ERROR, "\n       err_inj_addr : 0x%lx", err_inj_addr);
     if (err_inj_addr == 0) {
-      val_print(ACS_PRINT_ERR, "\n       Unable to allocate address in prox domain : 0x%lx",
+      val_print(ERROR, "\n       Unable to allocate address in prox domain : 0x%lx",
                 mc_prox_domain);
       /* test not applicable if memory isn't accessible by PE */
       test_skip++;
@@ -143,8 +142,8 @@ payload()
     status |= val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
     if (status)
     {
-      val_print(ACS_PRINT_ERR, "\n      Failed in installing the exception handler", 0);
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 03));
+      val_print(ERROR, "\n      Failed in installing the exception handler");
+      val_set_status(index, RESULT_FAIL(03));
       return;
     }
     branch_to_test = &&exception_return;
@@ -163,7 +162,7 @@ payload()
       warn_cnt++;
       break;
     } else if (status) {
-      val_print(ACS_PRINT_ERR, "\n       val_ras_setup_error failed, node %d", node_index);
+      val_print(ERROR, "\n       val_ras_setup_error failed, node %d", node_index);
       fail_cnt++;
       break;
     }
@@ -177,7 +176,7 @@ payload()
       warn_cnt++;
       break;
     } else if (status) {
-      val_print(ACS_PRINT_ERR, "\n       val_ras_inject_error failed, node %d", node_index);
+      val_print(ERROR, "\n       val_ras_inject_error failed, node %d", node_index);
       fail_cnt++;
       break;
     }
@@ -189,28 +188,28 @@ payload()
      * system to record the error with address syndrome in one of
      * the error records present for the current RAS node */
     err_inj_addr_data = (*(volatile addr_t *)err_inj_addr);
-    val_print(ACS_PRINT_DEBUG, "\n       Error injected address: 0x%llx", err_inj_addr);
-    val_print(ACS_PRINT_DEBUG, "  Data read: 0x%lx", err_inj_addr_data);
+    val_print(DEBUG, "\n       Error injected address: 0x%llx", err_inj_addr);
+    val_print(DEBUG, "  Data read: 0x%lx", err_inj_addr_data);
 
 
 exception_return:
-    val_print(ACS_PRINT_INFO, "\n       value esr_pending, %d", esr_pending);
+    val_print(TRACE, "\n       value esr_pending, %d", esr_pending);
     /* Check for External Abort */
     if (esr_pending) {
-      val_print(ACS_PRINT_DEBUG, "\n       Data abort Check Fail, for node %d", node_index);
+      val_print(DEBUG, "\n       Data abort Check Fail, for node %d", node_index);
       fail_cnt++;
       continue;
     }
   }
 
   if (fail_cnt)
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 04));
+    val_set_status(index, RESULT_FAIL(04));
   else if (warn_cnt)
-    val_set_status(index, RESULT_WARN(TEST_NUM, 01));
+    val_set_status(index, RESULT_WARNING(01));
   else if (test_skip)
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+    val_set_status(index, RESULT_SKIP(02));
   else
-    val_set_status(index, RESULT_PASS(TEST_NUM, 02));
+    val_set_status(index, RESULT_PASS);
 
   return;
 }

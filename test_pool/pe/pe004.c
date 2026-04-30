@@ -44,9 +44,9 @@ payload()
    * must be 1 if LPA2 is implemented, 4KB granule supports 52 bit input and output addresses.
    */
   if ((tgran4 == 0x0) || (tgran4 == 0x1))
-    val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+    val_set_status(index, RESULT_PASS);
   else
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+    val_set_status(index, RESULT_FAIL(1));
 }
 
 uint32_t

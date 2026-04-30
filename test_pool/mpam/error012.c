@@ -48,15 +48,15 @@ void payload(void)
 
     for (msc_index = 0; msc_index < total_nodes; msc_index++) {
 
-      val_print(ACS_PRINT_DEBUG, "\n       MSC index : %d", msc_index);
+      val_print(DEBUG, "\n       MSC index : %d", msc_index);
       if (!val_mpam_msc_supports_ris(msc_index)) {
-        val_print(ACS_PRINT_DEBUG, "\n       MSC index %d does not support RIS", msc_index);
+        val_print(DEBUG, "\n       MSC index %d does not support RIS", msc_index);
         continue;
       }
 
       /* Check if Error Status Register Supported */
       if (!val_mpam_msc_supports_esr(msc_index)) {
-        val_print(ACS_PRINT_DEBUG, "\n       MSC index %d does not support ESR/ECR", msc_index);
+        val_print(DEBUG, "\n       MSC index %d does not support ESR/ECR", msc_index);
         continue;
       }
 
@@ -65,8 +65,8 @@ void payload(void)
 
       status    = val_mpam_msc_reset_errcode(msc_index);
       if (!status) {
-        val_print(ACS_PRINT_DEBUG, "\n       Error Code Reset Failed", 0);
-        val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+        val_print(DEBUG, "\n       Error Code Reset Failed");
+        val_set_status(pe_index, RESULT_FAIL(01));
         return;
       }
 
@@ -84,7 +84,7 @@ void payload(void)
 
       val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, data);
       data = val_mpam_mmr_read(msc_index, REG_MPAMCFG_PART_SEL);
-      val_print(ACS_PRINT_DEBUG, "\n       Value Read Back from MPAMCFG_PART_SEL is %llx", data);
+      val_print(DEBUG, "\n       Value Read Back from MPAMCFG_PART_SEL is %llx", data);
 
       /* Wait for some time for the error to be reflected in MPAMF_ESR */
       val_time_delay_ms(100 * ONE_MILLISECOND);
@@ -92,8 +92,8 @@ void payload(void)
       /* Reset Errorcode which might have updated after setting out of range RIS */
       status    = val_mpam_msc_reset_errcode(msc_index);
       if (!status) {
-        val_print(ACS_PRINT_DEBUG, "\n       Error Code Reset Failed after RIS", 0);
-        val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
+        val_print(DEBUG, "\n       Error Code Reset Failed after RIS");
+        val_set_status(pe_index, RESULT_FAIL(02));
         return;
       }
 
@@ -102,18 +102,18 @@ void payload(void)
 
       /* Check All HAS_* Fields read as 0 */
       if (idr_value & MPAMF_IDR_HAS_MASK) {
-        val_print(ACS_PRINT_ERR, "\n       ID Register HAS_* Field Non Zero : %llx", idr_value);
+        val_print(ERROR, "\n       ID Register HAS_* Field Non Zero : %llx", idr_value);
         test_fail++;
       }
       /* Restore */
       val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, data_original);
 
       esr_errcode = val_mpam_msc_get_errcode(msc_index);
-      val_print(ACS_PRINT_DEBUG, "\n       Error code read is %llx", esr_errcode);
+      val_print(DEBUG, "\n       Error code read is %llx", esr_errcode);
 
       if (esr_errcode != ESR_ERRCODE_NO_ERROR) {
-        val_print(ACS_PRINT_ERR, "\n       Expected errcode: %d", ESR_ERRCODE_NO_ERROR);
-        val_print(ACS_PRINT_ERR, "\n       Actual errcode: %d", esr_errcode);
+        val_print(ERROR, "\n       Expected errcode: %d", ESR_ERRCODE_NO_ERROR);
+        val_print(ERROR, "\n       Actual errcode: %d", esr_errcode);
         test_fail++;
       }
       /* Restore Error Control Register original settings */
@@ -122,11 +122,11 @@ void payload(void)
     }
 
     if (test_skip)
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_SKIP(01));
     else if (test_fail)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 03));
+      val_set_status(pe_index, RESULT_FAIL(03));
     else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS);
     return;
 }
 

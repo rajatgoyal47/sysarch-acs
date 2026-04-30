@@ -37,9 +37,9 @@ payload(void)
 
   /* bits 1:0, 5:4, 9:8 and 13:12 must not be zero */
   if ((data & 0x3) && (data & 0x30) && (data & 0x300) && (data & 0x3000))
-      val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(index, RESULT_PASS);
   else
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+      val_set_status(index, RESULT_FAIL(01));
 
   return;
 

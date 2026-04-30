@@ -46,14 +46,14 @@ payload(void)
   /*Check for ETR devices using ETR using unique HID (ARMHC97C)*/
   status = val_get_device_path("ARMHC97C", etr_path);
   if (status != 0) {
-    val_print(ACS_PRINT_ERR, "\n       Unable to get ETR device info from ACPI namespace", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+    val_print(ERROR, "\n       Unable to get ETR device info from ACPI namespace");
+    val_set_status(index, RESULT_FAIL(1));
     return;
   }
 
   if ((char)etr_path[0][0] == '\0') {
-    val_print(ACS_PRINT_ERR, "\n       No ETR devices are discovered                 ", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+    val_print(ERROR, "\n       No ETR devices are discovered                 ");
+    val_set_status(index, RESULT_SKIP(1));
     return;
   } else {
     /*Counting num of ETR Devices*/
@@ -62,19 +62,19 @@ payload(void)
         etr_count++;
     }
   }
-  val_print(ACS_PRINT_DEBUG, "\n       Num of ETR devices found etr_count: %d ", etr_count);
+  val_print(DEBUG, "\n       Num of ETR devices found etr_count: %d ", etr_count);
 
   num_named_comp = val_iovirt_get_named_comp_info(NUM_NAMED_COMP, 0);
-  val_print(ACS_PRINT_DEBUG, "\n       NUM Named component  : %d", num_named_comp);
+  val_print(DEBUG, "\n       NUM Named component  : %d", num_named_comp);
 
   /*ETR device must be behind SMMU or CATU*/
   for (i = 0; i < etr_count; i++) {
     for (j = 0; j < num_named_comp; j++) {
       smmu_found = 0;
       /* print info fields */
-      val_print(ACS_PRINT_DEBUG, "\n       Named component  :", 0);
-      val_print(ACS_PRINT_DEBUG,
-                    (char8_t *)val_iovirt_get_named_comp_info(NAMED_COMP_DEV_OBJ_NAME, j), 0);
+      val_print(DEBUG, "\n       Named component  :");
+      val_print(DEBUG,
+                    (char8_t *)val_iovirt_get_named_comp_info(NAMED_COMP_DEV_OBJ_NAME, j));
 
       /*Check the ETR and Named Componnet paths are matching*/
       if (!val_strncmp((char8_t *)val_iovirt_get_named_comp_info(NAMED_COMP_DEV_OBJ_NAME, j),
@@ -91,28 +91,28 @@ payload(void)
     /*SMMU not found in ETR path, check for CATU*/
     if (!smmu_found) {
       /*Check for CATU in the path of ETR device*/
-      val_print(ACS_PRINT_DEBUG, "\n       SMMU not found in ETR Path at index %d", i);
+      val_print(DEBUG, "\n       SMMU not found in ETR Path at index %d", i);
 
       /*Check the CATU in ETR path*/
       status = val_smmu_is_etr_behind_catu((char8_t *)etr_path[i]);
       if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
-        val_print(ACS_PRINT_DEBUG,
-                    "\n       val_smmu_is_etr_behind_catu API not implemented", 0);
-        val_set_status(index, RESULT_WARN(TEST_NUM, 1));
+        val_print(DEBUG,
+                    "\n       val_smmu_is_etr_behind_catu API not implemented");
+	val_set_status(index, RESULT_WARNING(1));
         return;
       } else if (status) {
-        val_print(ACS_PRINT_DEBUG, "\n       No CATU found in ETR path at index %d", i);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+        val_print(DEBUG, "\n       No CATU found in ETR path at index %d", i);
+        val_set_status(index, RESULT_FAIL(2));
         return;
       }
     }
 
     if (!smmu_found) {
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 3));
+      val_set_status(index, RESULT_FAIL(3));
       return;
     }
   }
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

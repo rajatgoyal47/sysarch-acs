@@ -33,17 +33,17 @@ payload()
 
   gic_version = val_gic_get_info(GIC_INFO_VERSION);
   if (gic_version < 3) {
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+    val_set_status(index, RESULT_SKIP(1));
     return;
   }
 
   data = val_gic_get_info(GIC_INFO_SEC_STATES);
   if (data != 0) {
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+    val_set_status(index, RESULT_FAIL(1));
     return;
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

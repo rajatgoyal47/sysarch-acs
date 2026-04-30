@@ -31,22 +31,22 @@ payload(uint32_t num_pe)
 
   /* Check if DRTM_SET_TCB_HASH is implemented */
   if (status != DRTM_ACS_SUCCESS) {
-    val_print(ACS_PRINT_DEBUG,
+    val_print(DEBUG,
               "\n       DRTM_SET_TCB_HASH function not supported err=%d", status);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+    val_set_status(index, RESULT_SKIP(1));
     return;
   }
 
   /* If DRTM_SET_TCB_HASH is implemented then DRTM_LOCK_TCB_HASHES must be implemented */
   status = g_drtm_features.lock_tcb_hashes;
   if (status != DRTM_ACS_SUCCESS) {
-    val_print(ACS_PRINT_ERR,
+    val_print(ERROR,
               "\n       DRTM_LOCK_TCB_HASHES function not supported err=%d", status);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+    val_set_status(index, RESULT_FAIL(1));
     return;
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

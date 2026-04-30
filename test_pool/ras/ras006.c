@@ -60,18 +60,18 @@ payload()
 /* get number of nodes with RAS functionality */
   status = val_ras_get_info(RAS_INFO_NUM_NODES, 0, &num_node);
   if (status || (num_node == 0)) {
-    val_print(ACS_PRINT_DEBUG, "\n       No RAS Nodes found in AEST table.", 0);
-    val_print(ACS_PRINT_DEBUG, "\n       The test must be considered fail if system \
-                                        components supports RAS nodes", 0);
-    val_set_status(index, RESULT_WARN(TEST_NUM, 01));
+    val_print(DEBUG, "\n       No RAS Nodes found in AEST table.");
+    val_print(DEBUG, "\n       The test must be considered fail if system \
+                                        components supports RAS nodes");
+    val_set_status(index, RESULT_WARNING(01));
     return;
   }
 
   /* get number of MC nodes with RAS functionality */
   status = val_ras_get_info(RAS_INFO_NUM_MC, 0, &num_mc_node);
   if (status || (num_mc_node == 0)) {
-    val_print(ACS_PRINT_ERR, "\n       RAS MC nodes not found. Skipping...", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+    val_print(ERROR, "\n       RAS MC nodes not found. Skipping...");
+    val_set_status(index, RESULT_SKIP(02));
     return;
   }
 
@@ -79,7 +79,7 @@ payload()
       /* check whether current node is memory controller node */
       status = val_ras_get_info(RAS_INFO_NODE_TYPE, node_index, &node_type);
       if (status) {
-          val_print(ACS_PRINT_ERR,
+          val_print(ERROR,
                     "\n       Couldn't get node type for RAS node index: 0x%lx",
                     node_index);
           fail_cnt++;
@@ -91,7 +91,7 @@ payload()
             (both implemented and unimplemented) */
           status = val_ras_get_info(RAS_INFO_NUM_ERR_REC, node_index, &num_err_recs);
           if (status) {
-              val_print(ACS_PRINT_ERR,
+              val_print(ERROR,
                         "\n       Couldn't get number of error records for RAS node index: 0x%lx",
                         node_index);
               fail_cnt++;
@@ -99,7 +99,7 @@ payload()
           }
           /* skip if num of error records in zero */
           if (num_err_recs == 0) {
-              val_print(ACS_PRINT_DEBUG,
+              val_print(DEBUG,
                         "\n       Number of error records for RAS node index: 0x%lx is zero",
                         node_index);
               test_skip++;
@@ -109,7 +109,7 @@ payload()
           /* get proximity domain of RAS memory controller node */
           status = val_ras_get_info(RAS_INFO_MC_RES_PROX_DOMAIN, node_index, &mc_prox_domain);
           if (status) {
-              val_print(ACS_PRINT_ERR,
+              val_print(ERROR,
                         "\n       Couldn't get MC proximity domain for RAS node index: 0x%lx",
                         node_index);
               fail_cnt++;
@@ -120,7 +120,7 @@ payload()
              defined method */
           prox_base_addr = val_srat_get_info(SRAT_MEM_BASE_ADDR, mc_prox_domain);
           if (prox_base_addr == SRAT_INVALID_INFO) {
-              val_print(ACS_PRINT_ERR,
+              val_print(ERROR,
                         "\n       Invalid base address for proximity domain : 0x%lx",
                         mc_prox_domain);
               fail_cnt++;
@@ -131,7 +131,7 @@ payload()
           err_inj_addr = (uint64_t)val_mem_alloc_at_address(prox_base_addr, ONE_BYTE_BUFFER);
 
           if (err_inj_addr == 0) {
-              val_print(ACS_PRINT_ERR,
+              val_print(ERROR,
                         "\n       Unable to allocate address in proximity domain : 0x%lx failed.",
                         mc_prox_domain);
               /* test not applicable if memory isn't accessible by PE */
@@ -153,7 +153,7 @@ payload()
             warn_cnt++;
             break;
           } else if (status) {
-            val_print(ACS_PRINT_ERR, "\n       val_ras_setup_error failed, node %d", node_index);
+            val_print(ERROR, "\n       val_ras_setup_error failed, node %d", node_index);
             fail_cnt++;
             break;
           }
@@ -164,7 +164,7 @@ payload()
             warn_cnt++;
             break;
           } else if (status) {
-            val_print(ACS_PRINT_ERR, "\n       val_ras_inject_error failed, node %d", node_index);
+            val_print(ERROR, "\n       val_ras_inject_error failed, node %d", node_index);
             fail_cnt++;
             break;
           }
@@ -173,7 +173,7 @@ payload()
           val_ras_wait_timeout(1);
 
           if (status) {
-              val_print(ACS_PRINT_ERR,
+              val_print(ERROR,
                         "\n       Memory error injection for RAS node index: 0x%lx failed.",
                         node_index);
               fail_cnt++;
@@ -183,8 +183,8 @@ payload()
           /* perform a read to error-injected address, which will cause system to record the error
              with address syndrome in one of the error records present for the current RAS node */
           err_inj_addr_data = val_mmio_read(err_inj_addr);
-          val_print(ACS_PRINT_DEBUG, "\n       Error injected address: 0x%llx", err_inj_addr);
-          val_print(ACS_PRINT_DEBUG, "  Data read: 0x%lx", err_inj_addr_data);
+          val_print(DEBUG, "\n       Error injected address: 0x%llx", err_inj_addr);
+          val_print(DEBUG, "  Data read: 0x%lx", err_inj_addr_data);
 
           /* wait loop to allow system to update RAS error records */
           val_ras_wait_timeout(1);
@@ -192,7 +192,7 @@ payload()
           /* get error record implemented bitmap from RAS info table */
           status = val_ras_get_info(RAS_INFO_ERR_REC_IMP, node_index, &err_rec_impl_bitmap);
           if (status) {
-              val_print(ACS_PRINT_ERR,
+              val_print(ERROR,
                         "\n       Couldn't get implemented rec bitmap for RAS node index: 0x%lx",
                         node_index);
               fail_cnt++;
@@ -203,7 +203,7 @@ payload()
              ERR<n>ADDR field of error records */
           status = val_ras_get_info(RAS_INFO_ADDR_MODE, node_index, &err_rec_addrmode_bitmap);
           if (status) {
-              val_print(ACS_PRINT_ERR,
+              val_print(ERROR,
                     "\n       Couldn't get implemented addr mode bitmap for RAS node index: 0x%lx",
                     node_index);
               fail_cnt++;
@@ -228,10 +228,10 @@ payload()
                  error record */
               data = val_ras_reg_read(node_index, RAS_ERR_STATUS, err_rec_index);
               if (data == INVALID_RAS_REG_VAL) {
-                  val_print(ACS_PRINT_ERR,
+                  val_print(ERROR,
                               "\n       Couldn't read ERR<%d>STATUS register for ",
                               err_rec_index);
-                  val_print(ACS_PRINT_ERR,
+                  val_print(ERROR,
                               "RAS node index: 0x%lx",
                               node_index);
                   fail_cnt++;
@@ -252,10 +252,10 @@ payload()
               /* read ERR<n>ADDR.AI bit */
               data = val_ras_reg_read(node_index, RAS_ERR_ADDR, err_rec_index);
               if (data == INVALID_RAS_REG_VAL) {
-                  val_print(ACS_PRINT_ERR,
+                  val_print(ERROR,
                               "\n       Couldn't read ERR<%d>STATUS register for ",
                               err_rec_index);
-                  val_print(ACS_PRINT_ERR,
+                  val_print(ERROR,
                               "RAS node index: 0x%lx",
                               node_index);
                   fail_cnt++;
@@ -264,7 +264,7 @@ payload()
               err_rec_addr_ai = (data >> ERR_ADDR_AI_SHIFT) & 0x1;
 
               if (err_rec_addrmode == 0 && err_rec_addr_ai == 0) {
-                  val_print(ACS_PRINT_DEBUG,
+                  val_print(DEBUG,
                       "\n       RAS node index: 0x%lx PASSED",
                       node_index);
                   /* error record comply with RAS_07 requirements */
@@ -278,7 +278,7 @@ payload()
           /* check if system RAS recorded the error in memory with address syndrome
              if no, rule is not applicable for the node  */
           if (!err_recorded) {
-              val_print(ACS_PRINT_ERR,
+              val_print(ERROR,
                     "\n       Memory error not recorded for RAS node index: 0x%lx",
                     node_index);
               test_skip++;
@@ -287,13 +287,13 @@ payload()
   }
 
   if (fail_cnt)
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
+    val_set_status(index, RESULT_FAIL(02));
   else if (warn_cnt)
-    val_set_status(index, RESULT_WARN(TEST_NUM, 01));
+    val_set_status(index, RESULT_WARNING(01));
   else if (test_skip)
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 03));
+    val_set_status(index, RESULT_SKIP(03));
   else
-    val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+    val_set_status(index, RESULT_PASS);
 
   return;
 }

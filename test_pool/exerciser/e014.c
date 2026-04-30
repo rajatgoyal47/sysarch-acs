@@ -62,14 +62,14 @@ get_target_exer_bdf(uint32_t req_rp_bdf, uint32_t *tgt_e_bdf,
           status = val_pcie_get_ecam_index(req_rp_bdf, &req_rp_ecam_index);
           if (status)
           {
-             val_print(ACS_PRINT_ERR, "\n       Error Ecam index for req RP BDF: 0x%x", req_rp_bdf);
+             val_print(ERROR, "\n       Error Ecam index for req RP BDF: 0x%x", req_rp_bdf);
              goto test_fail;
           }
 
           status = val_pcie_get_ecam_index(erp_bdf, &erp_ecam_index);
           if (status)
           {
-             val_print(ACS_PRINT_ERR, "\n       Error Ecam index for tgt RP BDF: 0x%x", erp_bdf);
+             val_print(ERROR, "\n       Error Ecam index for tgt RP BDF: 0x%x", erp_bdf);
              goto test_fail;
           }
 
@@ -128,8 +128,8 @@ payload(void)
   /* Check If PCIe Hierarchy supports P2P. */
   if (!val_pcie_p2p_support())
   {
-    val_print(ACS_PRINT_DEBUG, "\n       P2P is supported, Skipping Test", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+    val_print(DEBUG, "\n       P2P is supported, Skipping Test");
+    val_set_status(index, RESULT_SKIP(1));
     return;
   }
 
@@ -141,7 +141,7 @@ payload(void)
           continue;
 
       req_e_bdf = val_exerciser_get_bdf(instance);
-      val_print(ACS_PRINT_DEBUG, "\n       Requester exerciser BDF - 0x%x", req_e_bdf);
+      val_print(DEBUG, "\n       Requester exerciser BDF - 0x%x", req_e_bdf);
 
       /* Get RP of the exerciser */
       if (val_pcie_get_rootport(req_e_bdf, &req_rp_bdf))
@@ -152,14 +152,14 @@ payload(void)
       if (get_target_exer_bdf(req_rp_bdf, &tgt_e_bdf, &tgt_rp_bdf, &bar_base))
           continue;
 
-      val_print(ACS_PRINT_DEBUG, "\n       Target exerciser BDF - 0x%x", tgt_e_bdf);
+      val_print(DEBUG, "\n       Target exerciser BDF - 0x%x", tgt_e_bdf);
       test_skip = 0;
 
       /* Check if P2P transaction causes any deadlock */
       status = check_p2p_transaction(instance, bar_base);
       if (status)
       {
-          val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+          val_set_status(index, RESULT_FAIL(1));
           return;
       }
 
@@ -169,12 +169,12 @@ payload(void)
     }
 
     if (test_skip) {
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+        val_set_status(index, RESULT_SKIP(2));
         return;
     }
 
   /* Pass Test */
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t
@@ -189,7 +189,7 @@ e014_entry(uint32_t num_pe)
   status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
   if (status != ACS_STATUS_SKIP) {
       if (val_exerciser_test_init() != ACS_STATUS_PASS)
-          return TEST_SKIP_VAL;
+          return RESULT_SKIP(1);
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
   }
 

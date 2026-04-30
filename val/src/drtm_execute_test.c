@@ -40,7 +40,7 @@ val_drtm_execute_interface_tests(uint32_t num_pe)
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == ACS_DRTM_INTERFACE_TEST_NUM_BASE) {
-        val_print(ACS_PRINT_INFO, "\n       USER Override - Skipping all Interface tests\n", 0);
+        val_print(TRACE, "\n       USER Override - Skipping all Interface tests\n");
         return ACS_STATUS_SKIP;
       }
   }
@@ -48,12 +48,12 @@ val_drtm_execute_interface_tests(uint32_t num_pe)
   /* Check if there are any tests to be executed in current module with user override options*/
   status = val_check_skip_module(ACS_DRTM_INTERFACE_TEST_NUM_BASE);
   if (status) {
-      val_print(ACS_PRINT_INFO, "\n       USER Override - Skipping all Interface tests\n", 0);
+      val_print(TRACE, "\n       USER Override - Skipping all Interface tests\n");
       return ACS_STATUS_SKIP;
   }
 
 
-  val_print(ACS_PRINT_INFO, "  Initializing ITS\n", 0);
+  val_print(TRACE, "  Initializing ITS\n");
   val_gic_its_configure();
 
   status = ACS_STATUS_PASS;
@@ -99,7 +99,7 @@ val_drtm_execute_dl_tests(uint32_t num_pe)
   num_pe = 1;
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == ACS_DRTM_DL_TEST_NUM_BASE) {
-        val_print(ACS_PRINT_INFO, "\n       USER Override - Skipping all DL tests\n", 0);
+        val_print(TRACE, "\n       USER Override - Skipping all DL tests\n");
         return ACS_STATUS_SKIP;
       }
   }
@@ -107,7 +107,7 @@ val_drtm_execute_dl_tests(uint32_t num_pe)
   /* Check if there are any tests to be executed in current module with user override options*/
   status = val_check_skip_module(ACS_DRTM_DL_TEST_NUM_BASE);
   if (status) {
-      val_print(ACS_PRINT_INFO, "\n       USER Override - Skipping all DL tests\n", 0);
+      val_print(TRACE, "\n       USER Override - Skipping all DL tests\n");
       return ACS_STATUS_SKIP;
   }
 
@@ -115,18 +115,18 @@ val_drtm_execute_dl_tests(uint32_t num_pe)
    * Less than zero are error case
    */
   if (g_drtm_features.dynamic_launch < DRTM_ACS_SUCCESS) {
-    val_print(ACS_PRINT_ERR,
+    val_print(ERROR,
                   "\n       DRTM query Dynamic Launch feature failed err=%d", status);
-    val_print(ACS_PRINT_WARN, "\n     *** Skipping remaining DL tests ***\n", 0);
+    val_print(WARN, "\n     *** Skipping remaining DL tests ***\n");
     return ACS_STATUS_FAIL;
   }
 
   /* Check Min Memory req supported to run this test using drtm features command
    * Less than or equal to zero are error case */
   if (g_drtm_features.min_memory_req.status <= DRTM_ACS_SUCCESS) {
-    val_print(ACS_PRINT_ERR,
+    val_print(ERROR,
                   "\n       DRTM query Min memory req feature failed err=%d", status);
-      val_print(ACS_PRINT_WARN, "\n     *** Skipping remaining DL tests ***\n", 0);
+      val_print(WARN, "\n     *** Skipping remaining DL tests ***\n");
     return ACS_STATUS_FAIL;
   }
 

@@ -40,16 +40,16 @@ esr(uint64_t exception_type, void *context)
   /* Update the ELR to point to next instrcution */
   val_pe_update_elr(context, (uint64_t)branch_to_test);
 
-  val_print(ACS_PRINT_WARN, "\n       Received Exception of type %d", exception_type);
-  val_set_status(index, RESULT_FAIL(TEST_NUM, 04));
+  val_print(WARN, "\n       Received Exception of type %d", exception_type);
+  val_set_status(index, RESULT_FAIL(04));
 }
 
 static void intr_handler(void)
 {
     uint32_t pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-    val_print(ACS_PRINT_DEBUG, "\n       Received MSC Err interrupt %d", intr_num);
-    val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+    val_print(DEBUG, "\n       Received MSC Err interrupt %d", intr_num);
+    val_set_status(pe_index, RESULT_PASS);
 
     /* Restore Error Control Register original settings */
     val_mpam_mmr_write(msc_index, REG_MPAMF_ECR, mpamf_ecr_saved);
@@ -85,14 +85,14 @@ void payload(void)
     for (msc_index = 0; msc_index < total_nodes; msc_index++) {
 
         if (!val_mpam_msc_supports_esr(msc_index)) {
-            val_print(ACS_PRINT_DEBUG, "\n       MSC index %d does not support ESR", msc_index);
+            val_print(DEBUG, "\n       MSC index %d does not support ESR", msc_index);
             continue;
         }
 
         intr_num = val_mpam_get_info(MPAM_MSC_ERR_INTR, msc_index, 0);
         intr_flags = val_mpam_get_info(MPAM_MSC_ERR_INTR_FLAGS, msc_index, 0);
 
-        val_print(ACS_PRINT_DEBUG, "\n       Error interrupt flags - 0x%llx", intr_flags);
+        val_print(DEBUG, "\n       Error interrupt flags - 0x%llx", intr_flags);
         intr_type = intr_flags & MPAM_ACPI_ERR_INTR_TYPE_MASK;
 
         /* Read MPAMF_ECR before generating error. This will be used to restore to default later */
@@ -100,7 +100,7 @@ void payload(void)
         status    = val_mpam_msc_reset_errcode(msc_index);
 
         if (!status) {
-            val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+            val_set_status(pe_index, RESULT_FAIL(01));
             return;
         }
 
@@ -109,8 +109,8 @@ void payload(void)
          * or if its error interrupt is not of type level-trigger
          */
         if ((intr_num == 0) || (intr_type != MPAM_ACPI_ERR_INTR_TYPE_LEVEL)) {
-            val_print(ACS_PRINT_DEBUG,
-                "\n       MSC does not implement level triggered Error intr. Skipping MSC", 0);
+            val_print(DEBUG,
+                "\n       MSC does not implement level triggered Error intr. Skipping MSC");
             continue;
         } else {
             intr_count++;
@@ -118,7 +118,7 @@ void payload(void)
 
         /* Register the interrupt handler */
         if (val_gic_install_isr(intr_num, intr_handler)) {
-            val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
+            val_set_status(pe_index, RESULT_FAIL(02));
             return;
         }
 
@@ -129,7 +129,7 @@ void payload(void)
          * Set the interrupt enable bit in MPAMF_ECR & raise
          * an interrupt by writing non-zero to MPAMF_ESR.ERRCODE
          */
-        val_print(ACS_PRINT_DEBUG, "\n       Triggering MSC Error interrupt %d", intr_num);
+        val_print(DEBUG, "\n       Triggering MSC Error interrupt %d", intr_num);
         val_mpam_msc_trigger_intr(msc_index);
 
         /* PE busy polls to check the completion of interrupt service routine */
@@ -139,19 +139,19 @@ void payload(void)
         /* Restore Error Control Register original settings (safety net) */
         val_mpam_mmr_write(msc_index, REG_MPAMF_ECR, mpamf_ecr_saved);
         if (timeout == 0) {
-            val_print(ACS_PRINT_ERR, "\n       MSC Err Interrupt not received on %d", intr_num);
-            val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 03));
+            val_print(ERROR, "\n       MSC Err Interrupt not received on %d", intr_num);
+            val_set_status(pe_index, RESULT_FAIL(03));
             return;
         }
     }
 
     /* Set the test status to Skip as none of the MPAM nodes implemented error interrupts */
     if (intr_count == 0) {
-        val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+        val_set_status(pe_index, RESULT_SKIP(01));
         return;
     }
 
-    val_set_status(pe_index, RESULT_PASS(TEST_NUM, 02));
+    val_set_status(pe_index, RESULT_PASS);
     return;
 
 exception_taken:

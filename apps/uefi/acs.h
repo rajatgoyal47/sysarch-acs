@@ -61,7 +61,7 @@
 #define PFDI_ACS_MINOR_VER      8
 #define PFDI_ACS_SUBMINOR_VER   0
 
-#define G_PRINT_LEVEL ACS_PRINT_TEST
+#define G_PRINT_LEVEL INFO
 
 #define G_SW_OS                 0
 #define G_SW_HYP                1
@@ -147,38 +147,16 @@ uint32_t command_init(void);
 /* TODO remove #if once all ACS app using this header moves to rule based infra.*/
 #ifndef EXCLUDE_RBX
 /* Extern declarations */
-extern UINT32  g_pcie_p2p;
-extern UINT32  g_pcie_cache_present;
-extern bool    g_pcie_skip_dp_nic_ms;
-extern UINT32  g_print_level;
 extern UINT32  g_num_skip;
 extern UINT64  g_stack_pointer;
 extern UINT64  g_exception_ret_addr;
 extern UINT64  g_ret_addr;
-extern UINT32  g_timeout_pass;
-extern UINT32  g_timeout_fail;
 extern UINT32  g_build_sbsa;
 extern UINT32  g_build_pcbsa;
-extern UINT32  g_print_mmio;
 extern UINT32  g_curr_module;
 extern UINT32  g_enable_module;
-extern UINT32  g_crypto_support;
-extern UINT32 *g_execute_modules;
-extern UINT32  g_num_modules;
-extern UINT32 *g_skip_modules;
-extern UINT32  g_num_skip_modules;
-extern UINT32  g_sys_last_lvl_cache;
-extern UINT32  g_el1skiptrap_mask;
 extern SHELL_FILE_HANDLE g_acs_log_file_handle;
 extern SHELL_FILE_HANDLE g_dtb_log_file_handle;
-extern RULE_ID_e *g_rule_list;
-extern UINT32     g_rule_count;
-extern RULE_ID_e *g_skip_rule_list;
-extern UINT32     g_skip_rule_count;
-extern uint32_t   g_arch_selection;
-extern uint32_t   g_level_filter_mode;
-extern uint32_t   g_level_value;
-extern uint32_t   g_bsa_sw_view_mask;
 extern BOOLEAN    g_invalid_arg_seen;
 extern CONST SHELL_PARAM_ITEM ParamList[];
 /* Use rule string map from VAL to translate -r inputs */

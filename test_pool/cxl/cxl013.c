@@ -44,9 +44,9 @@ esr(uint64_t interrupt_type, void *context)
   uint32_t pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   val_pe_update_elr(context, (uint64_t)branch_to_test);
-  val_print(ACS_PRINT_ERR, "\n       Received exception type: %d", interrupt_type);
+  val_print(ERROR, "\n       Received exception type: %d", interrupt_type);
   exception = 1;
-  val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 1));
+  val_set_status(pe_index, RESULT_FAIL(1));
 }
 
 static
@@ -206,48 +206,48 @@ payload(void)
   atomic_feat = VAL_EXTRACT_BITS(data, 20, 23);
 
   if (atomic_feat < 0x2) {
-    val_print(ACS_PRINT_ERR,
+    val_print(ERROR,
               "\n       FEAT_LSE not supported (ID_AA64ISAR0_EL1.Atomic = 0x%x)", atomic_feat);
-    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 1));
+    val_set_status(pe_index, RESULT_FAIL(1));
     return;
   }
 
   data = val_pe_reg_read(ID_AA64MMFR2_EL1);
   lse2_feat = VAL_EXTRACT_BITS(data, 32, 35);
   if (lse2_feat == 0) {
-    val_print(ACS_PRINT_ERR,
+    val_print(ERROR,
               "\n       FEAT_LSE2 not supported (ID_AA64MMFR2_EL1.AT = 0x%x)", lse2_feat);
-    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 2));
+    val_set_status(pe_index, RESULT_FAIL(2));
     return;
   }
 
   status = val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
   status |= val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
   if (status) {
-    val_print(ACS_PRINT_ERR, "\n       Failed to install exception handler", 0);
-    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 3));
+    val_print(ERROR, "\n       Failed to install exception handler");
+    val_set_status(pe_index, RESULT_FAIL(3));
     return;
   }
   branch_to_test = &&exception_return;
   exception = 0;
 
   if (find_cxl_type3_target(&target) != ACS_STATUS_PASS) {
-    val_print(ACS_PRINT_INFO, "\n       No CXL Type-3 memory target found", 0);
-    val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+    val_print(TRACE, "\n       No CXL Type-3 memory target found");
+    val_set_status(pe_index, RESULT_SKIP(1));
     return;
   }
 
   status = val_cxl_get_cfmws_window(target.host_index, &cfmws_base, &cfmws_size);
   if ((status != ACS_STATUS_PASS) || (cfmws_base == 0) || (cfmws_size < SIZE_4KB)) {
-    val_print(ACS_PRINT_ERR, "\n       Failed to locate usable CFMWS window", 0);
-    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 4));
+    val_print(ERROR, "\n       Failed to locate usable CFMWS window");
+    val_set_status(pe_index, RESULT_FAIL(4));
     return;
   }
 
   status = val_cxl_map_hdm_address(cfmws_base, SIZE_4KB, &mapped);
   if (status != ACS_STATUS_PASS) {
-    val_print(ACS_PRINT_ERR, "\n       Failed to map CXL Type-3 memory region", 0);
-    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 4));
+    val_print(ERROR, "\n       Failed to map CXL Type-3 memory region");
+    val_set_status(pe_index, RESULT_FAIL(4));
     return;
   }
 
@@ -258,8 +258,8 @@ exception_return:
     return;
 
   if ((status != ACS_STATUS_PASS) || exception) {
-    val_print(ACS_PRINT_ERR, "\n       Atomic sequence failed on CXL memory", 0);
-    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 5));
+    val_print(ERROR, "\n       Atomic sequence failed on CXL memory");
+    val_set_status(pe_index, RESULT_FAIL(5));
     return;
   }
 
@@ -267,34 +267,34 @@ exception_return:
   data = val_pe_reg_read(ID_AA64ISAR1_EL1);
   ls64_feat = VAL_EXTRACT_BITS(data, 60, 63);
   if (ls64_feat == 0)
-    val_print(ACS_PRINT_WARN, "\n       FEAT_LS64/LS4_V/LS64_ACCDATA is not supported", 0);
+    val_print(WARN, "\n       FEAT_LS64/LS4_V/LS64_ACCDATA is not supported");
 
   data = val_pe_reg_read(ID_AA64PFR0_EL1);
   ras_feat = VAL_EXTRACT_BITS(data, 28, 31);
   if (ras_feat == 0)
-    val_print(ACS_PRINT_WARN, "\n       FEAT_RAS is not supported", 0);
+    val_print(WARN, "\n       FEAT_RAS is not supported");
 
   rme_feat = VAL_EXTRACT_BITS(data, 52, 55);
   if (rme_feat == 0)
-    val_print(ACS_PRINT_WARN, "\n       FEAT_RME is not supported", 0);
+    val_print(WARN, "\n       FEAT_RME is not supported");
 
 
   data = val_pe_reg_read(ID_AA64PFR1_EL1);
   mte_feat = VAL_EXTRACT_BITS(data, 8, 11);
   if (mte_feat == 0)
-    val_print(ACS_PRINT_WARN, "\n       FEAT_MTE/MTE2 is not supported", 0);
+    val_print(WARN, "\n       FEAT_MTE/MTE2 is not supported");
 
   mte_frac_feat = VAL_EXTRACT_BITS(data, 40, 43);
   if (!((mte_feat >= 3) || ((mte_feat == 2) && (mte_frac_feat == 0))))
-    val_print(ACS_PRINT_WARN, "\n       FEAT_MTE_ASYNC is not supported", 0);
+    val_print(WARN, "\n       FEAT_MTE_ASYNC is not supported");
 
 
   data = val_pe_reg_read(ID_AA64MMFR3_EL1);
   mec_feat = VAL_EXTRACT_BITS(data, 28, 31);
   if (mec_feat == 0)
-    val_print(ACS_PRINT_WARN, "\n       Optional feature FEAT_MEC is not supported", 0);
+    val_print(WARN, "\n       Optional feature FEAT_MEC is not supported");
 
-  val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

@@ -37,25 +37,25 @@ payload()
 
   data_pe_tlb = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64ISAR0_EL1), 56, 59);
   if (data_pe_tlb != 0x2) {
-      val_print(ACS_PRINT_DEBUG, "\n       TLB Range Invalid Not "
-                                "Supported For PE              ", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+      val_print(DEBUG, "\n       TLB Range Invalid Not "
+                                "Supported For PE              ");
+      val_set_status(index, RESULT_SKIP(1));
       return;
   }
 
   num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
   if (num_smmu == 0) {
-    val_print(ACS_PRINT_DEBUG, "\n       No SMMU Controllers are discovered"
-                                 "                  ", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+    val_print(DEBUG, "\n       No SMMU Controllers are discovered"
+                                 "                  ");
+    val_set_status(index, RESULT_SKIP(2));
     return;
   }
 
   while (num_smmu--) {
     if (val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) < 3) {
-      val_print(ACS_PRINT_DEBUG, "\n       Not valid for SMMUv2 or older"
-                                    "version               ", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 3));
+      val_print(DEBUG, "\n       Not valid for SMMUv2 or older"
+                                    "version               ");
+      val_set_status(index, RESULT_SKIP(3));
       return;
     }
 
@@ -64,15 +64,15 @@ payload()
     /* If PE TLB Range Invalidation then SMMU_IDR3.RIL = 0b1 */
     if (data_pe_tlb == 0x2) {
         if (data_ril != 0x1) {
-            val_print(ACS_PRINT_ERR, "\n       Range Invalidation unsupported "
+            val_print(ERROR, "\n       Range Invalidation unsupported "
                                      "for SMMU %x", num_smmu);
-            val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+            val_set_status(index, RESULT_FAIL(1));
             return;
         }
     }
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

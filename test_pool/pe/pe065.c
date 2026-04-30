@@ -31,13 +31,13 @@ static void payload(void)
 
     /* ID_AA64PFR1_EL1.PFAR, bits [63:60] value one indicate FEAT_PFAR support */
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR1_EL1), 60, 63);
-    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       ID_AA64PFR1_EL1.PFAR = %llx",
+    val_print_primary_pe(DEBUG, "\n       ID_AA64PFR1_EL1.PFAR = %llx",
                                                                             data, index);
 
     if (data == 1)
-        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+        val_set_status(index, RESULT_PASS);
     else
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+        val_set_status(index, RESULT_FAIL(01));
 }
 
 uint32_t pe065_entry(uint32_t num_pe)

@@ -40,7 +40,7 @@ static uint32_t test_sequence_check(uint32_t instance, uint64_t write_value)
   for (idx = 0; idx < transaction_size; idx++) {
       val_exerciser_get_param(DATA_ATTRIBUTES, &transaction_data, &idx, instance);
       if (transaction_data !=  write_value) {
-          val_print(ACS_PRINT_ERR, "\n       Exerciser %d arrival order check failed", instance);
+          val_print(ERROR, "\n       Exerciser %d arrival order check failed", instance);
           return 1;
       }
   }
@@ -59,7 +59,7 @@ static uint32_t test_sequence_2B(uint16_t *addr, uint32_t instance)
 
   /* Start monitoring exerciser transactions */
   if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
-      val_print(ACS_PRINT_DEBUG,
+      val_print(DEBUG,
                "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
       return ACS_STATUS_SKIP;
   }
@@ -90,7 +90,7 @@ static uint32_t test_sequence_4B(uint32_t *addr, uint32_t instance)
 
   /* Start monitoring exerciser transactions */
   if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
-      val_print(ACS_PRINT_DEBUG,
+      val_print(DEBUG,
                "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
       return ACS_STATUS_SKIP;
   }
@@ -120,7 +120,7 @@ static uint32_t test_sequence_8B(uint64_t *addr, uint32_t instance)
 
   /* Start monitoring exerciser transactions */
   if (val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance)) {
-      val_print(ACS_PRINT_DEBUG,
+      val_print(DEBUG,
                "\n       Exerciser BDF 0x%x - Unable to start transaction monitoring", e_bdf);
       return ACS_STATUS_SKIP;
   }
@@ -173,17 +173,17 @@ barspace_transactions_order_check(void)
     /* Get BAR 0 details for this instance */
     status = val_exerciser_get_data(EXERCISER_DATA_MMIO_SPACE, &e_data, instance);
     if (status == NOT_IMPLEMENTED) {
-        val_print(ACS_PRINT_ERR, "\n       pal_exerciser_get_data() for MMIO not implemented", 0);
+        val_print(ERROR, "\n       pal_exerciser_get_data() for MMIO not implemented");
         continue;
     } else if (status) {
-        val_print(ACS_PRINT_ERR, "\n       Exerciser %d data read error     ", instance);
+        val_print(ERROR, "\n       Exerciser %d data read error     ", instance);
         continue;
     }
 
     /* Map mmio space to ARM device memory in MMU page tables */
     baseptr = (char *)e_data.bar_space.base_addr;
     if (!baseptr) {
-        val_print(ACS_PRINT_ERR, "\n       Failed in BAR ioremap for instance %x", instance);
+        val_print(ERROR, "\n       Failed in BAR ioremap for instance %x", instance);
         continue;
     }
 
@@ -208,14 +208,14 @@ payload(void)
   barspace_transactions_order_check();
 
   if (!run_flag) {
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_SKIP(01));
       return;
   }
 
   if (fail_cnt)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, fail_cnt));
+      val_set_status(pe_index, RESULT_FAIL(fail_cnt));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t
@@ -229,7 +229,7 @@ e022_entry(uint32_t num_pe)
   status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
   if (status != ACS_STATUS_SKIP) {
       if (val_exerciser_test_init() != ACS_STATUS_PASS)
-          return TEST_SKIP_VAL;
+          return RESULT_SKIP(1);
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
   }
 

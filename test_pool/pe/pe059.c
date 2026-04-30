@@ -33,9 +33,9 @@ static void payload(void)
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64ISAR2_EL1), 0, 3);
 
     if (data == 2)
-        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+        val_set_status(index, RESULT_PASS);
     else
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+        val_set_status(index, RESULT_FAIL(01));
 }
 
 uint32_t pe059_entry(uint32_t num_pe)

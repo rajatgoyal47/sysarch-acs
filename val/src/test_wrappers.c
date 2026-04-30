@@ -37,32 +37,33 @@ extern RULE_ID_e g_base_rule;
 static uint32_t run_test_entries(TEST_ENTRY_ID_e *tst_entry_list, uint32_t num_pe)
 {
     uint32_t i;
-    uint32_t entry_status = TEST_STATUS_UNKNOWN;
-    uint32_t rule_status = TEST_STATUS_UNKNOWN;
+    uint32_t entry_status = TEST_STATE_UNKNOWN;
+    uint32_t rule_status = TEST_STATE_UNKNOWN;
     bool test_pass_flag = 0;
     bool test_ns_flag = 0;
     bool test_warn_flag = 0;
+
 
     for (i = 0; tst_entry_list[i] != TEST_ENTRY_SENTINEL ; i++) {
         if (test_entry_func_table[tst_entry_list[i]] != NULL) {
             entry_status = test_entry_func_table[tst_entry_list[i]](num_pe);
         } else {
             /* If entry is NULL, then the entry is not supported in current PAL */
-            entry_status = TEST_PART_COV;
+            entry_status = RESULT_PARTIAL_COVERED;
             test_ns_flag = 1;
         }
 
         /* Track atleast one pass */
-        if (entry_status == TEST_PASS) {
+        if (GET_STATE(entry_status) == TEST_PASS) {
             test_pass_flag = 1;
         }
         /* Track atleast one warn */
-        if (entry_status == TEST_WARN) {
+        if (GET_STATE(entry_status) == TEST_WARNING) {
             test_warn_flag = 1;
         }
 
         /* Update overall status for the rule */
-        if ((entry_status > rule_status) || (rule_status == TEST_STATUS_UNKNOWN)) {
+        if ((entry_status > rule_status) || (rule_status == TEST_STATE_UNKNOWN)) {
             rule_status = entry_status;
         }
     }
@@ -70,14 +71,16 @@ static uint32_t run_test_entries(TEST_ENTRY_ID_e *tst_entry_list, uint32_t num_p
     /* Mixed PASS+SKIP/WARN or PASS+unsupported entry should be reported as partial coverage
        rather than worst-case max. */
     if ((test_pass_flag &&
-        ((rule_status == TEST_SKIP) || (rule_status == TEST_WARN))) ||
-        (test_ns_flag && (rule_status == TEST_PASS))) {
-        rule_status = TEST_PART_COV;
+        ((GET_STATE(rule_status) == TEST_SKIP) ||
+         (GET_STATE(rule_status) == TEST_WARNING))) ||
+        (test_ns_flag &&
+         (GET_STATE(rule_status) == TEST_PASS))) {
+        rule_status = RESULT_PARTIAL_COVERED;
     }
 
     /* If the combined result only saw WARN/SKIP outcomes, prefer WARN over SKIP. */
-    if (test_warn_flag && (rule_status == TEST_SKIP)) {
-        rule_status = TEST_WARN;
+    if (test_warn_flag && (GET_STATE(rule_status) == TEST_SKIP)) {
+        rule_status = RESULT_WARNING(0);
     }
 
     return rule_status;
@@ -98,18 +101,18 @@ static uint32_t run_pcie_static_and_exerciser(TEST_ENTRY_ID_e *static_list,
     uint32_t rule_status;
 
     /* Report partial coverage for mixed PASS+SKIP/WARN aggregated results. */
-    if (((static_status == TEST_PASS) &&
-        ((exr_status == TEST_SKIP) || (exr_status == TEST_WARN))) ||
-        ((exr_status == TEST_PASS) &&
-        ((static_status == TEST_SKIP) || (static_status == TEST_WARN))))
-        return TEST_PART_COV;
+    if (((GET_STATE(static_status) == TEST_PASS) &&
+        ((GET_STATE(exr_status) == TEST_SKIP) || (GET_STATE(exr_status) == TEST_WARNING))) ||
+        ((GET_STATE(exr_status) == TEST_PASS) &&
+        ((GET_STATE(static_status) == TEST_SKIP) || (GET_STATE(static_status) == TEST_WARNING))))
+        return RESULT_PARTIAL_COVERED;
 
     /* For all other combinations, fall back to severity-based aggregation. */
     rule_status = max_status(static_status, exr_status);
     /* If the combined result only saw WARN/SKIP outcomes, prefer WARN over SKIP. */
-    if (((static_status == TEST_WARN) || (exr_status == TEST_WARN)) &&
-        (rule_status == TEST_SKIP)) {
-        rule_status = TEST_WARN;
+    if (((GET_STATE(static_status) == TEST_WARNING) || (GET_STATE(exr_status) == TEST_WARNING)) &&
+        (GET_STATE(rule_status) == TEST_SKIP)) {
+        rule_status = RESULT_WARNING(0);
     }
 
     return rule_status;
@@ -444,10 +447,10 @@ v_l1wk_02_05_entry(uint32_t num_pe)
     return TEST_SKIP;
 #endif
 
-    if (g_el1skiptrap_mask & EL1SKIPTRAP_CNTPCT) {
-        val_print(ACS_PRINT_TEST,
+    if (acs_policy_get_el1skiptrap_mask() & EL1SKIPTRAP_CNTPCT) {
+        val_print(INFO,
                     "\n       Skipping rule as EL1 physical timer access not supported", 0);
-        return TEST_SKIP;
+        return RESULT_SKIP(0);
     }
 
     TEST_ENTRY_ID_e tst_entry_list[] = {U001_ENTRY, U002_ENTRY, TEST_ENTRY_SENTINEL};
@@ -468,14 +471,14 @@ v_l1pp_00_entry(uint32_t num_pe)
 {
 #ifdef TARGET_LINUX
     // Test not applicable for Linux target
-    return TEST_SKIP;
+    return RESULT_SKIP(0);
 #endif
 
     TEST_ENTRY_ID_e skip_list[] = {G007_ENTRY, TEST_ENTRY_SENTINEL};
     TEST_ENTRY_ID_e default_list[] = {G006_ENTRY, G007_ENTRY, TEST_ENTRY_SENTINEL};
 
     TEST_ENTRY_ID_e *entry_list =
-        (g_el1skiptrap_mask & EL1SKIPTRAP_CNTPCT) ? skip_list : default_list;
+        (acs_policy_get_el1skiptrap_mask() & EL1SKIPTRAP_CNTPCT) ? skip_list : default_list;
 
     return run_test_entries(entry_list, num_pe);
 }

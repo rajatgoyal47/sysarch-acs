@@ -107,9 +107,9 @@ v2_Init(void)
   /* Get the max interrupt */
   max_num_interrupts = val_get_max_intid();
 
-  val_print(ACS_PRINT_DEBUG, "  GIC_INIT: D base %x\n", gicd_base);
-  val_print(ACS_PRINT_DEBUG, "  GIC_INIT: CPU IF base %x\n", cpuif_base);
-  val_print(ACS_PRINT_DEBUG, "  GIC_INIT: Interrupts %d\n", max_num_interrupts);
+  val_print(DEBUG, "  GIC_INIT: D base %x\n", gicd_base);
+  val_print(DEBUG, "  GIC_INIT: CPU IF base %x\n", cpuif_base);
+  val_print(DEBUG, "  GIC_INIT: Interrupts %d\n", max_num_interrupts);
 
   /* Disable all interrupt */
   for (index = 0; index < max_num_interrupts; index++) {
@@ -121,10 +121,10 @@ v2_Init(void)
 
   if (val_pe_reg_read(CurrentEL) == AARCH64_EL2) {
     /* Route exception to EL2 */
-    GicWriteHcr(1 << 27);
+    write_hcr_el2(1 << 27);
   }
 
-  GicClearDaif();
+  write_daifclr(DAIF_CONFIG);
 
   /* Set default priority */
   for (index = 0; index < max_num_interrupts; index++) {

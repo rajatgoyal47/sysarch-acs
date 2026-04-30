@@ -33,18 +33,18 @@ payload(void)
 
   /* Obtain the STE values from PAL using _DSM Method */
   status = val_pcie_dsm_ste_tags();
-  val_print(ACS_PRINT_DEBUG, "\n  STE tag value is %x", status);
+  val_print(DEBUG, "\n  STE tag value is %x", status);
 
 
   if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
-      val_set_status(index, RESULT_WARN(TEST_NUM, 0));
+      val_set_status(index, RESULT_WARNING(1));
   }
   else if (status == 0) {
-      val_print(ACS_PRINT_ERR, "\n STE tag value should not be 0\n", 0);
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+      val_print(ERROR, "\n STE tag value should not be 0\n");
+      val_set_status(index, RESULT_FAIL(1));
   }
   else
-      val_set_status(index, RESULT_PASS(TEST_NUM, 0));
+      val_set_status(index, RESULT_PASS);
 
 }
 

@@ -39,7 +39,7 @@ pfdi_st_version_check(void)
 
   val_pfdi_invalidate_ret_params(pfdi_buffer);
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
   return;
 }
 
@@ -56,9 +56,9 @@ static void payload_pe_test_id_check(void *arg)
   g_pfdi_st_version_details =
             (PFDI_RET_PARAMS *) val_memory_calloc(num_pe, sizeof(PFDI_RET_PARAMS));
   if (g_pfdi_st_version_details == NULL) {
-    val_print(ACS_PRINT_ERR,
-                "\n       Allocation for PFDI Self Test Version Details Failed", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 4));
+    val_print(ERROR,
+                "\n       Allocation for PFDI Self Test Version Details Failed");
+    val_set_status(index, RESULT_FAIL(4));
     return;
   }
 
@@ -79,8 +79,8 @@ static void payload_pe_test_id_check(void *arg)
       while ((--timeout) && (IS_RESULT_PENDING(val_get_status(i))));
 
       if (timeout == 0) {
-        val_print(ACS_PRINT_ERR, "\n       **Timed out** for PE index = %d", i);
-        val_set_status(i, RESULT_FAIL(TEST_NUM, 5));
+        val_print(ERROR, "\n       **Timed out** for PE index = %d", i);
+        val_set_status(i, RESULT_FAIL(5));
         goto free_pfdi_details;
       }
     }
@@ -88,7 +88,7 @@ static void payload_pe_test_id_check(void *arg)
   val_time_delay_ms(ONE_MILLISECOND);
 
   for (i = 0; i < num_pe; i++) {
-    val_print(ACS_PRINT_DEBUG, "\n       PFDI Self Test version details for PE index = %d", i);
+    val_print(DEBUG, "\n       PFDI Self Test version details for PE index = %d", i);
     pfdi_buffer = g_pfdi_st_version_details + i;
     test_fail = 0;
 
@@ -101,51 +101,51 @@ static void payload_pe_test_id_check(void *arg)
       /* Return status Bits[63:32] must be zero */
       if (val_pfdi_reserved_bits_check_is_zero(
              VAL_EXTRACT_BITS(version, 32, 63)) != ACS_STATUS_PASS) {
-        val_print(ACS_PRINT_ERR, "\n       Failed on PE = %d", i);
+        val_print(ERROR, "\n       Failed on PE = %d", i);
         test_fail++;
       }
 
       /* Return status Bits[23:20] must be zero */
       if (val_pfdi_reserved_bits_check_is_zero(
              VAL_EXTRACT_BITS(version, 20, 23)) != ACS_STATUS_PASS) {
-        val_print(ACS_PRINT_ERR, "\n       Failed on PE = %d", i);
+        val_print(ERROR, "\n       Failed on PE = %d", i);
         test_fail++;
       }
 
       major = VAL_EXTRACT_BITS(version, 8, 15);
-      val_print(ACS_PRINT_DEBUG, "\n       PFDI Self Test Major Version = %d", major);
+      val_print(DEBUG, "\n       PFDI Self Test Major Version = %d", major);
 
       minor = VAL_EXTRACT_BITS(version, 0, 7);
-      val_print(ACS_PRINT_DEBUG, "\n       PFDI Self Test Minor Version = %d", minor);
+      val_print(DEBUG, "\n       PFDI Self Test Minor Version = %d", minor);
 
       vendor_id = VAL_EXTRACT_BITS(version, 24, 31);
-      val_print(ACS_PRINT_DEBUG, "\n       PFDI Self Test Vendor ID     = %d", vendor_id);
+      val_print(DEBUG, "\n       PFDI Self Test Vendor ID     = %d", vendor_id);
     } else if (temp_status == PFDI_ACS_UNKNOWN) {
-      val_print(ACS_PRINT_ERR, "\n       PFDI Self test metadata not available on PE %d ", i);
+      val_print(ERROR, "\n       PFDI Self test metadata not available on PE %d ", i);
       if (pfdi_buffer->x1 != 0) {
-        val_print(ACS_PRINT_ERR, "\n       Registers X1 is not zero:", 0);
-        val_print(ACS_PRINT_ERR, " x1=0x%llx", pfdi_buffer->x1);
+        val_print(ERROR, "\n       Registers X1 is not zero:");
+        val_print(ERROR, " x1=0x%llx", pfdi_buffer->x1);
         test_fail++;
       }
     } else {
-      val_print(ACS_PRINT_ERR,
+      val_print(ERROR,
                 "\n       PFDI PE Test ID failed err = %lld", temp_status);
       test_fail++;
     }
 
     if ((pfdi_buffer->x2 != 0) || (pfdi_buffer->x3 != 0) || (pfdi_buffer->x4 != 0)) {
-      val_print(ACS_PRINT_ERR, "\n       Registers X2-X4 are not zero:", 0);
-      val_print(ACS_PRINT_ERR, " x2=0x%llx", pfdi_buffer->x2);
-      val_print(ACS_PRINT_ERR, " x3=0x%llx", pfdi_buffer->x3);
-      val_print(ACS_PRINT_ERR, " x4=0x%llx", pfdi_buffer->x4);
-      val_print(ACS_PRINT_ERR, "\n       Failed on PE = %d", i);
+      val_print(ERROR, "\n       Registers X2-X4 are not zero:");
+      val_print(ERROR, " x2=0x%llx", pfdi_buffer->x2);
+      val_print(ERROR, " x3=0x%llx", pfdi_buffer->x3);
+      val_print(ERROR, " x4=0x%llx", pfdi_buffer->x4);
+      val_print(ERROR, "\n       Failed on PE = %d", i);
       test_fail++;
     }
 
     if (test_fail)
-      val_set_status(i, RESULT_FAIL(TEST_NUM, 3));
+      val_set_status(i, RESULT_FAIL(3));
     else
-      val_set_status(i, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(i, RESULT_PASS);
   }
 
 free_pfdi_details:

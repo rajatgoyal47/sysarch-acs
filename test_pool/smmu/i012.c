@@ -46,14 +46,14 @@ payload()
 
   num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
   if (num_smmu == 0) {
-    val_print(ACS_PRINT_DEBUG, "\n       No SMMU Controllers are discovered                 ", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+    val_print(DEBUG, "\n       No SMMU Controllers are discovered                 ");
+    val_set_status(index, RESULT_SKIP(1));
     return;
   }
 
   if (!(pe_mpam || frac)) {
-    val_print(ACS_PRINT_DEBUG, "\n       No MPAM controlled resources present               ", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+    val_print(DEBUG, "\n       No MPAM controlled resources present               ");
+    val_set_status(index, RESULT_SKIP(2));
     return;
   }
 
@@ -61,8 +61,8 @@ payload()
         smmu_rev = val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu);
         if (smmu_rev < 3) {
                 /* MPAM support not required for SMMUv2 and below */
-                val_print(ACS_PRINT_DEBUG, "\n       SMMU revision v2 or lower detected  ", 0);
-                val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+                val_print(DEBUG, "\n       SMMU revision v2 or lower detected  ");
+                val_set_status(index, RESULT_FAIL(1));
                 return;
         }
         else {
@@ -76,23 +76,23 @@ payload()
                         max_id = VAL_EXTRACT_BITS(val_smmu_read_cfg(SMMUv3_MPAMIDR,
                               num_smmu), 0, 15);
                         if (!(mpam && max_id)) {
-                                val_print(ACS_PRINT_ERR,
-                                          "\n       SMMU without MPAM support detected  ", 0);
-                                val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+                                val_print(ERROR,
+                                          "\n       SMMU without MPAM support detected  ");
+                                val_set_status(index, RESULT_FAIL(2));
                                 return;
                         }
                 }
                 else {
                         /* MPAM support not required for SMMUv3.0/3.1 */
-                        val_print(ACS_PRINT_WARN,
-                              "\n       SMMU revision v3.0/3.1 detected  ", 0);
-                        val_set_status(index, RESULT_FAIL(TEST_NUM, 3));
+                        val_print(WARN,
+                              "\n       SMMU revision v3.0/3.1 detected  ");
+                        val_set_status(index, RESULT_FAIL(3));
                         return;
                 }
         }
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

@@ -41,16 +41,16 @@ static void payload(void)
 
     for (msc_index = 0; msc_index < total_nodes; msc_index++) {
         version = val_mpam_msc_get_version(msc_index);
-        val_print(ACS_PRINT_INFO, "\n       MSC Node Index : %d", msc_index);
-        val_print(ACS_PRINT_INFO, ", Version : 0x%x", version);
+        val_print(TRACE, "\n       MSC Node Index : %d", msc_index);
+        val_print(TRACE, ", Version : 0x%x", version);
 
         if (version == MPAM_VERSION_1_0) {
             /* if MPAMv1.0 Check MPAMF_IDR.EXT = 0 */
             ext = BITFIELD_READ(IDR_EXT, val_mpam_mmr_read64(msc_index, REG_MPAMF_IDR));
             if (ext != 0) {
               /* Fail the test */
-              val_print(ACS_PRINT_ERR, "\n       MPAMF_IDR.EXT value is not 0", 0);
-              val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+              val_print(ERROR, "\n       MPAMF_IDR.EXT value is not 0");
+              val_set_status(pe_index, RESULT_FAIL(01));
               return;
             }
         }
@@ -59,21 +59,21 @@ static void payload(void)
             ext = BITFIELD_READ(IDR_EXT, val_mpam_mmr_read64(msc_index, REG_MPAMF_IDR));
             if (ext != 1) {
               /* Fail the test */
-              val_print(ACS_PRINT_ERR, "\n       MPAMF_IDR.EXT value is not 1", 0);
-              val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
+              val_print(ERROR, "\n       MPAMF_IDR.EXT value is not 1");
+              val_set_status(pe_index, RESULT_FAIL(02));
               return;
             }
         }
         else {
             /* Invalid */
             /* TODO : Check for v0.1 */
-            val_print(ACS_PRINT_ERR, "\n       MSC Version not valid", 0);
-            val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 03));
+            val_print(ERROR, "\n       MSC Version not valid");
+            val_set_status(pe_index, RESULT_FAIL(03));
             return;
         }
     }
 
-    val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+    val_set_status(pe_index, RESULT_PASS);
     return;
 }
 

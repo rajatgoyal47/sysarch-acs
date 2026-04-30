@@ -32,15 +32,15 @@ payload()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   gic_version = val_gic_get_info(GIC_INFO_VERSION);
-  val_print(ACS_PRINT_INFO, "\n       Received GIC version = %4d      ", gic_version);
+  val_print(TRACE, "\n       Received GIC version = %4d      ", gic_version);
 
   if (gic_version < 2) {
-      val_print(ACS_PRINT_ERR, "\n       GIC version is %x                 ", gic_version);
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+      val_print(ERROR, "\n       GIC version is %x                 ", gic_version);
+      val_set_status(index, RESULT_FAIL(1));
       return;
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 
 }
 

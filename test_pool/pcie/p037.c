@@ -54,10 +54,10 @@ payload(void)
        */
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
       dp_type = val_pcie_device_port_type(bdf);
-      /* BSA -> PCI_IN_13 SBSA(iEP_RP) -> RHVZJY */
+      /* BSA -> PCI_IN_13 SBSA(iEP_RP) -> HVZJY */
       if (dp_type == RP || dp_type == iEP_RP) {
         /* Read Vendor ID of RP with ECAM based mechanism, and compare it with the */
-        val_print(ACS_PRINT_DEBUG, "\n       BDF 0x%x", bdf);
+        val_print(DEBUG, "\n       BDF 0x%x", bdf);
         ecam_base = val_pcie_get_ecam_base(bdf);
 
         /* If test runs for atleast an endpoint */
@@ -73,27 +73,27 @@ payload(void)
         /* Read Function's Class Code through Pciio Protocol method */
         Status = val_pcie_io_read_cfg(bdf, TYPE01_RIDR, &pciio_proto_cc);
         if (Status == PCIE_NO_MAPPING) {
-          val_print(ACS_PRINT_ERR, "\n       PciIo protocol failed for BDF 0x%x", bdf);
+          val_print(ERROR, "\n       PciIo protocol failed for BDF 0x%x", bdf);
           fail_cnt++;
           continue;
         }
 
         if (ecam_cc != pciio_proto_cc)
         {
-          val_print(ACS_PRINT_ERR, "\n       Config Txn Error : 0x%x ", bdf);
+          val_print(ERROR, "\n       Config Txn Error : 0x%x ", bdf);
           fail_cnt++;
         }
       }
   }
 
   if (test_skip == 1) {
-      val_print(ACS_PRINT_DEBUG, "\n       No RP/iEP_RP type device found. Skipping test", 0);
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+      val_print(DEBUG, "\n       No RP/iEP_RP type device found. Skipping test");
+      val_set_status(pe_index, RESULT_SKIP(01));
   }
   else if (fail_cnt)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, fail_cnt));
+      val_set_status(pe_index, RESULT_FAIL(fail_cnt));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

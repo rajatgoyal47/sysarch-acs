@@ -88,8 +88,6 @@ typedef enum {
     S_L7PE_05,
     S_L7PE_06,
     S_L7PE_07,
-    S_L7PE_08,
-    S_L7PE_09,
     S_L8PE_01,
     S_L8PE_02,
     S_L8PE_03,
@@ -302,7 +300,6 @@ typedef enum {
     S_L7MP_03,
     S_L7MP_04,
     S_L7MP_05,
-    S_L7MP_07,
     S_L7MP_08,
 
     /* ETE */
@@ -444,7 +441,6 @@ typedef enum {
     PCI_PP_03,
     PCI_PP_04,
     PCI_PP_05,
-    PCI_PP_06,
     PCI_SM_01,
     PCI_SM_02,
     RE_ACS_1,
@@ -580,6 +576,7 @@ typedef enum {
     CXL_04,
     CXL_05,
     CXL_06,
+    CXL_08,
     CXL_09,
     CXL_10,
     CXL_11,
@@ -1022,6 +1019,9 @@ typedef enum {
     CXL,
     RME,
     GPU,
+    NV_STORE,
+    SECURITY,
+    TME,
     MODULE_ID_SENTINEL /* need to be in last */
 } MODULE_NAME_e;
 
@@ -1098,8 +1098,8 @@ typedef enum {
 /* Level filter mode for CLI selection */
 typedef enum {
     LVL_FILTER_NONE = 0,
-    LVL_FILTER_MAX,   /* keep rules with level <= g_level_value */
-    LVL_FILTER_ONLY,  /* keep rules with level == g_level_value */
+    LVL_FILTER_MAX,   /* keep rules with level <= selected level */
+    LVL_FILTER_ONLY,  /* keep rules with level == selected level */
     LVL_FILTER_FR     /* keep rules with level <= *_LEVEL_FR */
 } LEVEL_FILTER_MODE_e;
 

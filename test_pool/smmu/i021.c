@@ -51,19 +51,19 @@ check_smmu_pmcg(uint32_t check_counter)
     num_pmcg = val_iovirt_get_pmcg_info(PMCG_NUM_CTRL, 0);
 
     if (num_smmu == 0) {
-        val_print(ACS_PRINT_DEBUG, "\n       No SMMU Controllers are discovered ", 0);
+        val_print(DEBUG, "\n       No SMMU Controllers are discovered ");
         return ACS_STATUS_SKIP;
     } else if (num_pmcg == 0) {
         /* If SMMUs are present in system and no PMCGs detected, report test as FAIL*/
-        val_print(ACS_PRINT_ERR, "\n       SMMUs in the system don't implement SMMUv3"
-                                   " Performance Monitors Extension ", 0);
+        val_print(ERROR, "\n       SMMUs in the system don't implement SMMUv3"
+                                   " Performance Monitors Extension ");
         return ACS_STATUS_FAIL;
     }
 
     while (num_smmu--) {
         smmu_version = val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu);
         if (smmu_version != 3) {
-            val_print(ACS_PRINT_DEBUG, "\n       Valid for only SMMU v3, smmu version %d",
+            val_print(DEBUG, "\n       Valid for only SMMU v3, smmu version %d",
                       smmu_version);
             continue;
         }
@@ -81,7 +81,7 @@ check_smmu_pmcg(uint32_t check_counter)
                 /* Check if PMCG node memory is mapped. If not, map it */
                 status = val_mmu_update_entry(pmcg_base, SIZE_4KB, DEVICE_nGnRnE);
                 if (status) {
-                    val_print(ACS_PRINT_ERR, "\n       Could not map PMCG node memory", 0);
+                    val_print(ERROR, "\n       Could not map PMCG node memory");
                     return ACS_STATUS_FAIL;
                 }
 
@@ -90,9 +90,9 @@ check_smmu_pmcg(uint32_t check_counter)
 
                 /* If checking counter count, ensure there are at least 4 */
                 if (check_counter && num_pmcg_count < 4) {
-                    val_print(ACS_PRINT_ERR, "\n       PMCG has less than 4 counters for SMMU"
+                    val_print(ERROR, "\n       PMCG has less than 4 counters for SMMU"
                               "index : %d", num_smmu);
-                    val_print(ACS_PRINT_ERR, "\n       Number of PMCG counters : %d",
+                    val_print(ERROR, "\n       Number of PMCG counters : %d",
                               num_pmcg_count);
                     test_fail++;
                 }
@@ -102,7 +102,7 @@ check_smmu_pmcg(uint32_t check_counter)
         }
 
         if (num_pmcg_found == 0) {
-            val_print(ACS_PRINT_ERR, "\n       PMU Extension not implemented for SMMU index : %d",
+            val_print(ERROR, "\n       PMU Extension not implemented for SMMU index : %d",
                       num_smmu);
             test_fail++;
         }
@@ -123,11 +123,11 @@ static void payload_pmcg_present(void)
     uint32_t result = check_smmu_pmcg(0);
 
     if (result == ACS_STATUS_SKIP)
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
+        val_set_status(index, RESULT_SKIP(01));
     else
         val_set_status(index, result == ACS_STATUS_FAIL ?
-                    RESULT_FAIL(TEST_NUM, 01) :
-                    RESULT_PASS(TEST_NUM, 01));
+                    RESULT_FAIL(01) :
+                    RESULT_PASS);
 }
 
 /**
@@ -139,11 +139,11 @@ static void payload_counter_check(void)
     uint32_t result = check_smmu_pmcg(1);
 
     if (result == ACS_STATUS_SKIP)
-        val_set_status(index, RESULT_SKIP(TEST_NUM1, 01));
+        val_set_status(index, RESULT_SKIP(01));
     else
         val_set_status(index, result == ACS_STATUS_FAIL ?
-                    RESULT_FAIL(TEST_NUM1, 01) :
-                    RESULT_PASS(TEST_NUM1, 01));
+                    RESULT_FAIL(01) :
+                    RESULT_PASS);
 }
 
 /**

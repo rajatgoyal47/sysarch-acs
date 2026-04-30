@@ -35,9 +35,9 @@ payload()
 
   /* Mask bits 15:11 for Number of counters */
   if (((data & PMCR_NUM_COUNTERS_MASK) >> 11) >= 2)
-      val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(index, RESULT_PASS);
   else
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+      val_set_status(index, RESULT_FAIL(01));
 
   return;
 

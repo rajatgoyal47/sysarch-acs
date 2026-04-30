@@ -53,8 +53,8 @@ esr(uint64_t interrupt_type, void *context)
   uint32_t pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   val_pe_update_elr(context, (uint64_t)branch_to_test);
-  val_print(ACS_PRINT_ERR, "\n       Received exception type: %d", interrupt_type);
-  val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 1));
+  val_print(ERROR, "\n       Received exception type: %d", interrupt_type);
+  val_set_status(pe_index, RESULT_FAIL(1));
 }
 
 static
@@ -171,24 +171,24 @@ payload(void)
   status = val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
   status |= val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
   if (status) {
-    val_print(ACS_PRINT_ERR, "\n       Failed to install exception handler", 0);
-    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 1));
+    val_print(ERROR, "\n       Failed to install exception handler");
+    val_set_status(pe_index, RESULT_FAIL(1));
     return;
   }
 
   branch_to_test = &&exception_return;
 
   dpb_field = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64ISAR1_EL1), 0, 3);
-  val_print(ACS_PRINT_INFO, "\n       DPB %x", dpb_field);
+  val_print(TRACE, "\n       DPB %x", dpb_field);
   if ((dpb_field != 0x1) && (dpb_field != 0x2)) {
-    val_print(ACS_PRINT_INFO, "\n       DC CVAP/CVADP not supported by this PE", 0);
-    val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+    val_print(TRACE, "\n       DC CVAP/CVADP not supported by this PE");
+    val_set_status(pe_index, RESULT_SKIP(1));
     return;
   }
 
   if (find_cxl_mem_target(&target)) {
-    val_print(ACS_PRINT_INFO, "\n       No CXL Type 3 mem-capable target found", 0);
-    val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 2));
+    val_print(TRACE, "\n       No CXL Type 3 mem-capable target found");
+    val_set_status(pe_index, RESULT_SKIP(2));
     return;
   }
 
@@ -209,14 +209,14 @@ payload(void)
   val_pcie_enable_msa(target.rp_bdf);
 
   if (get_aer_status(target.rp_bdf, &aer_ori)) {
-    val_print(ACS_PRINT_ERR, "\n       AER capability not found on root port 0x%x", target.rp_bdf);
-    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 2));
+    val_print(ERROR, "\n       AER capability not found on root port 0x%x", target.rp_bdf);
+    val_set_status(pe_index, RESULT_FAIL(2));
     return;
   }
 
   status = val_cxl_map_hdm_address(cfmws_base, SIZE_4KB, &mapped);
   if (status != ACS_STATUS_PASS) {
-    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 3));
+    val_set_status(pe_index, RESULT_FAIL(3));
     return;
   }
 
@@ -226,14 +226,14 @@ payload(void)
   val_data_cache_ops_by_va((addr_t)test_addr, CLEAN_POC);
 
   if (get_aer_status(target.rp_bdf, &aer_updated)) {
-    val_print(ACS_PRINT_ERR, "\n       Failed to read AER status after PCMO sequence", 0);
-    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 4));
+    val_print(ERROR, "\n       Failed to read AER status after PCMO sequence");
+    val_set_status(pe_index, RESULT_FAIL(4));
     return;
   }
 
   if (compare_aer_status(&aer_ori, &aer_updated)) {
-    val_print(ACS_PRINT_ERR, "\n       AER errors detected after PCMO sequence", 0);
-    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 5));
+    val_print(ERROR, "\n       AER errors detected after PCMO sequence");
+    val_set_status(pe_index, RESULT_FAIL(5));
     return;
   }
 
@@ -244,13 +244,13 @@ exception_return:
   }
 
   if (read_back != CXL_TEST_PATTERN) {
-    val_print(ACS_PRINT_ERR, "\n       Readback mismatch: expected 0x%llx", CXL_TEST_PATTERN);
-    val_print(ACS_PRINT_ERR, " observed 0x%llx", read_back);
-    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 6));
+    val_print(ERROR, "\n       Readback mismatch: expected 0x%llx", CXL_TEST_PATTERN);
+    val_print(ERROR, " observed 0x%llx", read_back);
+    val_set_status(pe_index, RESULT_FAIL(6));
     return;
   }
 
-  val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

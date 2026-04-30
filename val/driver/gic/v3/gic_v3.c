@@ -74,7 +74,7 @@ CurrentCpuRDBase(uint64_t mGicRedistributorBase, uint32_t length)
   uint64_t     GicCpuRedistributorBase;
   uint64_t     Mpidr;
 
-  Mpidr = ArmReadMpidr();
+  Mpidr = read_mpidr_el1();
 
   CpuAffinity = (Mpidr & (PE_AFF0 | PE_AFF1 | PE_AFF2)) | ((Mpidr & PE_AFF3) >> 8);
 
@@ -377,8 +377,8 @@ v3_Init(void)
   /* Get the max interrupt */
   max_num_interrupts = val_get_max_intid();
 
-  val_print(ACS_PRINT_DEBUG, "  GIC_INIT: D base %x\n", gicd_base);
-  val_print(ACS_PRINT_DEBUG, "  GIC_INIT: Interrupts %d\n", max_num_interrupts);
+  val_print(DEBUG, "  GIC_INIT: D base %x\n", gicd_base);
+  val_print(DEBUG, "  GIC_INIT: Interrupts %d\n", max_num_interrupts);
 
 #if defined(TARGET_SIMULATION)
   /* Fast-sim: disable in register chunks (32 IRQs per write) */
@@ -395,10 +395,10 @@ v3_Init(void)
 
   if (val_pe_reg_read(CurrentEL) == AARCH64_EL2) {
     /* Route exception to EL2 */
-    GicWriteHcr(1 << 27);
+    write_hcr_el2(1 << 27);
   }
 
-  GicClearDaif();
+  write_daifclr(DAIF_CONFIG);
 
   /* Wake up redistributor before programming SGI/PPI state */
   WakeUpRD();
@@ -406,7 +406,7 @@ v3_Init(void)
   /* Set ARI bits for v3 mode */
   val_mmio_write(gicd_base + GICD_CTLR, val_mmio_read(gicd_base + GICD_CTLR) | GIC_ARE_ENABLE);
   val_mmio_write(gicd_base + GICD_CTLR, val_mmio_read(gicd_base + GICD_CTLR) | 0x2);
-  val_print(ACS_PRINT_DEBUG, "  GIC_INIT: GICD_CTLR value 0x%08x\n",
+  val_print(DEBUG, "  GIC_INIT: GICD_CTLR value 0x%08x\n",
                              val_mmio_read(gicd_base + GICD_CTLR));
 
 #if defined(TARGET_SIMULATION)
@@ -419,7 +419,7 @@ v3_Init(void)
   }
 #endif
 
-  Mpidr = ArmReadMpidr();
+  Mpidr = read_mpidr_el1();
   cpuTarget = Mpidr & (PE_AFF0 | PE_AFF1 | PE_AFF2 | PE_AFF3);
 
 #if defined(TARGET_SIMULATION)

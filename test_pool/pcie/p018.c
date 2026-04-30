@@ -43,7 +43,7 @@ payload(void)
 
   /* Check If PCIe Hierarchy supports P2P */
   if (val_pcie_p2p_support() == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
-    val_set_status(pe_index, RESULT_WARN(TEST_NUM, 1));
+    val_set_status(pe_index, RESULT_WARNING(1));
     return;
   }
 
@@ -62,7 +62,7 @@ payload(void)
           /* Check If RP supports P2P with other RP's. */
           status = val_pcie_dev_p2p_support(bdf);
           if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
-              val_set_status(pe_index, RESULT_WARN(TEST_NUM, 1));
+              val_set_status(pe_index, RESULT_WARNING(1));
               return;
           }
           if (status)
@@ -70,31 +70,31 @@ payload(void)
 
           /* Test runs for atleast one Root Port */
           test_skip = 0;
-          val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
+          val_print(DEBUG, "\n       BDF - 0x%x", bdf);
 
           /* It ACS Not Supported, Fail. */
           if (val_pcie_find_capability(bdf, PCIE_ECAP, ECID_ACS, &cap_base) != PCIE_SUCCESS) {
-              val_print(ACS_PRINT_ERR, "\n       BDF 0x%x: ACS Cap unsupported", bdf);
+              val_print(ERROR, "\n       BDF 0x%x: ACS Cap unsupported", bdf);
               test_fails++;
               continue;
           }
 
           /* If AER Not Supported, Fail. */
           if (val_pcie_find_capability(bdf, PCIE_ECAP, ECID_AER, &cap_base) != PCIE_SUCCESS) {
-              val_print(ACS_PRINT_ERR, "\n       BDF 0x%x: AER Cap unsupported", bdf);
+              val_print(ERROR, "\n       BDF 0x%x: AER Cap unsupported", bdf);
               test_fails++;
           }
       }
   }
 
   if (test_skip == 1) {
-      val_print(ACS_PRINT_DEBUG, "\n       No RP type device found. Skipping test", 0);
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+      val_print(DEBUG, "\n       No RP type device found. Skipping test");
+      val_set_status(pe_index, RESULT_SKIP(1));
   }
   else if (test_fails)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, test_fails));
+      val_set_status(pe_index, RESULT_FAIL(test_fails));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

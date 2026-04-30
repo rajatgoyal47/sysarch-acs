@@ -38,24 +38,24 @@ payload()
   breakpointcount = VAL_EXTRACT_BITS(data, 12, 15) + 1;
   if (breakpointcount < 6) {
       if (pe_index == primary_pe_idx) {
-          val_print(ACS_PRINT_ERR,
+          val_print(ERROR,
           "\n       Number of PE breakpoints reported: %d, expected >= 6", breakpointcount);
       }
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 1));
+      val_set_status(pe_index, RESULT_FAIL(1));
       return;
   }
 
   /*bits [31:28] Number of breakpoints that are context-aware, minus 1*/
   context_aware_breakpoints = VAL_EXTRACT_BITS(data, 28, 31) + 1;
   if (context_aware_breakpoints > 1)
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(pe_index, RESULT_PASS);
   else {
       if (pe_index == primary_pe_idx) {
-          val_print(ACS_PRINT_ERR,
+          val_print(ERROR,
           "\n       Number of PE context-aware breakpoints reported: %d, expected > 1",
           context_aware_breakpoints);
       }
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 2));
+      val_set_status(pe_index, RESULT_FAIL(2));
   }
   return;
 

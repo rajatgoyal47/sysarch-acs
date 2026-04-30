@@ -38,17 +38,17 @@ payload()
 
   num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
   if (num_smmu == 0) {
-    val_print(ACS_PRINT_DEBUG, "\n       No SMMU Controllers are discovered", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+    val_print(DEBUG, "\n       No SMMU Controllers are discovered");
+    val_set_status(index, RESULT_SKIP(1));
     return;
   }
 
   /* Check if uefi memory map has any 52 bit addr */
   memmap_addr_52bit = val_memory_region_has_52bit_addr();
-  val_print(ACS_PRINT_DEBUG, "\n       uefi mem map has 52 bit addr: %d", memmap_addr_52bit);
+  val_print(DEBUG, "\n       uefi mem map has 52 bit addr: %d", memmap_addr_52bit);
 
   data_pa_range = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64MMFR0_EL1), 0, 3);
-  val_print(ACS_PRINT_DEBUG, "\n       PE pa range value: %d", data_pa_range);
+  val_print(DEBUG, "\n       PE pa range value: %d", data_pa_range);
 
   while (num_smmu--) {
       /* SMMUv2 does not support 52 bit OAS */
@@ -57,8 +57,8 @@ payload()
 
       if (val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 3) {
           data_oas = VAL_EXTRACT_BITS(val_smmu_read_cfg(SMMUv3_IDR5, num_smmu), 0, 2);
-          val_print(ACS_PRINT_DEBUG, "\n       SMMU %d OAS value:", num_smmu);
-          val_print(ACS_PRINT_DEBUG, " %d", data_oas);
+          val_print(DEBUG, "\n       SMMU %d OAS value:", num_smmu);
+          val_print(DEBUG, " %d", data_oas);
           /* check if smmuv3 supporting 52 bit oas */
           if (data_oas != 0x6)
               smmu_52bit = smmu_52bit & 0;
@@ -66,14 +66,14 @@ payload()
   }
 
   if (smmu_52bit && (data_pa_range == 0x6)) {
-      val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(index, RESULT_PASS);
       return;
   }
 
   if (((smmu_52bit == 0) || (data_pa_range != 0x6)) && memmap_addr_52bit) {
-      val_print(ACS_PRINT_ERR, "\n       PE or SMMU doesn't support 52-bit, \
-                                                         but uefi mem map has 52-bit addr", 0);
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+      val_print(ERROR, "\n       PE or SMMU doesn't support 52-bit, \
+                                                         but uefi mem map has 52-bit addr");
+      val_set_status(index, RESULT_FAIL(1));
       return;
   }
 
@@ -82,7 +82,7 @@ payload()
      system physical addr space is 52-bit addr,but uefi mem map doesn't map any 52 bit addr.
      In this case if PE or SMMU is not supporting 52-bit addressing, test will skip
   */
-  val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+  val_set_status(index, RESULT_SKIP(2));
 }
 
 uint32_t

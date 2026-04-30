@@ -44,10 +44,10 @@ static void payload(void)
   /* get number of PE nodes with RAS functionality */
   status = val_ras_get_info(RAS_INFO_NUM_PE, 0, &num_pc_node);
   if (status || (num_pc_node == 0)) {
-     val_print(ACS_PRINT_DEBUG, "\n       No RAS Nodes found in AEST table.", 0);
-     val_print(ACS_PRINT_DEBUG, "\n       The test must be considered fail if PE \
-                                        supports RAS nodes", 0);
-      val_set_status(index, RESULT_WARN(TEST_NUM, 01));
+     val_print(DEBUG, "\n       No RAS Nodes found in AEST table.");
+     val_print(DEBUG, "\n       The test must be considered fail if PE \
+                                        supports RAS nodes");
+      val_set_status(index, RESULT_WARNING(01));
       return;
   }
   /* Get Number of RAS nodes */
@@ -64,7 +64,7 @@ static void payload(void)
       /* Check for Resource Shared in case of Processor Node */
       status = val_ras_get_info(RAS_INFO_PE_FLAG, node_index, &value);
       if (status) {
-          val_print(ACS_PRINT_DEBUG, "\n       PE Resource flag not found index %d", node_index);
+          val_print(DEBUG, "\n       PE Resource flag not found index %d", node_index);
           fail_cnt++;
           break;
       }
@@ -81,12 +81,12 @@ static void payload(void)
       /* Check for interface type is memory-mapped */
       status = val_ras_get_info(RAS_INFO_INTF_TYPE, node_index, &value);
       if (status) {
-          val_print(ACS_PRINT_DEBUG, "\n       Interface Type not found index %d", node_index);
+          val_print(DEBUG, "\n       Interface Type not found index %d", node_index);
           fail_cnt++;
           break;
       }
       if (value != 1) {
-          val_print(ACS_PRINT_ERR, "\n       Interface Type must be MMIO for index %d", node_index);
+          val_print(ERROR, "\n       Interface Type must be MMIO for index %d", node_index);
           fail_cnt++;
           continue;
       }
@@ -95,16 +95,16 @@ static void payload(void)
   }
 
   if (fail_cnt) {
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+      val_set_status(index, RESULT_FAIL(01));
       return;
   } else if (test_skip) {
-      val_print(ACS_PRINT_ERR, "\n       No Resource are Shared between two or more PE. "
+      val_print(ERROR, "\n       No Resource are Shared between two or more PE. "
                                "Skipping... ", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 03));
+      val_set_status(index, RESULT_SKIP(03));
       return;
     }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t ras013_entry(uint32_t num_pe)

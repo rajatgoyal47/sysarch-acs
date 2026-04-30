@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -169,10 +169,7 @@ uint64_t AA64DisableETETrace(void);
 uint64_t AA64SetupTraceAccess(void);
 uint64_t AA64EnableTRBUTrace(uint32_t index, uint64_t buffer_addr, uint32_t trbu_mode);
 uint64_t AA64DisableTRBUTrace(void);
-uint64_t AA64ReadTrbPtrEl1(void);
 
-uint64_t AA64ReadTrblimitr1(void);
-void AA64WriteTrblimitr1(uint64_t data);
 void AA64EnableTFO(void);
 void AA64DisableTFO(void);
 

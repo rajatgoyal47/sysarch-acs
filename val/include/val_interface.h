@@ -22,22 +22,27 @@
 #include "acs_drtm.h"
 #include "acs_pfdi.h"
 #include "acs_cxl.h"
+#include "acs_execution_policy.h"
+#include "val_status.h"
+#include "val_libc.h"
 
-/* set G_PRINT_LEVEL to one of the below values in your application entry
-  to control the verbosity of the prints */
-#define ACS_PRINT_ERR   5      /* Only Errors. use this to de-clutter the terminal and focus only on specifics */
-#define ACS_PRINT_WARN  4      /* Only warnings & errors. use this to de-clutter the terminal and focus only on specifics */
-#define ACS_PRINT_TEST  3      /* Test description and result descriptions. THIS is DEFAULT */
-#define ACS_PRINT_DEBUG 2      /* For Debug statements. contains register dumps etc */
-#define ACS_PRINT_INFO  1      /* Print all statements. Do not use unless really needed */
-
-#define ACS_STATUS_FAIL      0x90000000
 #define ACS_STATUS_ERR       0xEDCB1234  //some impropable value?
-#define ACS_STATUS_SKIP      0x10000000
-#define ACS_STATUS_PASS      0x0
 #define ACS_STATUS_NIST_PASS 0x1
 #define ACS_INVALID_INDEX    0xFFFFFFFF
-#define ACS_STATUS_UNKNOWN   0xFFFFFFFF
+
+#define ACS_STATUS_FAIL    STATUS_ERROR
+#define ACS_STATUS_PASS    STATUS_SUCCESS
+#define ACS_STATUS_SKIP    STATUS_SKIP
+#define ACS_STATUS_UNKNOWN STATUS_UNKNOWN
+/*Note: val_print can be overriden in platform_override_fvp.h, to
+enable implementation specific prints in PAL*/
+#ifndef val_print
+#define val_print(level, ...)                     \
+    do {                                          \
+        if ((level) >= acs_policy_get_print_level()) \
+            val_printf((level), __VA_ARGS__);     \
+    } while (0)
+#endif
 
 #define ACS_STATUS_PAL_NOT_IMPLEMENTED 0x4B1D  /* PAL reports feature/API not implemented */
 #ifndef NOT_IMPLEMENTED
@@ -46,34 +51,21 @@
 
 #define VAL_EXTRACT_BITS(data, start, end) ((data >> start) & ((1ul << (end-start+1))-1))
 
-#define WAKEUP_WD_PASS_TIMEOUT_THRESHOLD      500        /*minimum timeout that can be
-                                                         set for wakeup and wd tests*/
-#define WAKEUP_WD_PASS_TIMEOUT_MAX_THRESHOLD  2000000    /*minimum timeout that can be
-                                                         set for wakeup and wd tests*/
-#define WAKEUP_WD_FAILSAFE_TIMEOUT_MULTIPLIER 100        /*fail safe timeout multipler
-                                                         multiplied to timeout of ISR
-                                                         under test*/
-#define WAKEUP_WD_PASS_TIMEOUT_DEFAULT        1000       /*minimum timeout set
-                                                         by default (1ms)*/
+#define TIMEOUT_THRESHOLD                       500       /*minimum timeout that can be
+                                                          set for wakeup and wd and timer tests*/
+#define TIMEOUT_MAX_THRESHOLD                   2000000   /*maximum timeout that can be
+                                                          set for wakeup and wd and timer tests*/
+#define WAKEUP_WD_FAILSAFE_TIMEOUT_MULTIPLIER   100       /*fail safe timeout multipler
+                                                          multiplied to timeout of ISR under test*/
+#define WAKEUP_WD_PASS_TIMEOUT_DEFAULT          1000      /*minimum timeout set
+                                                          by default for wakeup & WD tests (1ms)*/
+#define TIMER_TIMEOUT_DEFAULT                   1000000   /*minimum timeout set
+                                                          by default for timer tests (1s)*/
 
 /* EL1 skip-trap param defines (-el1skiptrap) */
 #define EL1SKIPTRAP_PMSIDR   (1u << 0)
 #define EL1SKIPTRAP_CNTPCT   (1u << 1)
 #define EL1SKIPTRAP_DEVMEM   (1u << 2)
-
-/* Test status counters visible across ACS */
-typedef struct {
-    uint32_t total_rules_run;     /* Total rules/tests that reported a status */
-    uint32_t passed;              /* Count of TEST_PASS */
-    uint32_t partial_coverage;    /* Count of TEST_PART_COV */
-    uint32_t warnings;            /* Count of TEST_WARN */
-    uint32_t skipped;             /* Count of TEST_SKIP */
-    uint32_t failed;              /* Count of TEST_FAIL */
-    uint32_t not_implemented;     /* Count of TEST_NO_IMP */
-    uint32_t pal_not_supported;   /* Count of TEST_PAL_NS */
-} acs_test_status_counters_t;
-
-extern acs_test_status_counters_t g_rule_test_stats;
 
 /* Module init operation type enum */
 typedef enum {
@@ -100,15 +92,15 @@ typedef char char8_t;
 
 /* GENERIC VAL APIs */
 void val_allocate_shared_mem(void);
+uintptr_t val_get_status_region_base(void);
 void val_free_shared_mem(void);
-void val_print(uint32_t level, char8_t *string, uint64_t data);
+//void val_print(uint32_t level, char8_t *string, uint64_t data);
 void val_print_raw(uint64_t uart_addr, uint32_t level, char8_t *string, uint64_t data);
 void val_print_primary_pe(uint32_t level, char8_t *string, uint64_t data, uint32_t index);
 void val_print_test_start(char8_t *string);
 void val_print_test_end(uint32_t status, char8_t *string);
 void val_set_test_data(uint32_t index, uint64_t addr, uint64_t test_data);
 void val_get_test_data(uint32_t index, uint64_t *data0, uint64_t *data1);
-void *val_memcpy(void *dest_buffer, void *src_buffer, uint32_t len);
 void val_dump_dtb(void);
 void view_print_info(uint32_t view);
 void val_log_context(char8_t *file, char8_t *func, uint32_t line);
@@ -118,7 +110,6 @@ uint32_t val_exit_acs(void);
 void val_print_acs_test_status_summary(void);
 
 uint32_t execute_tests(void);
-uint32_t val_strncmp(char8_t *str1, char8_t *str2, uint32_t len);
 uint64_t val_time_delay_ms(uint64_t time_ms);
 
 /* VAL PE APIs */
@@ -179,7 +170,8 @@ typedef enum {
   GIC_INFO_NUM_ITS,
   GIC_INFO_ITS_BASE,
   GIC_INFO_NUM_MSI_FRAME,
-  GIC_INFO_NUM_GICR_GICRD
+  GIC_INFO_NUM_GICR_GICRD,
+  GIC_INFO_NUM_GICD
 }GIC_INFO_e;
 
 /* GICv2m APIs */
@@ -502,7 +494,7 @@ void val_setup_mair_register(void);
 #define CEIL_TO_MAX_SYS_TIMEOUT(v)                           \
 ({                                                           \
     uint64_t __x = (uint64_t)(v);                            \
-    ((__x >> 32) != 0) ? WAKEUP_WD_SYS_TIMEOUT_MAX : (uint32_t)__x; \
+    ((__x >> 32) != 0) ? SYS_TIMEOUT_MAX : (uint32_t)__x;     \
 })
 
 void     val_memory_create_info_table(uint64_t *memory_info_table);
@@ -649,7 +641,7 @@ uint32_t val_sbsa_ras_execute_tests(uint32_t level, uint32_t num_pe);
 uint32_t val_sbsa_nist_execute_tests(uint32_t level, uint32_t num_pe);
 
 uint32_t val_bsa_execute_tests(uint32_t *g_sw_view);
-uint32_t val_sbsa_execute_tests(uint32_t g_sbsa_level);
+uint32_t val_sbsa_execute_tests(uint32_t level);
 
 /* TPM2 API */
 
@@ -665,7 +657,7 @@ uint64_t val_tpm2_get_info(TPM2_INFO_e info_type);
 uint64_t val_tpm2_get_version(void);
 
 /* PC-BSA Related API's */
-uint32_t val_pcbsa_execute_tests(uint32_t g_pcbsa_level);
+uint32_t val_pcbsa_execute_tests(uint32_t level);
 uint32_t val_pcbsa_pe_execute_tests(uint32_t level, uint32_t num_pe);
 uint32_t val_pcbsa_gic_execute_tests(uint32_t level, uint32_t num_pe);
 uint32_t val_pcbsa_smmu_execute_tests(uint32_t level, uint32_t num_pe);

@@ -43,8 +43,8 @@ isr_mnt()
     data &= ~0x7;
     val_gic_reg_write(ICH_HCR_EL2, data);
 
-    val_set_status(index, RESULT_PASS(TEST_NUM, 1));
-    val_print(ACS_PRINT_INFO, "\n       Received GIC maintenance interrupt ", 0);
+    val_print(TRACE, "\n       Received GIC maintenance interrupt ");
+    val_set_status(index, RESULT_PASS);
     val_gic_end_of_interrupt(intid);
 }
 
@@ -59,9 +59,9 @@ payload()
     uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
     if (val_pe_reg_read(CurrentEL) == AARCH64_EL1) {
-        val_print(ACS_PRINT_DEBUG, "\n       Skipping. Test accesses EL2"
-                                    " Registers       ", 0);
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+        val_print(DEBUG, "\n       Skipping. Test accesses EL2"
+                                    " Registers       ");
+        val_set_status(index, RESULT_SKIP(1));
         return;
     }
 
@@ -72,16 +72,16 @@ payload()
 
     /*Check if interrupt is in PPI INTID range*/
     if ((intid < 16 || intid > 31) && (!val_gic_is_valid_eppi(intid))) {
-        val_print(ACS_PRINT_DEBUG,
+        val_print(DEBUG,
             "\n       GIC Maintenance interrupt not mapped to PPI base range,"
             "\n       INTID: %d   ", intid);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+        val_set_status(index, RESULT_FAIL(2));
         return;
     }
 
     if (val_gic_install_isr(intid, isr_mnt)) {
-        val_print(ACS_PRINT_ERR, "\n       GIC Install Handler Failed...", 0);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 3));
+        val_print(ERROR, "\n       GIC Install Handler Failed...");
+        val_set_status(index, RESULT_FAIL(3));
         return;
     }
 
@@ -96,8 +96,8 @@ payload()
     }
 
     if (timeout == 0) {
-        val_print(ACS_PRINT_ERR, "\n       Interrupt not received within timeout", 0);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 4));
+        val_print(ERROR, "\n       Interrupt not received within timeout");
+        val_set_status(index, RESULT_FAIL(4));
         return;
     }
     return;

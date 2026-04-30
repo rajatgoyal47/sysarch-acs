@@ -42,8 +42,8 @@ esr(uint64_t interrupt_type, void *context)
   /* Update the ELR to point to next instrcution */
   val_pe_update_elr(context, (uint64_t)branch_to_test);
 
-  val_print(ACS_PRINT_INFO, "\n       Received Exception of type %d", interrupt_type);
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_print(TRACE, "\n       Received Exception of type %d", interrupt_type);
+  val_set_status(index, RESULT_PASS);
 }
 
 static
@@ -61,20 +61,19 @@ payload()
   val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
 
   /* If we don't find a single un-populated address, mark this test as skipped */
-  val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+  val_set_status(index, RESULT_SKIP(1));
 
   while (loop_var) {
       /* Get the base address of unpopulated region */
       status = val_memory_get_unpopulated_addr(&addr, instance);
       if (status == PCIE_NO_MAPPING) {
-          val_print(ACS_PRINT_INFO,
-                    "\n       All instances of unpopulated memory were obtained",
-                    0);
+          val_print(TRACE,
+                    "\n       All instances of unpopulated memory were obtained");
           return;
       }
 
       if (status) {
-          val_print(ACS_PRINT_ERR,
+          val_print(ERROR,
                     "\n       Error in obtaining unpopulated memory for instance %d",
                     instance);
           return;
@@ -82,7 +81,7 @@ payload()
 
       if (val_memory_get_info(addr, &attr) == MEM_TYPE_NOT_POPULATED) {
          /* default value of FAIL, Pass is set in the exception handler */
-          val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+          val_set_status(index, RESULT_FAIL(1));
 
           branch_to_test = &&exception_taken;
 
@@ -93,7 +92,7 @@ payload()
 exception_taken:
           /* if the access did not go to our exception handler, fail and exit */
           if (IS_TEST_FAIL(val_get_status(index))) {
-              val_print(ACS_PRINT_ERR,
+              val_print(ERROR,
                         "\n       Memory access check fails at address = 0x%llx ",
                         addr);
               return;

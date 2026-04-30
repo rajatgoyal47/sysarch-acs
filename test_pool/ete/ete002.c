@@ -35,11 +35,11 @@ static void payload(void)
 
     /* ID_AA64DFR0_EL1.TraceVer, bits [7:4] non-zero value indicate FEAT_ETE support */
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64DFR0_EL1), 4, 7);
-    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       ID_AA64DFR0_EL1.TraceVer = %llx",
+    val_print_primary_pe(DEBUG, "\n       ID_AA64DFR0_EL1.TraceVer = %llx",
                                                                              data, index);
 
     if (data == 0) {
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+        val_set_status(index, RESULT_FAIL(01));
         return;
     }
 
@@ -48,11 +48,11 @@ static void payload(void)
      * TRCIDR0.TRCCCI[7] == 1 indicates atleast 12 bit cycle counting implemented for trace unit */
 
     reg_trcidr = val_pe_reg_read(TRCIDR0);
-    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       TRCIDR0 = %llx", reg_trcidr, index);
+    val_print_primary_pe(DEBUG, "\n       TRCIDR0 = %llx", reg_trcidr, index);
 
     data = VAL_EXTRACT_BITS(reg_trcidr, 7, 7);
     if (data != 1) {
-        val_print_primary_pe(ACS_PRINT_ERR, "\n       Cycle counting not implemented", 0, index);
+        val_print_primary_pe(ERROR, "\n       Cycle counting not implemented", 0, index);
         test_fail++;
     }
 
@@ -60,11 +60,11 @@ static void payload(void)
      * TRCIDR4.NUMACPAIRS, bits [3:0] non-zero indicates at least one address comparator pair */
 
     reg_trcidr = val_pe_reg_read(TRCIDR4);
-    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       TRCIDR4 = %llx", reg_trcidr, index);
+    val_print_primary_pe(DEBUG, "\n       TRCIDR4 = %llx", reg_trcidr, index);
 
     data = VAL_EXTRACT_BITS(reg_trcidr, 0, 3);
     if (data == 0) {
-        val_print_primary_pe(ACS_PRINT_ERR, "\n       Address comparator pair not present",
+        val_print_primary_pe(ERROR, "\n       Address comparator pair not present",
                              0, index);
         test_fail++;
     }
@@ -74,7 +74,7 @@ static void payload(void)
 
     data = VAL_EXTRACT_BITS(reg_trcidr, 24, 27);
     if (data == 0) {
-        val_print_primary_pe(ACS_PRINT_ERR, "\n       Context ID comparator not present",
+        val_print_primary_pe(ERROR, "\n       Context ID comparator not present",
                              0, index);
         test_fail++;
     }
@@ -87,7 +87,7 @@ static void payload(void)
         /* TRCIDR4.NUMVMIDC, bits [31:28] non-zero value indicates atleast one Virtual Context ID */
         data = VAL_EXTRACT_BITS(reg_trcidr, 28, 31);
         if (data == 0) {
-            val_print_primary_pe(ACS_PRINT_ERR, "\n       Virtual Context ID not present",
+            val_print_primary_pe(ERROR, "\n       Virtual Context ID not present",
                                  0, index);
             test_fail++;
         }
@@ -98,7 +98,7 @@ static void payload(void)
 
     data = VAL_EXTRACT_BITS(reg_trcidr, 20, 23);
     if (data == 0) {
-        val_print_primary_pe(ACS_PRINT_ERR, "\n       one single-shot comparator ctrl not present",
+        val_print_primary_pe(ERROR, "\n       one single-shot comparator ctrl not present",
                              0, index);
         test_fail++;
     }
@@ -109,7 +109,7 @@ static void payload(void)
     data = VAL_EXTRACT_BITS(reg_trcidr, 16, 19);
 
     if (data == 0) {
-        val_print_primary_pe(ACS_PRINT_ERR, "\n       ETE Event not present in trace", 0, index);
+        val_print_primary_pe(ERROR, "\n       ETE Event not present in trace", 0, index);
         test_fail++;
     }
     resource_selector_pair = data;
@@ -118,11 +118,11 @@ static void payload(void)
      * TRCIDR5.NUMCNTR, bits [30:28] indicates no of Counters for trace */
 
     reg_trcidr = val_pe_reg_read(TRCIDR5);
-    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       TRCIDR5 = %llx", reg_trcidr, index);
+    val_print_primary_pe(DEBUG, "\n       TRCIDR5 = %llx", reg_trcidr, index);
 
     data = VAL_EXTRACT_BITS(reg_trcidr, 28, 30);
     if (data < 2) {
-        val_print_primary_pe(ACS_PRINT_ERR, "\n       Counters Expected >= 2 Actual = %d",
+        val_print_primary_pe(ERROR, "\n       Counters Expected >= 2 Actual = %d",
                              data, index);
         test_fail++;
     }
@@ -132,21 +132,21 @@ static void payload(void)
 
     data = VAL_EXTRACT_BITS(reg_trcidr, 25, 27);
     if (data == 0) {
-        val_print_primary_pe(ACS_PRINT_ERR, "\n       Sequencer not Implemented", 0, index);
+        val_print_primary_pe(ERROR, "\n       Sequencer not Implemented", 0, index);
         test_fail++;
     }
 
     /* Check 9: At least four resource selection pairs */
     if (resource_selector_pair < 3) {
-        val_print_primary_pe(ACS_PRINT_ERR, "\n       Selection Pair Expected > 3 Actual = %d",
+        val_print_primary_pe(ERROR, "\n       Selection Pair Expected > 3 Actual = %d",
                              resource_selector_pair + 1, index);
         test_fail++;
     }
 
     if (test_fail)
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
+        val_set_status(index, RESULT_FAIL(02));
      else
-        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+        val_set_status(index, RESULT_PASS);
 }
 
 uint32_t ete002_entry(uint32_t num_pe)

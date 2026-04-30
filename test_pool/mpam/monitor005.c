@@ -55,16 +55,16 @@ payload(void)
 
     /* Check if LLC is valid */
     if (llc_idx == CACHE_TABLE_EMPTY) {
-        val_print(ACS_PRINT_DEBUG, "\n       No LLC found, skipping test", 0);
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+        val_print(DEBUG, "\n       No LLC found, skipping test");
+        val_set_status(index, RESULT_SKIP(1));
         return;
     }
 
     /* Get the LLC Cache ID */
     cache_identifier = val_cache_get_info(CACHE_ID, llc_idx);
     if (cache_identifier == INVALID_CACHE_INFO) {
-        val_print(ACS_PRINT_DEBUG, "\n       Invalid LLC ID, skipping test", 0);
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+        val_print(DEBUG, "\n       Invalid LLC ID, skipping test");
+        val_set_status(index, RESULT_SKIP(2));
         return;
     }
 
@@ -72,7 +72,7 @@ payload(void)
     for (msc_index = 0; msc_index < msc_cnt; msc_index++) {
         max_partid = val_mpam_get_max_partid(msc_index);
         if (max_partid == 0) {
-            val_print(ACS_PRINT_DEBUG, "\n       MSC %d has no PARTID support", msc_index);
+            val_print(DEBUG, "\n       MSC %d has no PARTID support", msc_index);
             continue;
         }
 
@@ -81,7 +81,7 @@ payload(void)
                       GET_MIN_VALUE(test_partid, max_partid - 1);
     }
 
-    val_print(ACS_PRINT_TEST, "\n       Selected PARTID = %d", test_partid);
+    val_print(INFO, "\n       Selected PARTID = %d", test_partid);
 
     /* Iterate through all available LLC MSCs and their resources */
     for (msc_index = 0; msc_index < msc_cnt; msc_index++) {
@@ -110,7 +110,7 @@ payload(void)
                 num_mon = val_mpam_get_csumon_count(msc_index);
 
             if (num_mon == 0) {
-                val_print(ACS_PRINT_DEBUG,
+                val_print(DEBUG,
                     "\n       MSC %d does not have CSU monitors, skipping MSC", msc_index);
                 continue;
             }
@@ -130,8 +130,8 @@ payload(void)
             dest_buf = (void *)val_memory_alloc_pages(num_pages);
 
             if ((src_buf == NULL) || (dest_buf == NULL)) {
-                val_print(ACS_PRINT_ERR, "\n       Mem allocation failed", 0);
-                val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+                val_print(ERROR, "\n       Mem allocation failed");
+                val_set_status(index, RESULT_FAIL(01));
                 if (src_buf != NULL)
                     val_memory_free_pages(src_buf, num_pages);
                 if (dest_buf != NULL)
@@ -157,13 +157,13 @@ payload(void)
             /* Program MPAM2_EL2 with test_partid and default PMG */
             status = val_mpam_program_el2(test_partid, DEFAULT_PMG);
             if (status) {
-                val_print(ACS_PRINT_ERR, "\n       MPAM2_EL2 programming failed", 0);
+                val_print(ERROR, "\n       MPAM2_EL2 programming failed");
                 /* Free the buffers to the heap manager */
                 if (dest_buf != NULL)
                     val_memory_free_pages(dest_buf, num_pages);
                 if (src_buf != NULL)
                     val_memory_free_pages(src_buf, num_pages);
-                val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
+                val_set_status(index, RESULT_FAIL(02));
                 return;
             }
 
@@ -171,7 +171,7 @@ payload(void)
             val_time_delay_ms(100 * ONE_MILLISECOND);
 
             start_count = val_mpam_read_csumon(msc_index);
-            val_print(ACS_PRINT_DEBUG, "\n       Start Count = 0x%lx", start_count);
+            val_print(DEBUG, "\n       Start Count = 0x%lx", start_count);
 
             /* Start mem copy */
             val_memcpy(src_buf, dest_buf, BUFFER_SIZE);
@@ -182,12 +182,12 @@ payload(void)
             val_time_delay_ms(100 * ONE_MILLISECOND);
 
             end_count = val_mpam_read_csumon(msc_index);
-            val_print(ACS_PRINT_DEBUG, "\n       End Count = 0x%lx", end_count);
+            val_print(DEBUG, "\n       End Count = 0x%lx", end_count);
 
             if (start_count != end_count) {
-                val_print(ACS_PRINT_ERR, "\n       Unexpected cache usage behavior observed", 0);
-                val_print(ACS_PRINT_ERR, "\n       Start count = 0x%lx", start_count);
-                val_print(ACS_PRINT_ERR, "\n       End count  = 0x%lx", end_count);
+                val_print(ERROR, "\n       Unexpected cache usage behavior observed");
+                val_print(ERROR, "\n       Start count = 0x%lx", start_count);
+                val_print(ERROR, "\n       End count  = 0x%lx", end_count);
                 test_fail++;
             }
 
@@ -198,14 +198,14 @@ payload(void)
 
               if (TEST_CSUMON_VALUE != end_count) {
                 /* Fail the test */
-                val_print(ACS_PRINT_ERR, "\n       Unexpected CSUMON Value after Write", 0);
-                val_print(ACS_PRINT_ERR, "\n       Expected = 0x%lx", TEST_CSUMON_VALUE);
-                val_print(ACS_PRINT_ERR, "\n       Found    = 0x%lx", end_count);
+                val_print(ERROR, "\n       Unexpected CSUMON Value after Write");
+                val_print(ERROR, "\n       Expected = 0x%lx", TEST_CSUMON_VALUE);
+                val_print(ERROR, "\n       Found    = 0x%lx", end_count);
                 test_fail++;
               }
             } else {
               /* CSU is Read Only, Skipping CSUMON Value RW Check */
-              val_print(ACS_PRINT_DEBUG, "\n       CSU Read Only, Skipping Write Check", 0);
+              val_print(DEBUG, "\n       CSU Read Only, Skipping Write Check");
             }
 
             /* Restore MPAM2_EL2 settings */
@@ -226,11 +226,11 @@ payload(void)
     }
 
     if (test_skip)
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 3));
+        val_set_status(index, RESULT_SKIP(3));
     else if (test_fail)
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 3));
+        val_set_status(index, RESULT_FAIL(3));
     else
-        val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+        val_set_status(index, RESULT_PASS);
 
     return;
 }

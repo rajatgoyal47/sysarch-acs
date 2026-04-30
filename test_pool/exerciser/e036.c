@@ -119,8 +119,8 @@ payload(void)
   /* Allocate 2 test buffers, one for each pasid */
   dram_buf_base_virt = val_memory_alloc_pages(TEST_DATA_NUM_PAGES * 2);
   if (!dram_buf_base_virt) {
-      val_print(ACS_PRINT_ERR, "\n       Cacheable mem alloc failure %x", 2);
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 1));
+      val_print(ERROR, "\n       Cacheable mem alloc failure %x", 2);
+      val_set_status(pe_index, RESULT_FAIL(1));
       return;
   }
 
@@ -138,14 +138,14 @@ payload(void)
   /* Get translation attributes via TCR and translation table base via TTBR */
   if (val_pe_reg_read_tcr(0 /*for TTBR0*/, &pgt_desc.tcr))
   {
-    val_print(ACS_PRINT_ERR, "\n       TCR read failure %x", 3);
-    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 3));
+    val_print(ERROR, "\n       TCR read failure %x", 3);
+    val_set_status(pe_index, RESULT_FAIL(3));
     return;
   }
   if (val_pe_reg_read_ttbr(0 /*TTBR0*/, &ttbr))
   {
-    val_print(ACS_PRINT_ERR, "\n       TTBR0 read failure %x", 4);
-    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 4));
+    val_print(ERROR, "\n       TTBR0 read failure %x", 4);
+    val_set_status(pe_index, RESULT_FAIL(4));
     return;
   }
 
@@ -176,7 +176,7 @@ payload(void)
     if ((dp_type != RCiEP) && (dp_type != iEP_EP))
         continue;
 
-    val_print(ACS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
+    val_print(DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
 
     /* Find SMMU node index for this pcie endpoint */
     master.smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf),
@@ -190,7 +190,7 @@ payload(void)
 
     if (smmu_ssid_bits < MIN_PASID_BITS || smmu_ssid_bits > MAX_PASID_BITS)
     {
-        val_print(ACS_PRINT_ERR, "\n       SMMU substreamid support error %d", smmu_ssid_bits);
+        val_print(ERROR, "\n       SMMU substreamid support error %d", smmu_ssid_bits);
         goto test_fail;
     }
 
@@ -200,13 +200,13 @@ payload(void)
     status = val_pcie_get_max_pasid_width(e_bdf, &exerciser_ssid_bits);
     if (status == PCIE_CAP_NOT_FOUND)
     {
-        val_print(ACS_PRINT_DEBUG,
+        val_print(DEBUG,
                   "\n       PASID extended capability not found for BDF: %x", e_bdf);
         continue;
     }
     else if (status)
     {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
                   "\n       Error in obtaining the PASID max width for BDF: %x",
                   e_bdf);
         goto test_fail;
@@ -241,14 +241,14 @@ payload(void)
         /* Need to know input and output address sizes before creating page table */
         pgt_desc.ias = val_smmu_get_info(SMMU_IN_ADDR_SIZE, master.smmu_index);
         if (pgt_desc.ias == 0) {
-            val_print(ACS_PRINT_ERR,
+            val_print(ERROR,
                      "\n       Input address size 0 for SMMU %d", master.smmu_index);
             goto test_fail;
         }
 
         pgt_desc.oas = val_smmu_get_info(SMMU_OUT_ADDR_SIZE, master.smmu_index);
         if (pgt_desc.oas == 0) {
-            val_print(ACS_PRINT_ERR,
+            val_print(ERROR,
                      "\n       Output address size 0 for SMMU %d", master.smmu_index);
             goto test_fail;
         }
@@ -257,8 +257,8 @@ payload(void)
            will update pgt_desc.pgt_base to point to created translation table */
         pgt_desc.pgt_base = (uint64_t) NULL;
         if (val_pgt_create(mem_desc, &pgt_desc)) {
-            val_print(ACS_PRINT_ERR,
-                     "\n       Unable to create page table with given attributes", 0);
+            val_print(ERROR,
+                     "\n       Unable to create page table with given attributes");
             goto test_fail;
         }
 
@@ -267,7 +267,7 @@ payload(void)
         master.substreamid = TEST_PASID1;
         if (val_smmu_map(master, pgt_desc))
         {
-            val_print(ACS_PRINT_ERR, "\n       SMMU mapping failed (%d)     ", master.substreamid);
+            val_print(ERROR, "\n       SMMU mapping failed (%d)     ", master.substreamid);
             goto test_fail;
         }
 
@@ -283,12 +283,12 @@ payload(void)
      * PASID Enable bit of the Root Port.
      */
     if (val_exerciser_ops(PASID_TLP_START, (uint64_t)master.substreamid, instance)) {
-        val_print(ACS_PRINT_ERR, "\n       Exerciser %x PASID TLP Prefix enable error", instance);
+        val_print(ERROR, "\n       Exerciser %x PASID TLP Prefix enable error", instance);
         goto test_fail;
     }
 
     if (val_exerciser_set_param(DMA_ATTRIBUTES, dram_buf_in_iova, dma_len, instance)) {
-        val_print(ACS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
+        val_print(ERROR, "\n       DMA attributes setting failure %4x", instance);
         goto test_fail;
     }
 
@@ -296,7 +296,7 @@ payload(void)
     val_exerciser_ops(START_DMA, EDMA_TO_DEVICE, instance);
 
     if (val_exerciser_set_param(DMA_ATTRIBUTES, dram_buf_out_iova, dma_len, instance)) {
-        val_print(ACS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
+        val_print(ERROR, "\n       DMA attributes setting failure %4x", instance);
         goto test_fail;
     }
 
@@ -304,12 +304,12 @@ payload(void)
     val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, instance);
 
     if (val_memory_compare(dram_buf_pasid1_in_virt, dram_buf_pasid1_out_virt, dma_len)) {
-        val_print(ACS_PRINT_ERR, "\n       Data Comparision failure for Exerciser %4x", instance);
+        val_print(ERROR, "\n       Data Comparision failure for Exerciser %4x", instance);
         goto test_fail;
     }
 
     if (val_exerciser_set_param(DMA_ATTRIBUTES, dram_buf_in_iova, dma_len, instance)) {
-        val_print(ACS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
+        val_print(ERROR, "\n       DMA attributes setting failure %4x", instance);
         goto test_fail;
     }
 
@@ -319,7 +319,7 @@ payload(void)
      * in exerciser PASID Control register.
      */
     if (val_exerciser_ops(PASID_TLP_STOP, (uint64_t)master.substreamid, instance)) {
-        val_print(ACS_PRINT_ERR, "\n       Exerciser %x PASID TLP Prefix disable error", instance);
+        val_print(ERROR, "\n       Exerciser %x PASID TLP Prefix disable error", instance);
         goto test_fail;
     }
 
@@ -333,8 +333,8 @@ payload(void)
        will update pgt_desc.pgt_base to point to created translation table */
     pgt_desc.pgt_base = (uint64_t) NULL;
     if (val_pgt_create(mem_desc, &pgt_desc)) {
-            val_print(ACS_PRINT_ERR,
-                     "\n       Unable to create page table with given attributes", 0);
+            val_print(ERROR,
+                     "\n       Unable to create page table with given attributes");
             goto test_fail;
     }
 
@@ -343,7 +343,7 @@ payload(void)
     master.substreamid = TEST_PASID2;
     if (val_smmu_map(master, pgt_desc))
     {
-        val_print(ACS_PRINT_ERR, "\n       SMMU mapping failed (%d)     ", master.substreamid);
+        val_print(ERROR, "\n       SMMU mapping failed (%d)     ", master.substreamid);
         goto test_fail;
     }
 
@@ -358,12 +358,12 @@ payload(void)
      * PASID Enable bit of the Root Port.
      */
     if (val_exerciser_ops(PASID_TLP_START, (uint64_t)master.substreamid, instance)) {
-        val_print(ACS_PRINT_ERR, "\n       Exerciser %x PASID TLP Prefix enable error", instance);
+        val_print(ERROR, "\n       Exerciser %x PASID TLP Prefix enable error", instance);
         goto test_fail;
     }
 
     if (val_exerciser_set_param(DMA_ATTRIBUTES, dram_buf_in_iova, dma_len, instance)) {
-        val_print(ACS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
+        val_print(ERROR, "\n       DMA attributes setting failure %4x", instance);
         goto test_fail;
     }
 
@@ -371,7 +371,7 @@ payload(void)
     val_exerciser_ops(START_DMA, EDMA_TO_DEVICE, instance);
 
     if (val_exerciser_set_param(DMA_ATTRIBUTES, dram_buf_out_iova, dma_len, instance)) {
-        val_print(ACS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
+        val_print(ERROR, "\n       DMA attributes setting failure %4x", instance);
         goto test_fail;
     }
 
@@ -379,12 +379,12 @@ payload(void)
     val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, instance);
 
     if (val_exerciser_ops(PASID_TLP_STOP, (uint64_t)master.substreamid, instance)) {
-        val_print(ACS_PRINT_ERR, "\n       Exerciser %x PASID TLP Prefix disable error", instance);
+        val_print(ERROR, "\n       Exerciser %x PASID TLP Prefix disable error", instance);
         goto test_fail;
     }
 
     if (val_memory_compare(dram_buf_pasid2_in_virt, dram_buf_pasid2_out_virt, dma_len)) {
-        val_print(ACS_PRINT_ERR, "\n       Data Comparison failure for Exerciser %4x", instance);
+        val_print(ERROR, "\n       Data Comparison failure for Exerciser %4x", instance);
         goto test_fail;
     }
 
@@ -393,14 +393,14 @@ payload(void)
   }
 
   if (e_valid_cnt)
-    val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+    val_set_status(pe_index, RESULT_PASS);
   else
-    val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+    val_set_status(pe_index, RESULT_SKIP(1));
 
   goto test_clean;
 
 test_fail:
-  val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 2));
+  val_set_status(pe_index, RESULT_FAIL(2));
 
 test_clean:
   val_memory_free_pages(dram_buf_base_virt, TEST_DATA_NUM_PAGES * 2);
@@ -420,7 +420,7 @@ e036_entry(uint32_t num_pe)
   status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
   if (status != ACS_STATUS_SKIP) {
       if (val_exerciser_test_init() != ACS_STATUS_PASS)
-          return TEST_SKIP_VAL;
+          return RESULT_SKIP(1);
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
   }
 

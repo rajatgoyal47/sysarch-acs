@@ -55,12 +55,12 @@ log_capability_issue(uint32_t index, uint32_t cap_id, uint8_t requirement)
     return;
 
   if (requirement == CAP_REQ_MANDATORY) {
-    val_print(ACS_PRINT_ERR, "\n       %a is not supported", (uint64_t)cap_name);
+    val_print(ERROR, "\n       %a is not supported", (uint64_t)cap_name);
   }
   else if (requirement == CAP_REQ_NOT_PERMITTED) {
-    val_print(ACS_PRINT_ERR, "\n       %a is supported", (uint64_t)cap_name);
+    val_print(ERROR, "\n       %a is supported", (uint64_t)cap_name);
   }
-  val_print(ACS_PRINT_ERR, " for host index 0x%x", index);
+  val_print(ERROR, " for host index 0x%x", index);
 }
 
 static void
@@ -80,8 +80,8 @@ payload(void)
   num_cxl_hb = val_cxl_get_info(CXL_INFO_NUM_DEVICES, 0);
 
   if (num_cxl_hb == 0) {
-      val_print(ACS_PRINT_INFO, "\n       No CXL Host Bridges discovered via CEDT", 0);
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+      val_print(TRACE, "\n       No CXL Host Bridges discovered via CEDT");
+      val_set_status(pe_index, RESULT_SKIP(1));
       return;
   }
 
@@ -89,9 +89,9 @@ payload(void)
       cxl_hb_base = val_cxl_get_info(CXL_INFO_COMPONENT_BASE, index);
       cxl_hb_len  = val_cxl_get_info(CXL_INFO_COMPONENT_LENGTH, index);
 
-      val_print(ACS_PRINT_INFO, "\n       HB[%x] CHBCR cxl_hb_base", index);
-      val_print(ACS_PRINT_INFO, " = 0x%llx", cxl_hb_base);
-      val_print(ACS_PRINT_INFO, " cxl_hb_len = 0x%llx", cxl_hb_len);
+      val_print(TRACE, "\n       HB[%x] CHBCR cxl_hb_base", index);
+      val_print(TRACE, " = 0x%llx", cxl_hb_base);
+      val_print(TRACE, " cxl_hb_len = 0x%llx", cxl_hb_len);
 
       cap_id_size = (uint32_t)(sizeof(g_capability_checks) / sizeof(g_capability_checks[0]));
       for (cap_check = 0; cap_check < cap_id_size; cap_check++) {
@@ -109,9 +109,9 @@ payload(void)
   }
 
   if (test_fail) {
-    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 1));
+    val_set_status(pe_index, RESULT_FAIL(1));
   } else {
-    val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+    val_set_status(pe_index, RESULT_PASS);
   }
 
 }

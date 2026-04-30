@@ -216,7 +216,7 @@
 
 #define PLATFORM_OVERRIDE_PCIE_ECAM0_EP_BAR64     0x4040000000 /* ECAM0: MMIO base 64bit EP BAR */
 #define PLATFORM_OVERRIDE_PCIE_ECAM0_RP_BAR64     0x4040100000 /* ECAM0: MMIO base 64bit RP BAR */
-#define PLATFORM_OVERRIDE_PCIE_ECAM0_EP_NPBAR32   0x60200000 /* ECAM0: MMIO base 32bit EP N-P BAR */
+#define PLATFORM_OVERRIDE_PCIE_ECAM0_EP_NPBAR32   0x60250000 /* ECAM0: MMIO base 32bit EP N-P BAR */
 #define PLATFORM_OVERRIDE_PCIE_ECAM0_EP_PBAR32    0x60000000 /* ECAM0: MMIO base 32bit EP P BAR   */
 #define PLATFORM_OVERRIDE_PCIE_ECAM0_RP_BAR32     0x60800000 /* ECAM0: MMIO base 32bit RP BAR     */
 
@@ -244,8 +244,10 @@
 // This value is arbitrary and may have to be adjusted
 #define PLATFORM_BM_OVERRIDE_MAX_IRQ_CNT       0xFFFF /* Max IRQs any device may raise           */
 
-/* TIMEOUT should be in Microsecond 5us to 2 sec */
+/* Wakeup/WD timeout (us); range 500us to 2 sec */
 #define PLATFORM_OVERRIDE_TIMEOUT              1000   /* time out for DUT */
+/* Timer test timeout (us); range 500us to 2 sec */
+#define PLATFORM_OVERRIDE_TIMER_TIMEOUT        10000
 
 /* FAIL safe timeout (> PLATFORM_OVERRIDE_TIMEOUT) */
 #define PLATFORM_OVERRIDE_FAILSAFE_TIMEOUT     (PLATFORM_OVERRIDE_TIMEOUT * 2)

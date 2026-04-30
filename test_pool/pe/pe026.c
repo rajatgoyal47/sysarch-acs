@@ -54,8 +54,8 @@ static void payload(void)
 
         if (VAL_EXTRACT_BITS(data2, 20, 23) == 0x2 || VAL_EXTRACT_BITS(data2, 28, 31) == 0x1)
         {
-            val_print(ACS_PRINT_INFO, "\n System supports both FEAT_LPA & FEAT_LPA2 ", 0);
-            val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+            val_print(TRACE, "\n System supports both FEAT_LPA & FEAT_LPA2 ");
+            val_set_status(index, RESULT_PASS);
             return;
         }
 
@@ -68,17 +68,17 @@ static void payload(void)
             /* If the base address is greater than 48 bits it is outside 256TB memory map */
             if (IS_ADDR_EXCEEDS_48BITS(peri_base))
             {
-                val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+                val_set_status(index, RESULT_FAIL(01));
                 return;
             }
             peri_count--;
         }
 
-        val_set_status(index, RESULT_PASS(TEST_NUM, 02));
+        val_set_status(index, RESULT_PASS);
     }
     else
     {
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
+        val_set_status(index, RESULT_SKIP(01));
     }
 }
 

@@ -35,7 +35,7 @@ payload()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   if (count == 0) {
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+      val_set_status(index, RESULT_SKIP(1));
       return;
   }
 
@@ -43,9 +43,9 @@ payload()
       if (val_peripheral_get_info(SATA_PLATFORM_TYPE, count - 1) == PLATFORM_TYPE_DT) {
           interface = val_peripheral_get_info(SATA_INTERFACE_TYPE, count - 1);
           if (interface != SATA_TYPE_AHCI) {
-              val_print(ACS_PRINT_DEBUG, "\n       Detected SATA CTRL not AHCI 0x%x  ",
+              val_print(DEBUG, "\n       Detected SATA CTRL not AHCI 0x%x  ",
                         interface);
-              val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+              val_set_status(index, RESULT_FAIL(1));
               return;
           }
       }
@@ -54,27 +54,27 @@ payload()
           ret = val_pcie_read_cfg(bdf, 0x8, &interface);
           interface = (interface >> 8) & 0xFF;
           if (ret == PCIE_NO_MAPPING || interface != 0x01) {
-              val_print(ACS_PRINT_INFO, "       WARN: SATA CTRL ECAM access failed %x\n",
+              val_print(TRACE, "       WARN: SATA CTRL ECAM access failed %x\n",
                         interface);
-              val_print(ACS_PRINT_INFO, "       Re-checking SATA CTRL using PciIo protocol\n", 0);
+              val_print(TRACE, "       Re-checking SATA CTRL using PciIo protocol\n");
               ret = val_pcie_io_read_cfg(bdf, 0x8, &interface);
               if (ret == PCIE_NO_MAPPING) {
-                  val_print(ACS_PRINT_DEBUG, "       Reading device class code using PciIo"
-                            " protocol failed\n", 0);
-                  val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+                  val_print(DEBUG, "       Reading device class code using PciIo"
+                            " protocol failed\n");
+                  val_set_status(index, RESULT_FAIL(2));
                   return;
               }
               interface = (interface >> 8) & 0xFF;
               if (interface != 0x01) {
-                  val_print(ACS_PRINT_DEBUG, " Detected SATA CTRL not AHCI\n", 0);
-                  val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+                  val_print(DEBUG, " Detected SATA CTRL not AHCI\n");
+                  val_set_status(index, RESULT_FAIL(1));
                   return;
               }
           }
       }
       count--;
   }
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
   return;
 }
 

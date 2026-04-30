@@ -73,16 +73,16 @@ static void payload(void)
    /* Get the Index for LLC */
     llc_index = val_cache_get_llc_index();
     if (llc_index == CACHE_TABLE_EMPTY) {
-      val_print(ACS_PRINT_ERR, "\n       Cache info table empty", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
+      val_print(ERROR, "\n       Cache info table empty");
+      val_set_status(index, RESULT_SKIP(01));
       return;
     }
 
     /* Get the cache identifier for LLC */
     cache_identifier = val_cache_get_info(CACHE_ID, llc_index);
     if (cache_identifier == INVALID_CACHE_INFO) {
-      val_print(ACS_PRINT_ERR, "\n       LLC invalid in PPTT", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+      val_print(ERROR, "\n       LLC invalid in PPTT");
+      val_set_status(index, RESULT_SKIP(02));
       return;
     }
 
@@ -111,14 +111,14 @@ static void payload(void)
       }
     }
 
-    val_print(ACS_PRINT_DEBUG, "\n       CPOR Nodes = %d", cpor_nodes);
-    val_print(ACS_PRINT_DEBUG, "\n       Test PARTID = %d", test_partid);
-    val_print(ACS_PRINT_DEBUG, "\n       Cache Max Size = 0x%x", cache_maxsize);
-    val_print(ACS_PRINT_DEBUG, "\n       Number of CSU Monitors = %d", csumon_count);
+    val_print(DEBUG, "\n       CPOR Nodes = %d", cpor_nodes);
+    val_print(DEBUG, "\n       Test PARTID = %d", test_partid);
+    val_print(DEBUG, "\n       Cache Max Size = 0x%x", cache_maxsize);
+    val_print(DEBUG, "\n       Number of CSU Monitors = %d", csumon_count);
 
     /* Skip the test if CSU monitors/ nodes supporting Cache Portion Partitoning are 0 */
     if ((cpor_nodes == 0) || (csumon_count == 0)) {
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 03));
+        val_set_status(index, RESULT_SKIP(03));
         return;
     }
 
@@ -151,8 +151,8 @@ static void payload(void)
       if (cpor_config_data[cfg_index].config_enable) {
         /* Configure CPOR settings for nodes supporting CPOR */
         for (msc_index = 0; msc_index < msc_node_cnt; msc_index++) {
-          val_print(ACS_PRINT_DEBUG, "\n       Running for cfg_index = %d", cfg_index);
-          val_print(ACS_PRINT_DEBUG, ", msc_index = %d", msc_index);
+          val_print(DEBUG, "\n       Running for cfg_index = %d", cfg_index);
+          val_print(DEBUG, ", msc_index = %d", msc_index);
 
           rsrc_node_cnt = val_mpam_get_info(MPAM_MSC_RSRC_COUNT, msc_index, 0);
           for (rsrc_index = 0; rsrc_index < rsrc_node_cnt; rsrc_index++) {
@@ -187,13 +187,14 @@ static void payload(void)
             dest_buf = (void *)val_memory_alloc_pages(num_pages);
 
             if ((src_buf == NULL) || (dest_buf == NULL)) {
-                val_print(ACS_PRINT_ERR, "\n       Mem allocation failed", 0);
-                val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+                val_print(ERROR, "\n       Mem allocation failed");
+                val_set_status(index, RESULT_FAIL(01));
                 if (dest_buf != NULL)
                     val_memory_free_pages(dest_buf, num_pages);
                 if (src_buf != NULL)
                     val_memory_free_pages(src_buf, num_pages);
                 return;
+
             }
 
             /* Configure CSU Monitor */
@@ -209,7 +210,7 @@ static void payload(void)
             };
 
             start_count = val_mpam_read_csumon(msc_index);
-            val_print(ACS_PRINT_DEBUG, "\n       Start Count = 0x%lx", start_count);
+            val_print(DEBUG, "\n       Start Count = 0x%lx", start_count);
 
             /* Start mem copy */
             val_memcpy(src_buf, dest_buf, buf_size);
@@ -217,7 +218,7 @@ static void payload(void)
             val_time_delay_ms(TIMEOUT_MEDIUM);
 
             end_count = val_mpam_read_csumon(msc_index);
-            val_print(ACS_PRINT_DEBUG, "\n       End Count = 0x%lx", end_count);
+            val_print(DEBUG, "\n       End Count = 0x%lx", end_count);
 
             /* Disable CSU MON */
             val_mpam_csumon_disable(msc_index);
@@ -249,20 +250,20 @@ static void payload(void)
     for (msc_index = 0; msc_index < msc_node_cnt; msc_index++) {
       for (cfg_index = 1; cfg_index < enabled_scenarios; cfg_index++) {
         if (counter[cfg_index][msc_index] > counter[cfg_index-1][msc_index]) {
-          val_print(ACS_PRINT_ERR, "\n       Failed for msc_index : %d", msc_index);
-          val_print(ACS_PRINT_ERR, "\n       cfg_index : %d", cfg_index-1);
-          val_print(ACS_PRINT_ERR, ", CSU Mon Count :0x%lx", counter[cfg_index-1][msc_index]);
-          val_print(ACS_PRINT_ERR, "\n       cfg_index : %d", cfg_index);
-          val_print(ACS_PRINT_ERR, ", CSU Mon Count :0x%lx", counter[cfg_index][msc_index]);
+          val_print(ERROR, "\n       Failed for msc_index : %d", msc_index);
+          val_print(ERROR, "\n       cfg_index : %d", cfg_index-1);
+          val_print(ERROR, ", CSU Mon Count :0x%lx", counter[cfg_index-1][msc_index]);
+          val_print(ERROR, "\n       cfg_index : %d", cfg_index);
+          val_print(ERROR, ", CSU Mon Count :0x%lx", counter[cfg_index][msc_index]);
           test_fail++;
         }
       }
     }
 
     if (test_fail)
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
+      val_set_status(index, RESULT_FAIL(02));
     else
-      val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(index, RESULT_PASS);
 
     return;
 }

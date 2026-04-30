@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2024-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2024-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -90,4 +90,9 @@ void pal_driver_uart_pl011_putc(int c)
 
     /* write the data (upper 24 bits are reserved) */
     ((pal_uart_t *)g_uart)->uartdr = pdata;
+}
+
+void pal_uart_putc(char c)
+{
+    pal_driver_uart_pl011_putc((uint8_t)c);
 }

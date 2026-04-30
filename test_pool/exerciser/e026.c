@@ -86,15 +86,15 @@ payload(void *arg)
    */
   pgt_base_array = val_aligned_alloc(MEM_ALIGN_4K, sizeof(uint64_t) * num_exercisers);
   if (!pgt_base_array) {
-      val_print(ACS_PRINT_ERR, "\n       mem alloc failure for pgt_base_array", 0);
-      val_set_status(pe_index, RESULT_FAIL(payload_data->test_num, 01));
+      val_print(ERROR, "\n       mem alloc failure for pgt_base_array");
+      val_set_status(pe_index, RESULT_FAIL(01));
       return;
   }
 
   pgt_base = val_aligned_alloc(MEM_ALIGN_4K, sizeof(uint64_t) * num_exercisers);
   if (!pgt_base) {
-      val_print(ACS_PRINT_ERR, "\n       mem alloc failure for pgt_base", 0);
-      val_set_status(pe_index, RESULT_FAIL(payload_data->test_num, 02));
+      val_print(ERROR, "\n       mem alloc failure for pgt_base");
+      val_set_status(pe_index, RESULT_FAIL(02));
       val_memory_free_aligned(pgt_base_array);
       return;
   }
@@ -113,7 +113,7 @@ payload(void *arg)
 
       /* Get exerciser bdf */
       e_bdf = val_exerciser_get_bdf(instance);
-      val_print(ACS_PRINT_DEBUG, "\n       Exercise BDF - 0x%x", e_bdf);
+      val_print(DEBUG, "\n       Exercise BDF - 0x%x", e_bdf);
 
       /* S_PCIe_07 requires only the second part of the check,
          while S_PCIe_08 requires both the first and second parts.
@@ -131,13 +131,13 @@ payload(void *arg)
       val_pcie_enable_ordering(e_bdf);
       val_mmio_write64((uint64_t)pgt_base_array, 0);
       if (val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)&dma_buffer, 8, instance)) {
-          val_print(ACS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
+          val_print(ERROR, "\n       DMA attributes setting failure %4x", instance);
           goto test_fail;
       }
 
       /* Trigger DMA from input buffer to exerciser memory */
       if (val_exerciser_ops(START_DMA, EDMA_TO_DEVICE, instance)) {
-          val_print(ACS_PRINT_ERR, "\n       DMA write failure to exerciser %4x", instance);
+          val_print(ERROR, "\n       DMA write failure to exerciser %4x", instance);
           goto test_fail;
       }
 
@@ -146,13 +146,13 @@ payload(void *arg)
           if (val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)(pgt_base_array) + (uint8_t)i,
                                       2, instance))
           {
-              val_print(ACS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
+              val_print(ERROR, "\n       DMA attributes setting failure %4x", instance);
               goto test_fail;
           }
 
           /* Trigger DMA from exerciser memory to output buffer*/
           if (val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, instance)) {
-              val_print(ACS_PRINT_ERR, "\n       DMA read failure from exerciser %4x", instance);
+              val_print(ERROR, "\n       DMA read failure from exerciser %4x", instance);
               goto test_fail;
           }
           i = i + 2;
@@ -172,7 +172,7 @@ disable_ro:
       if (!payload_data->check2_only) {
           /* All the previous writes sent must be completed, before next transaction */
           if (val_memory_compare(&test_data, pgt_base_array, 8)) {
-              val_print(ACS_PRINT_ERR,
+              val_print(ERROR,
                                   "\n      Data Comparasion failure for Exerciser %4x", instance);
               goto test_fail;
           }
@@ -185,13 +185,13 @@ disable_ro:
 
       val_mmio_write64((uint64_t)pgt_base_array, 0);
       if (val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)&dma_buffer, 8, instance)) {
-          val_print(ACS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
+          val_print(ERROR, "\n       DMA attributes setting failure %4x", instance);
           goto test_fail;
       }
 
       /* Trigger DMA from input buffer to exerciser memory */
       if (val_exerciser_ops(START_DMA, EDMA_TO_DEVICE, instance)) {
-          val_print(ACS_PRINT_ERR, "\n       DMA write failure to exerciser %4x", instance);
+          val_print(ERROR, "\n       DMA write failure to exerciser %4x", instance);
           goto test_fail;
       }
 
@@ -203,13 +203,13 @@ disable_ro:
           if (val_exerciser_set_param(DMA_ATTRIBUTES, (uint64_t)(pgt_base_array) + (uint8_t)j,
                                       8, instance))
           {
-              val_print(ACS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
+              val_print(ERROR, "\n       DMA attributes setting failure %4x", instance);
               goto test_fail;
           }
 
           /* Trigger DMA from exerciser memory to output buffer*/
           if (val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, instance)) {
-              val_print(ACS_PRINT_ERR, "\n       DMA read failure from exerciser %4x", instance);
+              val_print(ERROR, "\n       DMA read failure from exerciser %4x", instance);
               goto test_fail;
           }
           j = j + 2;
@@ -217,20 +217,20 @@ disable_ro:
       j = 0x2;
 
       if (val_memory_compare(pgt_base, pgt_base_array, MAX_LEN)) {
-          val_print(ACS_PRINT_ERR, "\n      Data Comparasion failure for Exerciser %4x", instance);
+          val_print(ERROR, "\n      Data Comparasion failure for Exerciser %4x", instance);
           goto test_fail;
       }
   }
 
 test_pass:
-  val_set_status(pe_index, RESULT_PASS(payload_data->test_num, 01));
+  val_set_status(pe_index, RESULT_PASS);
   goto test_clean;
 
   if (test_skip)
-      val_set_status(pe_index, RESULT_SKIP(payload_data->test_num, 01));
+      val_set_status(pe_index, RESULT_SKIP(01));
 
 test_fail:
-  val_set_status(pe_index, RESULT_FAIL(payload_data->test_num, 03));
+  val_set_status(pe_index, RESULT_FAIL(03));
 test_clean:
   val_memory_free_aligned(pgt_base_array);
   val_memory_free_aligned(pgt_base);
@@ -250,7 +250,7 @@ e026_entry(uint32_t num_pe)
   status = val_initialize_test(test_entries[0].test_num, test_entries[0].desc, num_pe);
   if (status != ACS_STATUS_SKIP) {
       if (val_exerciser_test_init() != ACS_STATUS_PASS)
-          return TEST_SKIP_VAL;
+          return TEST_SKIP;
       val_run_test_configurable_payload(&data, payload);
   }
 
@@ -275,7 +275,7 @@ e032_entry(uint32_t num_pe)
   status = val_initialize_test(test_entries[1].test_num, test_entries[1].desc, num_pe);
   if (status != ACS_STATUS_SKIP) {
       if (val_exerciser_test_init() != ACS_STATUS_PASS)
-          return TEST_SKIP_VAL;
+          return TEST_SKIP;
       val_run_test_configurable_payload(&data, payload);
   }
 

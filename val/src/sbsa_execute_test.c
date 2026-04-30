@@ -54,7 +54,7 @@ val_sbsa_pe_execute_tests(uint32_t level, uint32_t num_pe)
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == ACS_PE_TEST_NUM_BASE) {
-          val_print(ACS_PRINT_INFO, "\n USER Override - Skipping all PE tests\n", 0);
+          val_print(TRACE, "\n USER Override - Skipping all PE tests\n");
           return ACS_STATUS_SKIP;
       }
   }
@@ -62,7 +62,7 @@ val_sbsa_pe_execute_tests(uint32_t level, uint32_t num_pe)
   /* Check if there are any tests to be executed in current module with user override options*/
   status = val_check_skip_module(ACS_PE_TEST_NUM_BASE);
   if (status) {
-      val_print(ACS_PRINT_INFO, "\n USER Override - Skipping all PE tests\n", 0);
+      val_print(TRACE, "\n USER Override - Skipping all PE tests\n");
       return ACS_STATUS_SKIP;
   }
 
@@ -152,7 +152,7 @@ val_sbsa_gic_execute_tests(uint32_t level, uint32_t num_pe)
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == ACS_GIC_TEST_NUM_BASE) {
-          val_print(ACS_PRINT_INFO, "      USER Override - Skipping all GIC tests\n", 0);
+          val_print(TRACE, "      USER Override - Skipping all GIC tests\n");
           return ACS_STATUS_SKIP;
       }
   }
@@ -161,7 +161,7 @@ val_sbsa_gic_execute_tests(uint32_t level, uint32_t num_pe)
   /* Check if there are any tests to be executed in current module with user override options*/
   module_skip = val_check_skip_module(ACS_GIC_TEST_NUM_BASE);
   if (module_skip) {
-      val_print(ACS_PRINT_INFO, "\n USER Override - Skipping all GIC tests\n", 0);
+      val_print(TRACE, "\n USER Override - Skipping all GIC tests\n");
       return ACS_STATUS_SKIP;
   }
 
@@ -205,7 +205,7 @@ val_sbsa_wd_execute_tests(uint32_t level, uint32_t num_pe)
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == ACS_WD_TEST_NUM_BASE) {
-          val_print(ACS_PRINT_INFO, "      USER Override - Skipping all Watchdog tests\n", 0);
+          val_print(TRACE, "      USER Override - Skipping all Watchdog tests\n");
           return ACS_STATUS_SKIP;
       }
   }
@@ -213,7 +213,7 @@ val_sbsa_wd_execute_tests(uint32_t level, uint32_t num_pe)
   /* Check if there are any tests to be executed in current module with user override options*/
   status = val_check_skip_module(ACS_WD_TEST_NUM_BASE);
   if (status) {
-      val_print(ACS_PRINT_INFO, "\n USER Override - Skipping all Watchdog tests\n", 0);
+      val_print(TRACE, "\n USER Override - Skipping all Watchdog tests\n");
       return ACS_STATUS_SKIP;
   }
 
@@ -246,7 +246,7 @@ val_sbsa_timer_execute_tests(uint32_t level, uint32_t num_pe)
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == ACS_TIMER_TEST_NUM_BASE) {
-          val_print(ACS_PRINT_INFO, "      USER Override - Skipping all Timer tests\n", 0);
+          val_print(TRACE, "      USER Override - Skipping all Timer tests\n");
           return ACS_STATUS_SKIP;
       }
   }
@@ -254,7 +254,7 @@ val_sbsa_timer_execute_tests(uint32_t level, uint32_t num_pe)
   /* Check if there are any tests to be executed in current module with user override options*/
   status = val_check_skip_module(ACS_TIMER_TEST_NUM_BASE);
   if (status) {
-      val_print(ACS_PRINT_INFO, "\n USER Override - Skipping all Timer tests\n", 0);
+      val_print(TRACE, "\n USER Override - Skipping all Timer tests\n");
       return ACS_STATUS_SKIP;
   }
 
@@ -301,7 +301,7 @@ val_sbsa_pcie_execute_tests(uint32_t level, uint32_t num_pe)
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == ACS_PCIE_TEST_NUM_BASE) {
-          val_print(ACS_PRINT_INFO, "\n USER Override - Skipping all PCIe tests\n", 0);
+          val_print(TRACE, "\n USER Override - Skipping all PCIe tests\n");
           return ACS_STATUS_SKIP;
       }
   }
@@ -317,13 +317,13 @@ val_sbsa_pcie_execute_tests(uint32_t level, uint32_t num_pe)
 
   /* Skip the module only if no tests from PCIe module and extended PCIe module are run */
   if (skip_status > 1) {
-      val_print(ACS_PRINT_INFO, "\n USER Override - Skipping all PCIe tests\n", 0);
+      val_print(TRACE, "\n USER Override - Skipping all PCIe tests\n");
       return ACS_STATUS_SKIP;
   }
 
   if (pcie_bdf_table_list_flag == 1) {
-    val_print(ACS_PRINT_WARN, "\n     *** Created device list with valid bdf doesn't match \
-                    with the platform pcie device hierarchy, Skipping PCIE tests ***\n", 0);
+    val_print(WARN, "\n     *** Created device list with valid bdf doesn't match \
+                    with the platform pcie device hierarchy, Skipping PCIE tests ***\n");
     return ACS_STATUS_SKIP;
   }
 
@@ -337,7 +337,7 @@ val_sbsa_pcie_execute_tests(uint32_t level, uint32_t num_pe)
 
   ecam_status = p001_entry(num_pe);
   if (ecam_status == ACS_STATUS_FAIL) {
-    val_print(ACS_PRINT_WARN, "\n     *** Skipping remaining PCIE tests ***\n", 0);
+    val_print(WARN, "\n     *** Skipping remaining PCIE tests ***\n");
     return status;
   }
 
@@ -377,8 +377,8 @@ val_sbsa_pcie_execute_tests(uint32_t level, uint32_t num_pe)
 #endif
 
     if (g_pcie_integrated_devices == 0) {
-      val_print(ACS_PRINT_WARN, "\n     *** No integrated PCIe Devices Found, \
-                Skipping remaining PCIE tests ***\n", 0);
+      val_print(WARN, "\n     *** No integrated PCIe Devices Found, \
+                Skipping remaining PCIE tests ***\n");
       return ACS_STATUS_SKIP;
     }
 
@@ -462,7 +462,7 @@ val_sbsa_smmu_execute_tests(uint32_t level, uint32_t num_pe)
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == ACS_SMMU_TEST_NUM_BASE) {
-          val_print(ACS_PRINT_INFO, "      USER Override - Skipping all SMMU tests\n", 0);
+          val_print(TRACE, "      USER Override - Skipping all SMMU tests\n");
           return ACS_STATUS_SKIP;
       }
   }
@@ -470,7 +470,7 @@ val_sbsa_smmu_execute_tests(uint32_t level, uint32_t num_pe)
   /* Check if there are any tests to be executed in current module with user override options*/
   status = val_check_skip_module(ACS_SMMU_TEST_NUM_BASE);
   if (status) {
-      val_print(ACS_PRINT_INFO, "\n USER Override - Skipping all SMMU tests\n", 0);
+      val_print(TRACE, "\n USER Override - Skipping all SMMU tests\n");
       return ACS_STATUS_SKIP;
   }
 
@@ -483,8 +483,8 @@ val_sbsa_smmu_execute_tests(uint32_t level, uint32_t num_pe)
       status |= i025_entry(num_pe);
 
       if (status != ACS_STATUS_PASS) {
-         val_print(ACS_PRINT_WARN, "\n     SMMU Compatibility Check Failed, ", 0);
-         val_print(ACS_PRINT_WARN, "Skipping SMMU tests...\n", 0);
+         val_print(WARN, "\n     SMMU Compatibility Check Failed, ");
+         val_print(WARN, "Skipping SMMU tests...\n");
          return ACS_STATUS_FAIL;
       }
 
@@ -550,7 +550,7 @@ val_sbsa_memory_execute_tests(uint32_t level, uint32_t num_pe)
 
   for (i = 0 ; i < g_num_skip ; i++) {
       if (g_skip_test_num[i] == ACS_MEMORY_MAP_TEST_NUM_BASE) {
-          val_print(ACS_PRINT_INFO, "      USER Override - Skipping all memory tests\n", 0);
+          val_print(TRACE, "      USER Override - Skipping all memory tests\n");
           return ACS_STATUS_SKIP;
       }
   }
@@ -558,7 +558,7 @@ val_sbsa_memory_execute_tests(uint32_t level, uint32_t num_pe)
   /* Check if there are any tests to be executed in the current module with user override*/
   status = val_check_skip_module(ACS_MEMORY_MAP_TEST_NUM_BASE);
   if (status) {
-      val_print(ACS_PRINT_INFO, "\n USER Override - Skipping all memory tests\n", 0);
+      val_print(TRACE, "\n USER Override - Skipping all memory tests\n");
       return ACS_STATUS_SKIP;
   }
 
@@ -596,7 +596,7 @@ val_sbsa_exerciser_execute_tests(uint32_t level, uint32_t num_pe)
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == ACS_EXERCISER_TEST_NUM_BASE) {
-          val_print(ACS_PRINT_INFO, "\n USER Override - Skipping the Exerciser tests\n", 0);
+          val_print(TRACE, "\n USER Override - Skipping the Exerciser tests\n");
           return ACS_STATUS_SKIP;
       }
   }
@@ -604,33 +604,33 @@ val_sbsa_exerciser_execute_tests(uint32_t level, uint32_t num_pe)
   /* Check if there are any tests to be executed in current module with user override options*/
   status = val_check_skip_module(ACS_EXERCISER_TEST_NUM_BASE);
   if (status) {
-    val_print(ACS_PRINT_INFO, "\n USER Override - Skipping all Exerciser tests\n", 0);
+    val_print(TRACE, "\n USER Override - Skipping all Exerciser tests\n");
     return ACS_STATUS_SKIP;
   }
 
   if (val_pcie_create_device_bdf_table()) {
-      val_print(ACS_PRINT_WARN, "\n     Create BDF Table Failed, Skipping Exerciser tests...\n", 0);
+      val_print(WARN, "\n     Create BDF Table Failed, Skipping Exerciser tests...\n");
       return ACS_STATUS_SKIP;
   }
 
    if (pcie_bdf_table_list_flag == 1) {
-    val_print(ACS_PRINT_WARN, "\n     *** Created device list with valid bdf doesn't match \
-                with the platform pcie device hierarchy, Skipping exerciser tests ***\n", 0);
+    val_print(WARN, "\n     *** Created device list with valid bdf doesn't match \
+                with the platform pcie device hierarchy, Skipping exerciser tests ***\n");
     return ACS_STATUS_SKIP;
   }
 
-  val_print(ACS_PRINT_INFO, "\n      Starting Exerciser Setup\n", 0);
+  val_print(TRACE, "\n      Starting Exerciser Setup\n");
 
   val_exerciser_create_info_table();
   num_instances = val_exerciser_get_info(EXERCISER_NUM_CARDS);
 
   if (num_instances == 0) {
-      val_print(ACS_PRINT_WARN,
-                "\n     No Exerciser Devices Found, Skipping Exerciser tests...\n", 0);
+      val_print(WARN,
+                "\n     No Exerciser Devices Found, Skipping Exerciser tests...\n");
       return ACS_STATUS_SKIP;
   }
 
-  val_print(ACS_PRINT_INFO, "\n      Initializing SMMU\n", 0);
+  val_print(TRACE, "\n      Initializing SMMU\n");
   num_smmu = val_iovirt_get_smmu_info(SMMU_NUM_CTRL, 0);
   val_smmu_init();
 
@@ -639,7 +639,7 @@ val_sbsa_exerciser_execute_tests(uint32_t level, uint32_t num_pe)
       val_smmu_disable(instance);
 
   if (g_its_init != 1) {
-      val_print(ACS_PRINT_INFO, "\n      Initializing ITS\n", 0);
+      val_print(TRACE, "\n      Initializing ITS\n");
       val_gic_its_configure();
       g_its_init = 1;
   }
@@ -706,7 +706,7 @@ val_sbsa_pmu_execute_tests(uint32_t level, uint32_t num_pe)
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == ACS_PMU_TEST_NUM_BASE) {
-          val_print(ACS_PRINT_INFO, "      USER Override - Skipping all PMU tests\n", 0);
+          val_print(TRACE, "      USER Override - Skipping all PMU tests\n");
           return ACS_STATUS_SKIP;
       }
   }
@@ -714,14 +714,14 @@ val_sbsa_pmu_execute_tests(uint32_t level, uint32_t num_pe)
   /* Check if there are any tests to be executed in current module with user override options*/
   skip_module = val_check_skip_module(ACS_PMU_TEST_NUM_BASE);
   if (skip_module) {
-      val_print(ACS_PRINT_INFO, "\n USER Override - Skipping all PMU tests\n", 0);
+      val_print(TRACE, "\n USER Override - Skipping all PMU tests\n");
       return ACS_STATUS_SKIP;
   }
 
   /* check if PE supports PMU extension, else skip all PMU tests */
   if (val_pe_feat_check(PE_FEAT_PMU)) {
-      val_print(ACS_PRINT_TEST,
-                "\n       PE PMU extension unimplemented. Skipping all PMU tests\n", 0);
+      val_print(INFO,
+                "\n       PE PMU extension unimplemented. Skipping all PMU tests\n");
       return ACS_STATUS_SKIP;
   }
 
@@ -766,7 +766,7 @@ val_sbsa_mpam_execute_tests(uint32_t level, uint32_t num_pe)
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == ACS_MPAM_TEST_NUM_BASE) {
-          val_print(ACS_PRINT_INFO, "      USER Override - Skipping all MPAM tests\n", 0);
+          val_print(TRACE, "      USER Override - Skipping all MPAM tests\n");
           return ACS_STATUS_SKIP;
       }
   }
@@ -774,14 +774,14 @@ val_sbsa_mpam_execute_tests(uint32_t level, uint32_t num_pe)
   /* Check if there are any tests to be executed in the current module with user override*/
   skip_module = val_check_skip_module(ACS_MPAM_TEST_NUM_BASE);
   if (skip_module) {
-      val_print(ACS_PRINT_INFO, "\n USER Override - Skipping all MPAM tests\n", 0);
+      val_print(TRACE, "\n USER Override - Skipping all MPAM tests\n");
       return ACS_STATUS_SKIP;
   }
 
   /* check if PE supports MPAM extension, else skip all MPAM tests */
   if (val_pe_feat_check(PE_FEAT_MPAM)) {
-      val_print(ACS_PRINT_TEST,
-                "\n       PE MPAM extension unimplemented. Skipping all MPAM tests\n", 0);
+      val_print(INFO,
+                "\n       PE MPAM extension unimplemented. Skipping all MPAM tests\n");
       return ACS_STATUS_SKIP;
   }
 
@@ -795,8 +795,8 @@ val_sbsa_mpam_execute_tests(uint32_t level, uint32_t num_pe)
 
       msc_node_cnt = val_mpam_get_msc_count();
       if (msc_node_cnt == 0) {
-          val_print(ACS_PRINT_TEST,
-                "\n       MPAM MSCs not found. Skipping remaining MPAM tests\n", 0);
+          val_print(INFO,
+                "\n       MPAM MSCs not found. Skipping remaining MPAM tests\n");
           return ACS_STATUS_SKIP;
       }
 
@@ -834,7 +834,7 @@ val_sbsa_ras_execute_tests(uint32_t level, uint32_t num_pe)
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == ACS_RAS_TEST_NUM_BASE) {
-          val_print(ACS_PRINT_INFO, "\n      USER Override - Skipping all RAS tests\n", 0);
+          val_print(TRACE, "\n      USER Override - Skipping all RAS tests\n");
           return ACS_STATUS_SKIP;
       }
   }
@@ -842,14 +842,14 @@ val_sbsa_ras_execute_tests(uint32_t level, uint32_t num_pe)
   /* Check if there are any tests to be executed in current module with user override options*/
   skip_module = val_check_skip_module(ACS_RAS_TEST_NUM_BASE);
   if (skip_module) {
-      val_print(ACS_PRINT_INFO, "\n USER Override - Skipping all RAS tests\n", 0);
+      val_print(TRACE, "\n USER Override - Skipping all RAS tests\n");
       return ACS_STATUS_SKIP;
   }
 
   /* check if PE supports RAS extension, else skip all RAS tests */
   if (val_pe_feat_check(PE_FEAT_RAS)) {
-      val_print(ACS_PRINT_TEST,
-                "\n       PE RAS extension unimplemented. Skipping all RAS tests\n", 0);
+      val_print(INFO,
+                "\n       PE RAS extension unimplemented. Skipping all RAS tests\n");
       return ACS_STATUS_SKIP;
   }
 
@@ -857,7 +857,7 @@ val_sbsa_ras_execute_tests(uint32_t level, uint32_t num_pe)
 
   status = val_ras_get_info(RAS_INFO_NUM_NODES, 0, &num_ras_nodes);
   if (status || (num_ras_nodes == 0)) {
-    val_print(ACS_PRINT_TEST, "\n       RAS nodes not found. Skipping all RAS tests\n", 0);
+    val_print(INFO, "\n       RAS nodes not found. Skipping all RAS tests\n");
     return ACS_STATUS_SKIP;
   }
 
@@ -901,7 +901,7 @@ val_sbsa_ete_execute_tests(uint32_t level, uint32_t num_pe)
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == ACS_ETE_TEST_NUM_BASE) {
-          val_print(ACS_PRINT_INFO, "      USER Override - Skipping all ETE tests \n", 0);
+          val_print(TRACE, "      USER Override - Skipping all ETE tests \n");
           return ACS_STATUS_SKIP;
       }
   }
@@ -909,7 +909,7 @@ val_sbsa_ete_execute_tests(uint32_t level, uint32_t num_pe)
   /* Check if there are any tests to be executed in current module with user override options*/
   status = val_check_skip_module(ACS_ETE_TEST_NUM_BASE);
   if (status) {
-      val_print(ACS_PRINT_INFO, "\n USER Override - Skipping all ETE tests \n", 0);
+      val_print(TRACE, "\n USER Override - Skipping all ETE tests \n");
       return ACS_STATUS_SKIP;
   }
 
@@ -920,7 +920,7 @@ val_sbsa_ete_execute_tests(uint32_t level, uint32_t num_pe)
       ete_status = ete001_entry(num_pe);
 
       if (ete_status == ACS_STATUS_FAIL) {
-          val_print(ACS_PRINT_ERR, "\n FEAT_ETE Not Supported, Skipping FEAT_ETE tests \n", 0);
+          val_print(ERROR, "\n FEAT_ETE Not Supported, Skipping FEAT_ETE tests \n");
       } else {
           ete_status |= ete002_entry(num_pe);
           ete_status |= ete003_entry(num_pe);
@@ -930,7 +930,7 @@ val_sbsa_ete_execute_tests(uint32_t level, uint32_t num_pe)
       trbe_status = ete005_entry(num_pe);
 
       if (trbe_status == ACS_STATUS_FAIL) {
-          val_print(ACS_PRINT_ERR, "\n FEAT_TRBE Not Supported, Skipping FEAT_TRBE tests \n", 0);
+          val_print(ERROR, "\n FEAT_TRBE Not Supported, Skipping FEAT_TRBE tests \n");
       } else {
           trbe_status |= ete006_entry(num_pe);
           trbe_status |= ete007_entry(num_pe);
@@ -959,7 +959,7 @@ val_sbsa_nist_execute_tests(uint32_t level, uint32_t num_pe)
 
   for (i = 0; i < g_num_skip; i++) {
       if (g_skip_test_num[i] == ACS_NIST_TEST_NUM_BASE) {
-          val_print(ACS_PRINT_INFO, "      USER Override - Skipping all NIST tests\n", 0);
+          val_print(TRACE, "      USER Override - Skipping all NIST tests\n");
           return ACS_STATUS_SKIP;
       }
   }
@@ -967,7 +967,7 @@ val_sbsa_nist_execute_tests(uint32_t level, uint32_t num_pe)
   /* Check if there are any tests to be executed in current module with user override options*/
   status = val_check_skip_module(ACS_NIST_TEST_NUM_BASE);
   if (status) {
-      val_print(ACS_PRINT_INFO, "\n USER Override - Skipping all NIST tests\n", 0);
+      val_print(TRACE, "\n USER Override - Skipping all NIST tests\n");
       return ACS_STATUS_SKIP;
   }
 
@@ -983,47 +983,47 @@ val_sbsa_nist_execute_tests(uint32_t level, uint32_t num_pe)
 
 
 uint32_t
-val_sbsa_execute_tests(uint32_t g_sbsa_level)
+val_sbsa_execute_tests(uint32_t level)
 {
 
   uint32_t Status;
   uint32_t num_pe = val_pe_get_num();
 
   /***         Starting PE tests                     ***/
-  Status = val_sbsa_pe_execute_tests(g_sbsa_level, num_pe);
+  Status = val_sbsa_pe_execute_tests(level, num_pe);
 
   /***         Starting Memory tests                 ***/
-  Status |= val_sbsa_memory_execute_tests(g_sbsa_level, num_pe);
+  Status |= val_sbsa_memory_execute_tests(level, num_pe);
 
   /***         Starting GIC tests                    ***/
-  Status |= val_sbsa_gic_execute_tests(g_sbsa_level, num_pe);
+  Status |= val_sbsa_gic_execute_tests(level, num_pe);
 
   /***         Starting SMMU tests                   ***/
-  Status |= val_sbsa_smmu_execute_tests(g_sbsa_level, num_pe);
+  Status |= val_sbsa_smmu_execute_tests(level, num_pe);
 
   /***         Starting Timer tests               ***/
-  Status |= val_sbsa_timer_execute_tests(g_sbsa_level, num_pe);
+  Status |= val_sbsa_timer_execute_tests(level, num_pe);
 
   /***         Starting Watchdog tests               ***/
-  Status |= val_sbsa_wd_execute_tests(g_sbsa_level, num_pe);
+  Status |= val_sbsa_wd_execute_tests(level, num_pe);
 
   /***         Starting PCIe tests                   ***/
-  Status |= val_sbsa_pcie_execute_tests(g_sbsa_level, num_pe);
+  Status |= val_sbsa_pcie_execute_tests(level, num_pe);
 
   /***         Starting Exerciser tests              ***/
-  Status |= val_sbsa_exerciser_execute_tests(g_sbsa_level, num_pe);
+  Status |= val_sbsa_exerciser_execute_tests(level, num_pe);
 
   /***         Starting MPAM tests                   ***/
-  Status |= val_sbsa_mpam_execute_tests(g_sbsa_level, num_pe);
+  Status |= val_sbsa_mpam_execute_tests(level, num_pe);
 
   /***         Starting PMU tests                    ***/
-  Status |= val_sbsa_pmu_execute_tests(g_sbsa_level, num_pe);
+  Status |= val_sbsa_pmu_execute_tests(level, num_pe);
 
   /***         Starting RAS tests                    ***/
-  Status |= val_sbsa_ras_execute_tests(g_sbsa_level, num_pe);
+  Status |= val_sbsa_ras_execute_tests(level, num_pe);
 
   /***         Starting ETE tests                    ***/
-  Status |= val_sbsa_ete_execute_tests(g_sbsa_level, num_pe);
+  Status |= val_sbsa_ete_execute_tests(level, num_pe);
 
   return Status;
 

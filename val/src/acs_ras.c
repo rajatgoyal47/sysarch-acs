@@ -38,7 +38,7 @@ val_ras_create_info_table(uint64_t *ras_info_table)
 {
 
   if (ras_info_table == NULL) {
-      val_print(ACS_PRINT_ERR, "Input for Create Info table cannot be NULL\n", 0);
+      val_print(ERROR, "Input for Create Info table cannot be NULL\n");
       return ACS_STATUS_ERR;
   }
 
@@ -46,7 +46,7 @@ val_ras_create_info_table(uint64_t *ras_info_table)
 
   pal_ras_create_info_table(g_ras_info_table);
 
-  val_print(ACS_PRINT_TEST, " RAS_INFO: Number of RAS nodes        : %4d\n",
+  val_print(INFO, " RAS_INFO: Number of RAS nodes        : %4d\n",
                            g_ras_info_table->num_nodes);
 
   return ACS_STATUS_PASS;
@@ -63,9 +63,8 @@ val_ras_free_info_table(void)
         g_ras_info_table = NULL;
     }
     else {
-      val_print(ACS_PRINT_ERR,
-                  "\n WARNING: g_ras_info_table pointer is already NULL",
-        0);
+      val_print(ERROR,
+                  "\n WARNING: g_ras_info_table pointer is already NULL");
     }
 }
 
@@ -82,7 +81,7 @@ val_ras2_create_info_table(uint64_t *ras2_info_table)
 {
 
   if (ras2_info_table == NULL) {
-      val_print(ACS_PRINT_ERR, "\nInput for RAS2 feat create info table cannot be NULL\n", 0);
+      val_print(ERROR, "\nInput for RAS2 feat create info table cannot be NULL\n");
       return;
   }
 
@@ -91,9 +90,9 @@ val_ras2_create_info_table(uint64_t *ras2_info_table)
 
   pal_ras2_create_info_table(g_ras2_info_table);
 
-  val_print(ACS_PRINT_TEST, " RAS2_INFO: Number of RAS2 entries    : %4d\n",
+  val_print(INFO, " RAS2_INFO: Number of RAS2 entries    : %4d\n",
                            g_ras2_info_table->num_all_block);
-  val_print(ACS_PRINT_TEST, " RAS2_INFO: Num of RAS2 memory entries: %4d\n",
+  val_print(INFO, " RAS2_INFO: Num of RAS2 memory entries: %4d\n",
                            g_ras2_info_table->num_of_mem_block);
 #endif
 return;
@@ -206,7 +205,7 @@ val_ras_get_info(uint32_t info_type, uint32_t param1, uint64_t *ret_data)
       /* Returns the PFG Support */
       value = val_ras_reg_read(param1, RAS_ERR_FR, 0);
       if (value == INVALID_RAS_REG_VAL) {
-          val_print(ACS_PRINT_ERR,
+          val_print(ERROR,
                 "\n       Couldn't read ERR<0>FR register for RAS node index: 0x%lx",
                 param1);
           return ACS_STATUS_FAIL;
@@ -238,7 +237,7 @@ val_ras_get_info(uint32_t info_type, uint32_t param1, uint64_t *ret_data)
       break;
   case RAS_INFO_NODE_INDEX_FOR_AFF:
       /* Returns the Node Index For the PE node for MPIDR = param1 */
-      val_print(ACS_PRINT_DEBUG,
+      val_print(DEBUG,
                 "\n       RAS_GET_INFO : Param1 = 0x%x ",
                 param1);
       for (j = 0; j < g_ras_info_table->num_nodes; j++) {
@@ -256,7 +255,7 @@ val_ras_get_info(uint32_t info_type, uint32_t param1, uint64_t *ret_data)
             else {
               pe_affinity = val_ras_reg_read(j, RAS_ERR_ERRDEVAFF, 0);
               if (pe_affinity == INVALID_RAS_REG_VAL) {
-                val_print(ACS_PRINT_ERR,
+                val_print(ERROR,
                 "\n       RAS_GET_INFO : Invalid pe_affinity (ERR_ERRDEVAFF) for RAS node = %d ",
                 j);
                 return ACS_STATUS_FAIL;
@@ -275,7 +274,7 @@ val_ras_get_info(uint32_t info_type, uint32_t param1, uint64_t *ret_data)
             /* get processor UID */
             pe_uid = val_pe_get_uid(param1);
             if (pe_uid == INVALID_PE_INFO) {
-                val_print(ACS_PRINT_ERR,
+                val_print(ERROR,
                 "\n       RAS_GET_INFO : Invalid PE UID for MPIDR = %lx",
                 param1);
                 return ACS_STATUS_FAIL;
@@ -287,7 +286,7 @@ val_ras_get_info(uint32_t info_type, uint32_t param1, uint64_t *ret_data)
           }
         }
       }
-      val_print(ACS_PRINT_ERR,
+      val_print(ERROR,
                 "\n       RAS_GET_INFO : No PE RAS node matches with MPIDR = %lx",
                 param1);
       return ACS_STATUS_FAIL;
@@ -316,7 +315,7 @@ val_ras2_get_mem_info(RAS2_MEM_INFO_e type, uint32_t index)
   RAS2_BLOCK *block;
 
   if (g_ras2_info_table == NULL) {
-      val_print(ACS_PRINT_ERR, "\nRAS2_GET_MEM_INFO : ras2 info table is not created\n", 0);
+      val_print(ERROR, "\nRAS2_GET_MEM_INFO : ras2 info table is not created\n");
       return 0; /* imply no ras2_info entries */
   }
 
@@ -325,7 +324,7 @@ val_ras2_get_mem_info(RAS2_MEM_INFO_e type, uint32_t index)
 
   /* check if index in range */
   if (index > g_ras2_info_table->num_of_mem_block - 1) {
-      val_print(ACS_PRINT_ERR,
+      val_print(ERROR,
                 "\nRAS2_GET_MEM_INFO: Index (%d) is greater than num of RAS2 mem blocks\n",
                  index);
       return INVALID_RAS2_INFO;
@@ -343,7 +342,7 @@ val_ras2_get_mem_info(RAS2_MEM_INFO_e type, uint32_t index)
               case RAS2_SCRUB_SUPPORT:
                   return block->block_info.mem_feat_info.patrol_scrub_support;
               default:
-                  val_print(ACS_PRINT_ERR,
+                  val_print(ERROR,
                             "\nThis RAS2 memory info option not supported: %d\n", type);
                   return INVALID_RAS2_INFO;
               }
@@ -379,7 +378,7 @@ val_ras_reg_read(uint32_t node_index, uint32_t reg, uint32_t err_rec_idx)
   /* Check if err record index is valid */
   val_ras_get_info(RAS_INFO_NUM_ERR_REC, node_index, &num_err_recs);
   if ((err_rec_idx - start_rec_index) >= num_err_recs) {
-      val_print(ACS_PRINT_ERR,
+      val_print(ERROR,
                 "\n       RAS_REG_READ : Invalid Input error record index(%d)\n", err_rec_idx);
       return INVALID_RAS_REG_VAL;
   }
@@ -388,9 +387,9 @@ val_ras_reg_read(uint32_t node_index, uint32_t reg, uint32_t err_rec_idx)
   val_ras_get_info(RAS_INFO_ERR_REC_IMP, node_index, &err_rec_impl_bitmap);
 
   if ((err_rec_impl_bitmap >> err_rec_idx) & 0x1) {
-      val_print(ACS_PRINT_ERR,
+      val_print(ERROR,
                 "\n       RAS_REG_READ : Error record index(%d) is unimplemented ", err_rec_idx);
-      val_print(ACS_PRINT_ERR,
+      val_print(ERROR,
                 "for node with index: %d\n", node_index);
       return INVALID_RAS_REG_VAL;
   }
@@ -423,9 +422,9 @@ val_ras_reg_read(uint32_t node_index, uint32_t reg, uint32_t err_rec_idx)
           if (err_rec_idx == start_rec_index)
               offset = ERR_PFGCDN_OFFSET + (64 * start_rec_index);
           else {
-              val_print(ACS_PRINT_ERR,
+              val_print(ERROR,
                 "\n       RAS_REG_READ : ERR<%d>PFGCDN is RES0 for node index :", err_rec_idx);
-              val_print(ACS_PRINT_ERR, " %d", node_index);
+              val_print(ERROR, " %d", node_index);
               return INVALID_RAS_REG_VAL;
           }
           break;
@@ -434,9 +433,9 @@ val_ras_reg_read(uint32_t node_index, uint32_t reg, uint32_t err_rec_idx)
           if (err_rec_idx == start_rec_index)
               offset = ERR_PFGCTL_OFFSET + (64 * start_rec_index);
           else {
-              val_print(ACS_PRINT_ERR,
+              val_print(ERROR,
                 "\n       RAS_REG_READ : ERR<%d>PFGCTL is RES0 for node index :", err_rec_idx);
-              val_print(ACS_PRINT_ERR, " %d", node_index);
+              val_print(ERROR, " %d", node_index);
               return INVALID_RAS_REG_VAL;
           }
           break;
@@ -451,34 +450,34 @@ val_ras_reg_read(uint32_t node_index, uint32_t reg, uint32_t err_rec_idx)
       /* System register based read */
 
       /* RAS registers reads with ERRSELR_EL1.SEL set to start error record index */
-      AA64WriteErrSelr1(start_rec_index);
+      write_errselr_el1(start_rec_index);
 
       switch (reg) {
       case RAS_ERR_FR:
-          value = AA64ReadErrFr1();
+          value = read_erxfr_el1();
           break;
       case RAS_ERR_CTLR:
-          value = AA64ReadErrCtlr1();
+          value = read_erxctlr_el1();
           break;
       case RAS_ERR_PFGCDN:
           /* ERR<n>PFGCDN RAS register is valid only for first error record */
           if (err_rec_idx == start_rec_index)
-              value = AA64ReadErrPfgcdn1();
+              value = read_erxpfgcdn_el1();
           else {
-              val_print(ACS_PRINT_ERR,
+              val_print(ERROR,
                 "\n       RAS_REG_READ : ERR<%d>PFGCDN is RES0 for the node index :", err_rec_idx);
-              val_print(ACS_PRINT_ERR, " %d", node_index);
+              val_print(ERROR, " %d", node_index);
               return INVALID_RAS_REG_VAL;
           }
           break;
       case RAS_ERR_PFGCTL:
           /* ERR<n>PFGCTL RAS register is valid only for first error record */
           if (err_rec_idx == start_rec_index)
-              value = AA64ReadErrPfgctl1();
+              value = read_erxpfgctl_el1();
           else {
-              val_print(ACS_PRINT_ERR,
+              val_print(ERROR,
                 "\n       RAS_REG_READ : ERR<%d>PFGCTL is RES0 for the node index :", err_rec_idx);
-              val_print(ACS_PRINT_ERR, " %d", node_index);
+              val_print(ERROR, " %d", node_index);
               return INVALID_RAS_REG_VAL;
           }
           break;
@@ -488,14 +487,14 @@ val_ras_reg_read(uint32_t node_index, uint32_t reg, uint32_t err_rec_idx)
 
       /* RAS registers reads with ERRSELR_EL1.SEL set to current error record index
         These registers are unique to given error record */
-      AA64WriteErrSelr1(err_rec_idx);
+      write_errselr_el1(err_rec_idx);
 
       switch (reg) {
       case RAS_ERR_STATUS:
-          value = AA64ReadErrStatus1();
+          value = read_erxstatus_el1();
           break;
       case RAS_ERR_ADDR:
-          value = AA64ReadErrAddr1();
+          value = read_erxaddr_el1();
           break;
       default:
           break;
@@ -553,20 +552,20 @@ val_ras_reg_write(uint32_t node_index, uint32_t reg, uint64_t write_data)
     /* System register based Write */
 
     /* Update ERRSELR_EL1.SEL to choose which record index to use */
-    AA64WriteErrSelr1(rec_index);
+    write_errselr_el1(rec_index);
 
     switch (reg) {
     case RAS_ERR_CTLR:
-      AA64WriteErrCtlr1(write_data);
+      write_erxctlr_el1(write_data);
       break;
     case RAS_ERR_STATUS:
-      AA64WriteErrStatus1(write_data);
+      write_erxstatus_el1(write_data);
       break;
     case RAS_ERR_PFGCDN:
-      AA64WriteErrPfgcdn1(write_data);
+      write_erxpfgcdn_el1(write_data);
       break;
     case RAS_ERR_PFGCTL:
-      AA64WriteErrPfgctl1(write_data);
+      write_erxpfgctl_el1(write_data);
       break;
     default:
       break;
@@ -654,12 +653,12 @@ ras_pfg_access_node(uint32_t node_index)
   /* Access to the Node register, Might need an imp def way here */
   reg_value = val_ras_reg_read(node_index, RAS_ERR_CTLR, 0);
   if (reg_value == INVALID_RAS_REG_VAL) {
-      val_print(ACS_PRINT_ERR,
+      val_print(ERROR,
                 "\n       Couldn't read ERR<0>CTLR register for RAS node index: 0x%lx",
                 node_index);
   }
 
-  val_print(ACS_PRINT_INFO, "      Access RAS Node, CTLR : 0x%llx\n", reg_value);
+  val_print(TRACE, "      Access RAS Node, CTLR : 0x%llx\n", reg_value);
 }
 
 /**
@@ -683,10 +682,10 @@ val_ras_inject_error(RAS_ERR_IN_t in_param, RAS_ERR_OUT_t *out_param)
     reg_value = val_ras_reg_read(in_param.node_index, RAS_ERR_PFGCTL, in_param.rec_index);
 
     if (reg_value == INVALID_RAS_REG_VAL) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
                     "\n       Couldn't read ERR<%d>PFGCTL register for ",
                     in_param.rec_index);
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
                     "RAS node index: 0x%lx",
                     in_param.node_index);
         return ACS_STATUS_FAIL;
@@ -725,7 +724,7 @@ uint32_t val_ras_check_err_record(uint32_t node_index, uint32_t error_type)
 
   err_status = val_ras_reg_read(node_index, RAS_ERR_STATUS, 0);
   if (err_status == INVALID_RAS_REG_VAL) {
-      val_print(ACS_PRINT_ERR,
+      val_print(ERROR,
                 "\n       Couldn't read ERR<0>STATUS register for RAS node index: 0x%lx",
                 node_index);
       return ACS_STATUS_FAIL;
@@ -733,7 +732,7 @@ uint32_t val_ras_check_err_record(uint32_t node_index, uint32_t error_type)
 
   /* Check Status Register Validity in Ras Node */
   if (!(err_status & ERR_STATUS_V_MASK)) {
-    val_print(ACS_PRINT_DEBUG, "\n       Status Reg Not Valid, for node %d", node_index);
+    val_print(DEBUG, "\n       Status Reg Not Valid, for node %d", node_index);
     status = ACS_STATUS_FAIL;
   }
 
@@ -756,7 +755,7 @@ uint32_t val_ras_check_err_record(uint32_t node_index, uint32_t error_type)
 
   /* Check Error Bit in Ras Node */
   if (!(err_status & err_type_mask)) {
-    val_print(ACS_PRINT_DEBUG, "\n       ERR Status Type Fail, for node %d", node_index);
+    val_print(DEBUG, "\n       ERR Status Type Fail, for node %d", node_index);
     status = ACS_STATUS_FAIL;
   }
 

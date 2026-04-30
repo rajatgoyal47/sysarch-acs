@@ -79,7 +79,7 @@ cache_sequence(uint32_t instance, uint32_t e_bdf)
 
   test_data = 0xab;
   /* CPU writes Pattern A. Do not clean/invalidate this cache line. */
-  val_print(ACS_PRINT_INFO, "\n       STEP3: CPU writes Pattern A (0x%x) without cache clean",
+  val_print(TRACE, "\n       STEP3: CPU writes Pattern A (0x%x) without cache clean",
             test_data);
   val_memory_set(target_va, TEST_SIZE, test_data);
 
@@ -106,15 +106,15 @@ cache_sequence(uint32_t instance, uint32_t e_bdf)
 
   val_pe_cache_invalidate_range((uint64_t)dram_buf1_virt, TEST_SIZE);
   if (!compare_test_data(dram_buf1_virt, TEST_SIZE, test_data)) {
-    val_print(ACS_PRINT_ERR, "\n       Exerciser did not observe Pattern A over coherent path", 0);
-    val_print(ACS_PRINT_ERR, "\n       Expected 0x%x", test_data);
-    val_print(ACS_PRINT_ERR, "\n       Observed first byte 0x%x", dram_buf1_virt[0]);
+    val_print(ERROR, "\n       Exerciser did not observe Pattern A over coherent path");
+    val_print(ERROR, "\n       Expected 0x%x", test_data);
+    val_print(ERROR, "\n       Observed first byte 0x%x", dram_buf1_virt[0]);
     val_memory_free_cacheable(e_bdf, SIZE_4KB, buf_va, buf_pa);
     return ACS_STATUS_FAIL;
   }
 
   test_data = 0xde;
-  val_print(ACS_PRINT_INFO, "\n Exerciser writes 0xDE CPU reads without invalidate", 0);
+  val_print(TRACE, "\n Exerciser writes 0xDE CPU reads without invalidate");
   val_memory_set(dram_buf2_virt, TEST_SIZE, test_data);
   val_pe_cache_clean_invalidate_range((uint64_t)dram_buf2_virt, TEST_SIZE);
 
@@ -138,9 +138,9 @@ cache_sequence(uint32_t instance, uint32_t e_bdf)
 
   /* CPU reads target without explicit invalidate. */
   if (!compare_test_data(target_va, TEST_SIZE, test_data)) {
-    val_print(ACS_PRINT_ERR, "\n     CPU did not observe pattern without explicit invalidate", 0);
-    val_print(ACS_PRINT_ERR, "\n     Expected 0x%x", test_data);
-    val_print(ACS_PRINT_ERR, "\n     Observed first byte 0x%x", target_va[0]);
+    val_print(ERROR, "\n     CPU did not observe pattern without explicit invalidate");
+    val_print(ERROR, "\n     Expected 0x%x", test_data);
+    val_print(ERROR, "\n     Observed first byte 0x%x", target_va[0]);
     val_memory_free_cacheable(e_bdf, SIZE_4KB, buf_va, buf_pa);
     return ACS_STATUS_FAIL;
   }
@@ -167,7 +167,7 @@ payload(void)
 
   comp_count = val_cxl_get_component_info(CXL_COMPONENT_INFO_COUNT, 0);
   if (comp_count == 0) {
-    val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+    val_set_status(pe_index, RESULT_SKIP(01));
     return;
   }
 
@@ -180,11 +180,11 @@ payload(void)
     e_bdf = val_cxl_get_component_info(CXL_COMPONENT_INFO_BDF_INDEX, comp_idx);
     status = val_cxl_device_is_cxl(e_bdf);
     if (status != ACS_STATUS_PASS) {
-      val_print(ACS_PRINT_DEBUG, "\n       No CXL Exerciser device BDF", 0);
+      val_print(DEBUG, "\n       No CXL Exerciser device BDF");
       continue;
     }
     if (!val_cxl_device_cache_capable(e_bdf)) {
-      val_print(ACS_PRINT_INFO, "CXL.cache not supported for component BDF 0x%x", e_bdf);
+      val_print(TRACE, "CXL.cache not supported for component BDF 0x%x", e_bdf);
       continue;
     }
 
@@ -199,10 +199,10 @@ payload(void)
     if (val_exerciser_init(instance))
         continue;
 
-    val_print(ACS_PRINT_DEBUG, "\n       Exerciser BDF: 0x%x", e_bdf);
+    val_print(DEBUG, "\n       Exerciser BDF: 0x%x", e_bdf);
 
     if (val_exerciser_set_param(ENABLE_CACHE_TXN, 1, 1, instance)) {
-      val_print(ACS_PRINT_DEBUG, "\n       Enable CXL.cache Transaction from the Exerciser", 0);
+      val_print(DEBUG, "\n       Enable CXL.cache Transaction from the Exerciser");
       continue;
     }
 
@@ -210,17 +210,17 @@ payload(void)
     test_skip = 0;
     status = cache_sequence(instance, e_bdf);
     if (status != ACS_STATUS_PASS) {
-      val_print(ACS_PRINT_ERR, "\n       CXL.cache exerciser sequence failed", 0);
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 1));
+      val_print(ERROR, "\n       CXL.cache exerciser sequence failed");
+      val_set_status(pe_index, RESULT_FAIL(1));
       return;
     }
 
   }
 
   if (test_skip)
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 02));
+      val_set_status(pe_index, RESULT_SKIP(02));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t
@@ -234,7 +234,7 @@ e041_entry(uint32_t num_pe)
   status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
   if (status != ACS_STATUS_SKIP) {
     if (val_exerciser_test_init() != ACS_STATUS_PASS)
-      return TEST_SKIP_VAL;
+      return TEST_SKIP;
 
     val_run_test_payload(TEST_NUM, num_pe, payload, 0);
   }

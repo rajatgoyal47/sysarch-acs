@@ -60,7 +60,7 @@ mbwu_prepare_overflow_intr(uint32_t msc_idx,
     val_mpam_memory_configure_mbwumon(msc_idx);
 
     if (val_mpam_mbwu_clear_overflow_status(msc_idx)) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
             "\n       Failed to clear overflow status before setup for MSC %d", msc_idx);
         return ACS_STATUS_FAIL;
     }
@@ -98,7 +98,7 @@ mbwu_prepare_overflow_intr(uint32_t msc_idx,
 
     /* Overflow Status is Cleared in Handler */
     if (val_mpam_mbwu_is_overflow_set(msc_idx)) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
             "\n       Overflow status not Cleared for MSC %d in Handler", msc_idx);
         return ACS_STATUS_FAIL;
     }
@@ -119,18 +119,18 @@ void intr_handler(void)
     status_l_asserted = ctl & ((uint32_t)1 << MBWU_CTL_OFLOW_STATUS_L_SHIFT);
 
     if (!status_l_asserted) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
             "\n       OFLOW_STATUS_L not set on overflow interrupt for MSC %d", msc_index);
-        val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
+        val_set_status(pe_index, RESULT_FAIL(02));
     } else {
-        val_print(ACS_PRINT_DEBUG,
+        val_print(DEBUG,
             "\n       OFLOW_STATUS_L observed set on interrupt for MSC %d", msc_index);
-        val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+        val_set_status(pe_index, RESULT_PASS);
 
         if (val_mpam_mbwu_clear_overflow_status(msc_index)) {
-            val_print(ACS_PRINT_ERR,
+            val_print(ERROR,
                 "\n       Failed to clear overflow status via helper for MSC %d", msc_index);
-            val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 03));
+            val_set_status(pe_index, RESULT_FAIL(03));
         }
     }
 
@@ -167,7 +167,7 @@ void payload(void)
     /* Program MPAM2_EL2 with DEFAULT_PARTID and default PMG */
     status = val_mpam_program_el2(DEFAULT_PARTID, DEFAULT_PMG);
     if (status) {
-        val_print(ACS_PRINT_ERR, "\n       MPAM2_EL2 programming failed", 0);
+        val_print(ERROR, "\n       MPAM2_EL2 programming failed");
         test_fail++;
         test_skip = 0;
         goto cleanup;
@@ -206,7 +206,7 @@ void payload(void)
             /* Ensure the region can fit both source and destination buffers */
             if ((base == SRAT_INVALID_INFO) || (mem_size == SRAT_INVALID_INFO) ||
                 (mem_size <= 2 * buf_size)) {
-                val_print(ACS_PRINT_DEBUG,
+                val_print(DEBUG,
                     "\n       MSC %d memory range invalid for MBWU_L test", msc_index);
                 continue;
             }
@@ -217,7 +217,7 @@ void payload(void)
             if (!handler_installed) {
                 status = val_gic_install_isr(intr_num, intr_handler);
                 if (status) {
-                    val_print(ACS_PRINT_ERR,
+                    val_print(ERROR,
                         "\n       Failed to install ISR for interrupt %d", intr_num);
                     test_fail++;
                     goto monitor_cleanup;
@@ -231,7 +231,7 @@ void payload(void)
             src_buf = (void *)val_mem_alloc_at_address(base, buf_size);
             dest_buf = (void *)val_mem_alloc_at_address(base + buf_size, buf_size);
             if ((src_buf == NULL) || (dest_buf == NULL)) {
-                val_print(ACS_PRINT_ERR, "\n       Mem allocation failed for MSC %d", msc_index);
+                val_print(ERROR, "\n       Mem allocation failed for MSC %d", msc_index);
                 test_fail++;
                 goto monitor_cleanup;
             }
@@ -244,9 +244,9 @@ void payload(void)
             /* Configure overflow interrupt and drive the counter to overflow */
             status = mbwu_prepare_overflow_intr(msc_index, src_buf, dest_buf, buf_size);
             if (status) {
-                val_print(ACS_PRINT_ERR,
+                val_print(ERROR,
                     "\n       Failed to configure overflow interrupt for MSC %d", msc_index);
-                val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+                val_set_status(pe_index, RESULT_FAIL(01));
                 test_fail++;
                 goto monitor_cleanup;
             }
@@ -255,7 +255,7 @@ void payload(void)
             while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(pe_index))));
 
             if (timeout == 0) {
-                val_print(ACS_PRINT_ERR,
+                val_print(ERROR,
                     "\n       Overflow interrupt not received for MSC %d", msc_index);
                 test_fail++;
                 goto monitor_cleanup;
@@ -263,14 +263,14 @@ void payload(void)
 
             /* Verify the ISR ran and observed OFLOW_STATUS_L */
             if (!handler_invoked) {
-                val_print(ACS_PRINT_ERR,
+                val_print(ERROR,
                     "\n       Handler not invoked for MSC %d after overflow", msc_index);
                 test_fail++;
                 goto monitor_cleanup;
             }
 
             if (!status_l_asserted) {
-                val_print(ACS_PRINT_ERR,
+                val_print(ERROR,
                     "\n       OFLOW_STATUS_L not observed set for MSC %d", msc_index);
                 test_fail++;
                 goto monitor_cleanup;
@@ -310,11 +310,11 @@ cleanup:
     val_mpam_reg_write(MPAM2_EL2, mpam2_el2_saved);
 
     if (test_skip)
-        val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+        val_set_status(pe_index, RESULT_SKIP(1));
     else if (test_fail || !intr_enabled)
-        val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 4));
+        val_set_status(pe_index, RESULT_FAIL(4));
     else
-        val_set_status(pe_index, RESULT_PASS(TEST_NUM, 2));
+        val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t intr004_entry(void)

@@ -52,7 +52,7 @@ check_pcie_cfg_space(uint32_t bdf)
 
         // Check PCIe Cap IDs are in range
         if (cid > PCIE_CAP_ID_END) {
-            val_print(ACS_PRINT_ERR,
+            val_print(ERROR,
                 "\n       Invalid Cap ID: 0x%x found in regular cfg space", cid);
             err = 1;
         }
@@ -69,7 +69,7 @@ check_pcie_cfg_space(uint32_t bdf)
 
         // Check PCIe Ext Cap IDs are in range
         if (cid > PCIE_ECAP_ID_END) {
-            val_print(ACS_PRINT_ERR,
+            val_print(ERROR,
                 "\n       Invalid Cap ID: 0x%x found in extended cfg space", cid);
             err = 1;
         }
@@ -104,9 +104,9 @@ payload(void)
         // Only check for Root Ports
         if (dp_type == RP) {
             test_skip = 0;
-            val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
+            val_print(DEBUG, "\n       BDF - 0x%x", bdf);
             if (check_pcie_cfg_space(bdf)) {
-                val_print(ACS_PRINT_ERR,
+                val_print(ERROR,
                     "\n       Invalid PCIe capability found on dev: %d", tbl_index);
                 test_fail++;
             }
@@ -114,11 +114,11 @@ payload(void)
     }
 
     if (test_skip)
-        val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+        val_set_status(pe_index, RESULT_SKIP(1));
     else if (test_fail)
-        val_set_status(pe_index, RESULT_FAIL(TEST_NUM, test_fail));
+        val_set_status(pe_index, RESULT_FAIL(test_fail));
     else
-        val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+        val_set_status(pe_index, RESULT_PASS);
 
     return;
 }

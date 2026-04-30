@@ -41,8 +41,8 @@ static void payload(void)
 
   /* Get the number of Root Complex in the system */
   if (!num_pcie_rc) {
-     val_print(ACS_PRINT_DEBUG, "\n       Skip because no PCIe RC detected  ", 0);
-     val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+     val_print(DEBUG, "\n       Skip because no PCIe RC detected  ");
+     val_set_status(pe_index, RESULT_SKIP(1));
      return;
   }
 
@@ -57,15 +57,15 @@ static void payload(void)
 
       if (!rc_ats_supp)
       {
-          val_print(ACS_PRINT_ERR, "\n       ATS Capability Not Present for RC: %x", num_pcie_rc);
+          val_print(ERROR, "\n       ATS Capability Not Present for RC: %x", num_pcie_rc);
           test_fails++;
       }
   }
 
   if (test_fails)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_FAIL(01));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t p089_entry(uint32_t num_pe)

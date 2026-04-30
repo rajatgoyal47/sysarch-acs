@@ -63,7 +63,7 @@ get_target_exer_bdf(uint32_t req_rp_bdf, uint32_t *tgt_e_bdf,
 
       /* It ACS Not Supported, continue */
       if (val_pcie_find_capability(erp_bdf, PCIE_ECAP, ECID_ACS, &cap_base) != PCIE_SUCCESS) {
-          val_print(ACS_PRINT_DEBUG, "\n       ACS Not Supported for BDF : 0x%x", erp_bdf);
+          val_print(DEBUG, "\n       ACS Not Supported for BDF : 0x%x", erp_bdf);
           continue;
       }
 
@@ -91,7 +91,6 @@ get_target_exer_bdf(uint32_t req_rp_bdf, uint32_t *tgt_e_bdf,
 static
 uint32_t
 create_va_pa_mapping (uint64_t txn_va, uint64_t txn_pa,
-                      smmu_master_attributes_t *smmu_master,
                       pgt_descriptor_t *pgt_desc, uint32_t req_instance,
                       uint32_t req_rp_bdf, uint32_t pgt_ap)
 {
@@ -105,8 +104,6 @@ create_va_pa_mapping (uint64_t txn_va, uint64_t txn_pa,
   uint32_t status, dma_status;
   uint64_t bar_value;
   uint32_t old_val, new_val;
-
-  master = *smmu_master;
 
   val_memory_set(&master, sizeof(master), 0);
   val_memory_set(mem_desc_array, sizeof(mem_desc_array), 0);
@@ -174,7 +171,7 @@ create_va_pa_mapping (uint64_t txn_va, uint64_t txn_pa,
       /* Configure SMMU tables for this exerciser to use this page table for VA to PA translations*/
       if (val_smmu_map(master, *pgt_desc))
       {
-          val_print(ACS_PRINT_DEBUG, "\n       SMMU mapping failed (%x)     ", e_bdf);
+          val_print(DEBUG, "\n       SMMU mapping failed (%x)     ", e_bdf);
           goto test_fail;
       }
 
@@ -191,14 +188,14 @@ create_va_pa_mapping (uint64_t txn_va, uint64_t txn_pa,
       /* Corrupt the BAR and read the value before making a DMA transaction. */
       val_mmio_write(txn_va, 0xABCDABCD);
       old_val = val_mmio_read((uint64_t)txn_va);
-      val_print(ACS_PRINT_DEBUG, "\n       Bar value before DMA is %llx", old_val);
+      val_print(DEBUG, "\n       Bar value before DMA is %llx", old_val);
 
       /* Trigger DMA from Exerciser to the target device. */
       val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, req_instance);
 
       /* Read the memory location to check if DMA is successful or not. */
       new_val = val_mmio_read((uint64_t)txn_va);
-      val_print(ACS_PRINT_DEBUG, "\n       Bar value after DMA is %llx", new_val);
+      val_print(DEBUG, "\n       Bar value after DMA is %llx", new_val);
 
       /* If the values of targeted reads are same, the DMA is failure. */
       if (old_val == new_val)
@@ -211,14 +208,14 @@ create_va_pa_mapping (uint64_t txn_va, uint64_t txn_pa,
 
       /* DMA must fail because Write permission not given */
       if ((pgt_ap == PGT_STAGE1_AP_RO) && (dma_status != 0)) {
-          val_print(ACS_PRINT_DEBUG,
+          val_print(DEBUG,
                     "\n       Seq1:DMA Write must not happen For : %4x", req_instance);
           goto test_fail;
       }
 
       /* DMA must not fail because Write permission given */
       if ((pgt_ap == PGT_STAGE1_AP_RW) && (dma_status == 0)) {
-          val_print(ACS_PRINT_DEBUG, "\n       Seq2:DMA Write must happen For : %4x", req_instance);
+          val_print(DEBUG, "\n       Seq2:DMA Write must happen For : %4x", req_instance);
           goto test_fail;
       }
       status = ACS_STATUS_PASS;
@@ -244,7 +241,6 @@ check_redirected_req_validation (uint32_t req_instance, uint32_t req_rp_bdf, uin
   uint32_t instance;
   uint32_t num_smmus;
   uint32_t status;
-  smmu_master_attributes_t master;
   pgt_descriptor_t pgt_desc;
 
   /* Sequence 1 : No Write Permission, Trigger a DMA Write to bar address
@@ -259,11 +255,11 @@ check_redirected_req_validation (uint32_t req_instance, uint32_t req_rp_bdf, uin
 
   num_smmus = val_iovirt_get_smmu_info(SMMU_NUM_CTRL, 0);
 
-  status = create_va_pa_mapping(txn_va, bar_base, &master,
+  status = create_va_pa_mapping(txn_va, bar_base,
                                 &pgt_desc, req_instance,
                                 req_rp_bdf, PGT_STAGE1_AP_RO);
   if (status) {
-      val_print(ACS_PRINT_DEBUG,
+      val_print(DEBUG,
                       "\n       Seq1:SMMU Mapping Failed For : %4x", req_instance);
       goto test_fail;
   }
@@ -273,7 +269,7 @@ check_redirected_req_validation (uint32_t req_instance, uint32_t req_rp_bdf, uin
    */
   if ((val_pcie_is_device_status_error(req_rp_bdf) == 0) &&
      (val_pcie_is_sig_target_abort(req_rp_bdf) == 0)) {
-      val_print(ACS_PRINT_DEBUG, "\n       Seq1:Expected Error For RootPort : 0x%x", req_rp_bdf);
+      val_print(DEBUG, "\n       Seq1:Expected Error For RootPort : 0x%x", req_rp_bdf);
       goto test_fail;
   }
 
@@ -286,11 +282,11 @@ check_redirected_req_validation (uint32_t req_instance, uint32_t req_rp_bdf, uin
    */
 
   /* Create VA-PA Mapping in SMMU with PGT permissions as Read Write */
-  status = create_va_pa_mapping(txn_va, bar_base, &master,
+  status = create_va_pa_mapping(txn_va, bar_base,
                                 &pgt_desc, req_instance,
                                 req_rp_bdf, PGT_STAGE1_AP_RW);
   if (status) {
-      val_print(ACS_PRINT_DEBUG, "\n       Seq2:SMMU Mapping Failed For : %4x", req_instance);
+      val_print(DEBUG, "\n       Seq2:SMMU Mapping Failed For : %4x", req_instance);
       goto test_fail;
   }
 
@@ -299,7 +295,7 @@ check_redirected_req_validation (uint32_t req_instance, uint32_t req_rp_bdf, uin
    */
   if (val_pcie_is_device_status_error(req_rp_bdf) ||
      val_pcie_is_sig_target_abort(req_rp_bdf)) {
-      val_print(ACS_PRINT_DEBUG, "\n       Seq2:Expected No Error For RootPort : 0x%x", req_rp_bdf);
+      val_print(DEBUG, "\n       Seq2:Expected No Error For RootPort : 0x%x", req_rp_bdf);
       goto test_fail;
   }
 
@@ -362,7 +358,7 @@ payload(void)
 
   /* Check If PCIe Hierarchy supports P2P. */
   if (val_pcie_p2p_support() == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
-    val_set_status(pe_index, RESULT_WARN(TEST_NUM, 1));
+    val_set_status(pe_index, RESULT_WARNING(1));
     return;
   }
 
@@ -389,7 +385,7 @@ payload(void)
           continue;
 
       req_e_bdf = val_exerciser_get_bdf(instance);
-      val_print(ACS_PRINT_DEBUG, "\n       Requester exerciser BDF - 0x%x", req_e_bdf);
+      val_print(DEBUG, "\n       Requester exerciser BDF - 0x%x", req_e_bdf);
 
       /* Get RP of the exerciser */
       if (val_pcie_get_rootport(req_e_bdf, &req_rp_bdf))
@@ -397,7 +393,7 @@ payload(void)
 
       /* It ACS Not Supported, Fail.*/
       if (val_pcie_find_capability(req_rp_bdf, PCIE_ECAP, ECID_ACS, &cap_base) != PCIE_SUCCESS) {
-          val_print(ACS_PRINT_ERR, "\n       ACS Not Supported for BDF : 0x%x", req_rp_bdf);
+          val_print(ERROR, "\n       ACS Not Supported for BDF : 0x%x", req_rp_bdf);
           fail_cnt++;
           continue;
       }
@@ -413,10 +409,10 @@ payload(void)
       /* Check For Redirected Request Validation Functionality */
       status = check_redirected_req_validation(instance, req_rp_bdf, bar_base);
       if (status == ACS_STATUS_SKIP)
-          val_print(ACS_PRINT_ERR, "\n       ACS Validation Check Skipped for 0x%x", req_rp_bdf);
+          val_print(ERROR, "\n       ACS Validation Check Skipped for 0x%x", req_rp_bdf);
       else if (status) {
           fail_cnt++;
-          val_print(ACS_PRINT_ERR, "\n       ACS Redirected Req Check Failed for 0x%x", req_rp_bdf);
+          val_print(ERROR, "\n       ACS Redirected Req Check Failed for 0x%x", req_rp_bdf);
       }
 
       /* Check for Redirected Request Validation Functionality for the same device
@@ -457,11 +453,11 @@ payload(void)
               /* Check For Redirected Request Validation Functionality */
               status = check_redirected_req_validation(instance, req_rp_bdf, bar_base);
               if (status == ACS_STATUS_SKIP)
-                  val_print(ACS_PRINT_ERR, "\n       ACS Validation Check Skipped for 0x%x",
+                  val_print(ERROR, "\n       ACS Validation Check Skipped for 0x%x",
                                                                                 req_rp_bdf);
               else if (status) {
                   fail_cnt++;
-                  val_print(ACS_PRINT_ERR, "\n       ACS Redirected Req Check Failed for 0x%x",
+                  val_print(ERROR, "\n       ACS Redirected Req Check Failed for 0x%x",
                                                                                    req_rp_bdf);
               }
          }
@@ -474,11 +470,11 @@ payload(void)
   val_pcie_write_acsctrl(acsctrl_default);
 
   if (test_skip == 1)
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+      val_set_status(pe_index, RESULT_SKIP(1));
   else if (fail_cnt)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, fail_cnt));
+      val_set_status(pe_index, RESULT_FAIL(fail_cnt));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(pe_index, RESULT_PASS);
 
   return;
 
@@ -495,7 +491,7 @@ e002_entry(uint32_t num_pe)
   status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
   if (status != ACS_STATUS_SKIP) {
       if (val_exerciser_test_init() != ACS_STATUS_PASS)
-          return TEST_SKIP_VAL;
+          return TEST_SKIP;
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
   }
 

@@ -34,20 +34,20 @@ static void payload(void)
      * bits[62:59] can individually enabled as PBHA bits for both Stage-1 and Stage-2
      */
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64MMFR1_EL1), 12, 15);
-    val_print_primary_pe(ACS_PRINT_INFO, "\n       ID_AA64MMFR1_EL1.HPDS = %llx",
+    val_print_primary_pe(TRACE, "\n       ID_AA64MMFR1_EL1.HPDS = %llx",
                                                                             data, index);
 
     /* If FEAT_HPDS2 is not supported then PBHA bits cannot be enabled */
     if (data != 2) {
-        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+        val_set_status(index, RESULT_PASS);
         return;
     } else {
         /* Read CurrentEL which indicates the current exception level */
         el = val_pe_reg_read(CurrentEL);
 
         if (el != AARCH64_EL1 && el != AARCH64_EL2) {
-            val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
-            val_print_primary_pe(ACS_PRINT_DEBUG, "\n     Current EL = %llx", el, index);
+            val_print_primary_pe(DEBUG, "\n     Current EL = %llx", el, index);
+            val_set_status(index, RESULT_FAIL(01));
             return;
         }
 
@@ -58,7 +58,7 @@ static void payload(void)
 
         if (el == AARCH64_EL2) {
             e2h = VAL_EXTRACT_BITS(val_pe_reg_read(HCR_EL2), 34, 34);
-            val_print_primary_pe(ACS_PRINT_INFO, "\n       HCR_EL2.E2H = %llx",
+            val_print_primary_pe(TRACE, "\n       HCR_EL2.E2H = %llx",
                                                                             e2h, index);
         }
 
@@ -79,11 +79,11 @@ static void payload(void)
 
             if (VAL_EXTRACT_BITS(data, 41, 41) != 0) {
                 if (VAL_EXTRACT_BITS(data, 43, 46) != 0) {
-                    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       TCR_ELx.HPD0 = %llx",
+                    val_print_primary_pe(DEBUG, "\n       TCR_ELx.HPD0 = %llx",
                                          VAL_EXTRACT_BITS(data, 41, 41), index);
-                    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       TCR_ELx.HWU0nn = %llx",
+                    val_print_primary_pe(DEBUG, "\n       TCR_ELx.HWU0nn = %llx",
                                          VAL_EXTRACT_BITS(data, 43, 46), index);
-                    val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
+                    val_set_status(index, RESULT_FAIL(02));
                     return;
                 }
             }
@@ -93,11 +93,11 @@ static void payload(void)
 
             if (VAL_EXTRACT_BITS(data, 42, 42) != 0) {
                 if (VAL_EXTRACT_BITS(data, 47, 50) != 0) {
-                    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       TCR_ELx.HPD1 = %llx",
+                    val_print_primary_pe(DEBUG, "\n       TCR_ELx.HPD1 = %llx",
                                          VAL_EXTRACT_BITS(data, 42, 42), index);
-                    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       TCR_ELx.HWU1nn = %llx",
+                    val_print_primary_pe(DEBUG, "\n       TCR_ELx.HWU1nn = %llx",
                                          VAL_EXTRACT_BITS(data, 47, 50), index);
-                    val_set_status(index, RESULT_FAIL(TEST_NUM, 03));
+                    val_set_status(index, RESULT_FAIL(03));
                     return;
                 }
             }
@@ -109,31 +109,31 @@ static void payload(void)
 
             if (VAL_EXTRACT_BITS(data, 24, 24) != 0) {
                 if (VAL_EXTRACT_BITS(data, 25, 28) != 0) {
-                    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       TCR_EL2.HPD = %llx",
+                    val_print_primary_pe(DEBUG, "\n       TCR_EL2.HPD = %llx",
                                          VAL_EXTRACT_BITS(data, 24, 24), index);
-                    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       TCR_EL2.HWUnn = %llx",
+                    val_print_primary_pe(DEBUG, "\n       TCR_EL2.HWUnn = %llx",
                                          VAL_EXTRACT_BITS(data, 25, 28), index);
-                    val_set_status(index, RESULT_FAIL(TEST_NUM, 04));
+                    val_set_status(index, RESULT_FAIL(04));
                     return;
                 }
              }
         }
 
         if (el != AARCH64_EL2) {
-             val_print_primary_pe(ACS_PRINT_WARN, "\n       Current EL needs to be in EL2",
+             val_print_primary_pe(WARN, "\n       Current EL needs to be in EL2",
                                                              0, index);
-             val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+             val_set_status(index, RESULT_SKIP(02));
              return;
         }
 
         /* VTCR_EL2.HWUnn[28:25] !=0 indicates corresponding PBHA bit can be enabled in Stage-2 */
         data = val_pe_reg_read(VTCR_EL2);
         if (VAL_EXTRACT_BITS(data, 25, 28) != 0) {
-            val_print_primary_pe(ACS_PRINT_DEBUG, "\n       VTCR_EL2.HWUnn = %llx",
+            val_print_primary_pe(DEBUG, "\n       VTCR_EL2.HWUnn = %llx",
                                      VAL_EXTRACT_BITS(data, 25, 28), index);
-            val_set_status(index, RESULT_FAIL(TEST_NUM, 05));
+            val_set_status(index, RESULT_FAIL(05));
          } else
-            val_set_status(index, RESULT_PASS(TEST_NUM, 02));
+            val_set_status(index, RESULT_PASS);
     }
 
 }

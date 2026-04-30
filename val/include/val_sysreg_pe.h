@@ -1,0 +1,134 @@
+/*
+ * Copyright (c) 2026, Arm Limited or its affiliates. All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
+
+#ifndef VAL_SYSREG_PE_H
+#define VAL_SYSREG_PE_H
+
+#include "val_sysreg.h"
+
+SYSREG_READ_FUNC(id_pfr0_el1)
+SYSREG_READ_FUNC(id_pfr1_el1)
+SYSREG_READ_FUNC(id_aa64isar0_el1)
+SYSREG_READ_FUNC(id_aa64isar1_el1)
+SYSREG_READ_FUNC(id_aa64isar2_el1)
+SYSREG_READ_FUNC(id_aa64pfr1_el1)
+SYSREG_READ_FUNC(id_aa64dfr0_el1)
+SYSREG_READ_FUNC(id_aa64dfr1_el1)
+
+SYSREG_READ_FUNC(ctr_el0)
+
+SYSREG_READ_FUNC(midr_el1)
+SYSREG_READ_FUNC(mpidr_el1)
+SYSREG_READ_FUNC(id_aa64mmfr0_el1)
+
+SYSREG_RW_FUNCS(vbar_el2)
+
+SYSREG_RW_FUNCS(sctlr_el1)
+SYSREG_RW_FUNCS(sctlr_el2)
+SYSREG_RW_FUNCS(sctlr_el3)
+
+SYSREG_RW_FUNCS(esr_el2)
+
+SYSREG_RW_FUNCS(far_el2)
+
+SYSREG_RW_FUNCS(mair_el1)
+SYSREG_RW_FUNCS(mair_el2)
+
+SYSREG_RW_FUNCS(tcr_el1)
+SYSREG_RW_FUNCS(tcr_el2)
+
+SYSREG_RW_FUNCS(ttbr0_el1)
+SYSREG_RW_FUNCS(ttbr0_el2)
+
+SYSREG_RW_FUNCS(ttbr1_el1)
+SYSREG_READ_FUNC(ttbr1_el2)
+
+SYSREG_READ_FUNC(vtcr_el2)
+SYSREG_RW_FUNCS(vpidr_el2)
+SYSREG_RW_FUNCS(vmpidr_el2)
+
+SYSREG_READ_FUNC(pmbidr_el1)
+SYSREG_READ_FUNC(pmsidr_el1)
+SYSREG_READ_FUNC(lorid_el1)
+
+SYSREG_RW_FUNCS(mdcr_el2)
+
+SYSREG_RW_FUNCS(pmcr_el0)
+SYSREG_RW_FUNCS(pmovsclr_el0)
+SYSREG_RW_FUNCS(pmovsset_el0)
+SYSREG_RW_FUNCS(pmintenclr_el1)
+SYSREG_RW_FUNCS(pmintenset_el1)
+
+SYSREG_READ_FUNC(ccsidr_el1)
+SYSREG_RW_FUNCS(csselr_el1)
+SYSREG_READ_FUNC(clidr_el1)
+
+SYSREG_READ_FUNC(id_dfr0_el1)
+SYSREG_READ_FUNC(id_isar0_el1)
+SYSREG_READ_FUNC(id_isar1_el1)
+SYSREG_READ_FUNC(id_isar2_el1)
+SYSREG_READ_FUNC(id_isar3_el1)
+SYSREG_READ_FUNC(id_isar4_el1)
+SYSREG_READ_FUNC(id_isar5_el1)
+
+SYSREG_READ_FUNC(id_mmfr0_el1)
+SYSREG_READ_FUNC(id_mmfr1_el1)
+SYSREG_READ_FUNC(id_mmfr2_el1)
+SYSREG_READ_FUNC(id_mmfr3_el1)
+SYSREG_READ_FUNC(id_mmfr4_el1)
+
+SYSREG_READ_FUNC(mvfr0_el1)
+SYSREG_READ_FUNC(mvfr1_el1)
+SYSREG_READ_FUNC(mvfr2_el1)
+
+SYSREG_READ_FUNC(pmceid0_el0)
+SYSREG_READ_FUNC(pmceid1_el0)
+
+SYSREG_READ_FUNC(id_aa64zfr0_el1)
+SYSREG_READ_FUNC(brbidr0_el1)
+
+RENAME_SYSREG_READ_FUNC(id_aa64mmfr2_el1, ID_AA64MMFR2_EL1)
+SYSREG_READ_FUNC(id_aa64mmfr3_el1)
+
+SYSREG_READ_FUNC(dbgbcr0_el1)
+SYSREG_READ_FUNC(dbgbcr1_el1)
+SYSREG_READ_FUNC(dbgbcr2_el1)
+SYSREG_READ_FUNC(dbgbcr3_el1)
+SYSREG_READ_FUNC(dbgbcr4_el1)
+SYSREG_READ_FUNC(dbgbcr5_el1)
+SYSREG_READ_FUNC(dbgbcr6_el1)
+SYSREG_READ_FUNC(dbgbcr7_el1)
+SYSREG_READ_FUNC(dbgbcr8_el1)
+SYSREG_READ_FUNC(dbgbcr9_el1)
+SYSREG_READ_FUNC(dbgbcr10_el1)
+SYSREG_READ_FUNC(dbgbcr11_el1)
+SYSREG_READ_FUNC(DBGBCR12_EL1)
+SYSREG_READ_FUNC(dbgbcr13_el1)
+SYSREG_READ_FUNC(dbgbcr14_el1)
+SYSREG_READ_FUNC(dbgbcr15_el1)
+
+RENAME_SYSREG_RW_FUNCS(trblimitr_el1, TRBLIMITR_EL1)
+RENAME_SYSREG_RW_FUNCS(trbptr_el1, TRBPTR_EL1)
+RENAME_SYSREG_READ_FUNC(trbidr_el1, TRBIDR_EL1)
+
+SYSREG_READ_FUNC(trcidr0)
+SYSREG_READ_FUNC(trcidr4)
+SYSREG_READ_FUNC(trcidr5)
+
+SYSREG_READ_FUNC(err0fr_el1)
+SYSREG_READ_FUNC(err1fr_el1)
+SYSREG_READ_FUNC(err2fr_el1)
+SYSREG_READ_FUNC(err3fr_el1)
+
+SYSREG_RW_FUNCS(pmsirr_el1)
+SYSREG_RW_FUNCS(pmscr_el2)
+SYSREG_RW_FUNCS(pmsfcr_el1)
+SYSREG_RW_FUNCS(pmbptr_el1)
+
+RENAME_SYSREG_RW_FUNCS(pmblimitr_el1, PMBLIMITR_EL1)
+
+#endif /* VAL_SYSREG_PE_H */

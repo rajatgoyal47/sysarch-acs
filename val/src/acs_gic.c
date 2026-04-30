@@ -38,10 +38,10 @@ val_gic_create_info_table(uint64_t *gic_info_table)
   uint32_t gic_version, num_msi_frame;
 
   if (gic_info_table == NULL) {
-      val_print(ACS_PRINT_ERR, "Input for Create Info table cannot be NULL\n", 0);
+      val_print(ERROR, "Input for Create Info table cannot be NULL\n");
       return ACS_STATUS_ERR;
   }
-  val_print(ACS_PRINT_INFO, " Creating GIC INFO table\n", 0);
+  val_print(TRACE, " Creating GIC INFO table\n");
 
   g_gic_info_table = (GIC_INFO_TABLE *)gic_info_table;
 
@@ -51,23 +51,23 @@ val_gic_create_info_table(uint64_t *gic_info_table)
   gic_version = val_gic_get_info(GIC_INFO_VERSION);
   num_msi_frame = val_gic_get_info(GIC_INFO_NUM_MSI_FRAME);
   if ((gic_version != 2) || (num_msi_frame == 0)) /* check if not a GICv2m system */
-      val_print(ACS_PRINT_TEST, " GIC INFO: GIC version                :    v%d\n", gic_version);
+      val_print(INFO, " GIC INFO: GIC version                :    v%d\n", gic_version);
   else
-      val_print(ACS_PRINT_TEST, " GIC INFO: GIC version                :    v2m\n", 0);
+      val_print(INFO, " GIC INFO: GIC version                :    v2m\n");
 
-  val_print(ACS_PRINT_TEST, " GIC_INFO: Number of GICD             : %4d\n",
+  val_print(INFO, " GIC_INFO: Number of GICD             : %4d\n",
                                                              g_gic_info_table->header.num_gicd);
-  val_print(ACS_PRINT_TEST, " GIC_INFO: Number of GICR RD          : %4d\n",
+  val_print(INFO, " GIC_INFO: Number of GICR RD          : %4d\n",
                                                              g_gic_info_table->header.num_gicr_rd);
   if (g_gic_info_table->header.num_gicr_rd == 0) {
-      val_print(ACS_PRINT_TEST, " GIC_INFO: Number of GICC RD          : %4d\n",
+      val_print(INFO, " GIC_INFO: Number of GICC RD          : %4d\n",
                                                              g_gic_info_table->header.num_gicc_rd);
   }
-  val_print(ACS_PRINT_TEST, " GIC_INFO: Number of ITS              : %4d\n",
+  val_print(INFO, " GIC_INFO: Number of ITS              : %4d\n",
                                                              g_gic_info_table->header.num_its);
 
   if (g_gic_info_table->header.num_gicd == 0) {
-      val_print(ACS_PRINT_ERR,"\n ** CRITICAL ERROR: GIC Distributor count is 0 **\n", 0);
+      val_print(ERROR, "\n ** CRITICAL ERROR: GIC Distributor count is 0 **\n");
       return ACS_STATUS_ERR;
   }
 
@@ -94,8 +94,8 @@ val_gic_free_info_table(void)
         g_gic_info_table = NULL;
     }
     else {
-      val_print(ACS_PRINT_DEBUG,
-                  "\n g_gic_info_table pointer is already NULL", 0);
+      val_print(DEBUG,
+                  "\n g_gic_info_table pointer is already NULL");
     }
 }
 
@@ -114,7 +114,7 @@ val_get_gicd_base(void)
   GIC_INFO_ENTRY  *gic_entry;
 
   if (g_gic_info_table == NULL) {
-      val_print(ACS_PRINT_ERR, "GIC INFO table not available\n", 0);
+      val_print(ERROR, "GIC INFO table not available\n");
       return 0;
   }
 
@@ -172,7 +172,7 @@ val_gic_get_pe_rdbase(uint64_t mpidr)
   /* If System doesn't have GICR RD strcture, then use GICCC RD base */
   if (g_gic_info_table->header.num_gicr_rd == 0) {
       gicrd_base = val_get_gicr_base(&gicrd_baselen, 0);
-      val_print(ACS_PRINT_DEBUG, "       gicrd_base 0x%lx\n", gicrd_base);
+      val_print(DEBUG, "       gicrd_base 0x%lx\n", gicrd_base);
 
       /* If information is present in GICC Structure */
       if (gicrd_baselen == 0)
@@ -188,13 +188,13 @@ val_gic_get_pe_rdbase(uint64_t mpidr)
   /* Use GICR RD base structure */
   while (gicr_rdindex < g_gic_info_table->header.num_gicr_rd) {
       gicrd_base = val_get_gicr_base(&gicrd_baselen, gicr_rdindex);
-      val_print(ACS_PRINT_INFO, "       gicr_rdindex %d", gicr_rdindex);
-      val_print(ACS_PRINT_INFO, "       gicrd_base 0x%lx\n", gicrd_base);
+      val_print(TRACE, "       gicr_rdindex %d", gicr_rdindex);
+      val_print(TRACE, "       gicrd_base 0x%lx\n", gicrd_base);
 
       pe_gicrd_base = gicrd_base;
       while (pe_gicrd_base < (gicrd_base + gicrd_baselen))
       {
-          val_print(ACS_PRINT_INFO, "       GICR_TYPER 0x%lx\n",
+          val_print(TRACE, "       GICR_TYPER 0x%lx\n",
                     val_mmio_read64(pe_gicrd_base + GICR_TYPER));
 
           affinity = (val_mmio_read64(pe_gicrd_base + GICR_TYPER) & GICR_TYPER_AFF) >> 32;
@@ -226,7 +226,7 @@ val_get_gicr_base(uint32_t *rdbase_len, uint32_t gicr_rd_index)
   GIC_INFO_ENTRY  *gic_entry;
 
   if (g_gic_info_table == NULL) {
-      val_print(ACS_PRINT_ERR, "GIC INFO table not available\n", 0);
+      val_print(ERROR, "GIC INFO table not available\n");
       return 0;
   }
   gic_entry = g_gic_info_table->gic_info;
@@ -264,7 +264,7 @@ val_get_gich_base(void)
   GIC_INFO_ENTRY  *gic_entry;
 
   if (g_gic_info_table == NULL) {
-      val_print(ACS_PRINT_ERR, "GIC INFO table not available\n", 0);
+      val_print(ERROR, "GIC INFO table not available\n");
       return 0;
   }
 
@@ -292,7 +292,7 @@ val_get_cpuif_base(void)
   GIC_INFO_ENTRY  *gic_entry;
 
   if (g_gic_info_table == NULL) {
-      val_print(ACS_PRINT_ERR, "GIC INFO table not available\n", 0);
+      val_print(ERROR, "GIC INFO table not available\n");
       return 0;
   }
 
@@ -323,7 +323,7 @@ val_gic_get_info(GIC_INFO_e type)
   uint32_t rdbase_len;
 
   if (g_gic_info_table == NULL) {
-      val_print(ACS_PRINT_ERR, "\n   Get GIC info called before gic info table is filled ",        0);
+      val_print(ERROR, "\n   Get GIC info called before gic info table is filled ");
       return 0;
   }
 
@@ -331,7 +331,7 @@ val_gic_get_info(GIC_INFO_e type)
 
       case GIC_INFO_VERSION:
           if (g_gic_info_table->header.gic_version != 0) {
-             val_print(ACS_PRINT_INFO, "\n       gic version from info table = %d\n",
+             val_print(TRACE, "\n       gic version from info table = %d\n",
                        g_gic_info_table->header.gic_version);
              return g_gic_info_table->header.gic_version;
           }
@@ -367,8 +367,11 @@ val_gic_get_info(GIC_INFO_e type)
       case GIC_INFO_NUM_GICR_GICRD:
           return g_gic_info_table->header.num_gicr_rd;
 
+      case GIC_INFO_NUM_GICD:
+          return g_gic_info_table->header.num_gicd;
+
       default:
-          val_print(ACS_PRINT_ERR, "\n    GIC Info - TYPE not recognized %d  ", type);
+          val_print(ERROR, "\n    GIC Info - TYPE not recognized %d  ", type);
           break;
   }
   return ACS_STATUS_ERR;
@@ -417,7 +420,7 @@ uint32_t val_gic_get_intr_trigger_type(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e
   uint32_t config_bit_shift;
 
   if (int_id > val_get_max_intid()) {
-    val_print(ACS_PRINT_ERR, "\n       Invalid Interrupt ID number 0x%x ", int_id);
+    val_print(ERROR, "\n       Invalid Interrupt ID number 0x%x ", int_id);
     return ACS_STATUS_ERR;
   }
 
@@ -446,7 +449,7 @@ val_gic_espi_supported(void)
 
   espi_support = val_gic_espi_support();
 
-  val_print(ACS_PRINT_INFO, "\n    ESPI supported %d  ", espi_support);
+  val_print(TRACE, "\n    ESPI supported %d  ", espi_support);
   return espi_support;
 }
 
@@ -500,8 +503,8 @@ uint32_t val_gic_route_interrupt_to_pe(uint32_t int_id, uint64_t mpidr)
       val_mmio_write64(val_get_gicd_base() + GICD_IROUTER + (8 * int_id), cpuaffinity);
   }
   else{
-      val_print(ACS_PRINT_ERR, "\n    Only SPIs can be routed, ", 0);
-      val_print(ACS_PRINT_ERR, "interrupt with INTID = %d cannot be routed", int_id);
+      val_print(ERROR, "\n    Only SPIs can be routed, ");
+      val_print(ERROR, "interrupt with INTID = %d cannot be routed", int_id);
   }
 
   return 0;
@@ -548,7 +551,7 @@ void val_gic_clear_interrupt(uint32_t int_id)
                        ((uint32_t)1 << reg_shift));
     }
     else
-        val_print(ACS_PRINT_ERR, "\n    Invalid SPI interrupt ID number %d", int_id);
+        val_print(ERROR, "\n    Invalid SPI interrupt ID number %d", int_id);
 }
 
 /**
@@ -567,7 +570,7 @@ uint32_t val_gic_get_espi_intr_trigger_type(uint32_t int_id,
   uint32_t config_bit_shift;
 
   if (!(int_id >= 4096 && int_id <= val_gic_max_espi_val())) {
-    val_print(ACS_PRINT_ERR, "\n       Invalid Extended Int ID number 0x%x ", int_id);
+    val_print(ERROR, "\n       Invalid Extended Int ID number 0x%x ", int_id);
     return ACS_STATUS_ERR;
   }
 
@@ -599,7 +602,7 @@ void val_gic_set_intr_trigger(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e trigger_
    uint32_t reg_offset;
    uint32_t config_bit_shift;
 
-   val_print(ACS_PRINT_DEBUG, "\n       Setting Trigger type as %d", trigger_type);
+   val_print(DEBUG, "\n       Setting Trigger type as %d", trigger_type);
 
    reg_offset = int_id / GICD_ICFGR_INTR_STRIDE;
    config_bit_shift  = GICD_ICFGR_INTR_CONFIG1(int_id);
@@ -611,7 +614,7 @@ void val_gic_set_intr_trigger(uint32_t int_id, INTR_TRIGGER_INFO_TYPE_e trigger_
    else
        reg_value = reg_value & (~((uint32_t)1 << config_bit_shift));
 
-   val_print(ACS_PRINT_INFO, "\n       Writing to Register Address : 0x%llx ",
+   val_print(TRACE, "\n       Writing to Register Address : 0x%llx ",
                            val_get_gicd_base() + GICD_ICFGR + (4 * reg_offset));
 
    val_mmio_write(val_get_gicd_base() + GICD_ICFGR + (4 * reg_offset), reg_value);

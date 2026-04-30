@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 **/
-
 #include "acs_val.h"
 #include "acs_pe.h"
 #include "acs_mpam.h"
@@ -80,16 +79,16 @@ payload(void)
 
     /* Check if LLC is valid */
     if (llc_idx == CACHE_TABLE_EMPTY) {
-        val_print(ACS_PRINT_DEBUG, "\n       No LLC found, skipping test", 0);
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+        val_print(DEBUG, "\n       No LLC found, skipping test");
         return;
+        val_set_status(index, RESULT_SKIP(1));
     }
 
     /* Get the LLC Cache ID */
     cache_identifier = val_cache_get_info(CACHE_ID, llc_idx);
     if (cache_identifier == INVALID_CACHE_INFO) {
-        val_print(ACS_PRINT_DEBUG, "\n       Invalid LLC ID, skipping test", 0);
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+        val_print(DEBUG, "\n       Invalid LLC ID, skipping test");
+        val_set_status(index, RESULT_SKIP(2));
         return;
     }
 
@@ -97,7 +96,7 @@ payload(void)
     for (msc_index = 0; msc_index < msc_cnt; msc_index++) {
         max_partid = val_mpam_get_max_partid(msc_index);
         if (max_partid == 0) {
-            val_print(ACS_PRINT_DEBUG, "\n       MSC %d has no PARTID support", msc_index);
+            val_print(DEBUG, "\n       MSC %d has no PARTID support", msc_index);
             continue;
         }
 
@@ -106,7 +105,7 @@ payload(void)
                       GET_MIN_VALUE(test_partid, max_partid - 1);
     }
 
-    val_print(ACS_PRINT_TEST, "\n       Selected PARTID = %d", test_partid);
+    val_print(INFO, "\n       Selected PARTID = %d", test_partid);
 
     /* Iterate through all available LLC MSCs and their resources */
     for (msc_index = 0; msc_index < msc_cnt; msc_index++) {
@@ -127,8 +126,8 @@ payload(void)
                in unexpected behavior in the test
             */
             if (val_cache_get_associativity(cache_identifier) < 4) {
-                val_print(ACS_PRINT_TEST,
-                          "\n       LLC is less than 4-way, skipping MSC", 0);
+                val_print(INFO,
+                          "\n       LLC is less than 4-way, skipping MSC");
                 continue;
             }
 
@@ -142,7 +141,7 @@ payload(void)
 
             /* Check if MSC supports CASSOC */
             if (!val_mpam_supports_cassoc(msc_index)) {
-                val_print(ACS_PRINT_DEBUG,
+                val_print(DEBUG,
                     "\n       MSC %d does not support CASSOC partitioning, skipping", msc_index);
                 continue;
             }
@@ -152,7 +151,7 @@ payload(void)
                 num_mon = val_mpam_get_csumon_count(msc_index);
 
             if (num_mon == 0) {
-                val_print(ACS_PRINT_DEBUG,
+                val_print(DEBUG,
                     "\n       MSC %d does not have CSU monitors, skipping MSC", msc_index);
                 continue;
             }
@@ -171,8 +170,8 @@ payload(void)
             dest_buf = (void *)val_memory_alloc_pages(num_pages);
 
             if ((src_buf == NULL) || (dest_buf == NULL)) {
-                val_print(ACS_PRINT_ERR, "\n       Mem allocation failed", 0);
-                val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+                val_print(ERROR, "\n       Mem allocation failed");
+                val_set_status(index, RESULT_FAIL(01));
                 if (dest_buf != NULL)
                     val_memory_free_pages(dest_buf, num_pages);
                 if (src_buf != NULL)
@@ -202,12 +201,12 @@ payload(void)
             saved_el2 = val_mpam_reg_read(MPAM2_EL2);
 
             /***  Scenario 1: Buffer copy with 100% CASSOC settings  ***/
-            val_print(ACS_PRINT_DEBUG, "\n       Scenario 1: 100 percent CASSOC setting", 0);
+            val_print(DEBUG, "\n       Scenario 1: 100 percent CASSOC setting");
 
             /* Program MPAM2_EL2 with test_partid and default PMG */
             status = val_mpam_program_el2(test_partid, DEFAULT_PMG);
             if (status) {
-                val_print(ACS_PRINT_ERR, "\n       MPAM2_EL2 programming failed", 0);
+                val_print(ERROR, "\n       MPAM2_EL2 programming failed");
                 /* Free the buffers to the heap manager */
                 val_pe_cache_invalidate_range((uint64_t)src_buf, BUFFER_SIZE);
                 val_pe_cache_invalidate_range((uint64_t)dest_buf, BUFFER_SIZE);
@@ -215,12 +214,12 @@ payload(void)
 
                 val_memory_free_aligned(src_buf);
                 val_memory_free_aligned(dest_buf);
-                val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
+                val_set_status(index, RESULT_FAIL(02));
                 return;
             }
 
             start_count = val_mpam_read_csumon(msc_index);
-            val_print(ACS_PRINT_DEBUG, "\n       Start Count = 0x%lx", start_count);
+            val_print(DEBUG, "\n       Start Count = 0x%lx", start_count);
 
             /* Start mem copy */
             val_memcpy(src_buf, dest_buf, BUFFER_SIZE);
@@ -228,7 +227,7 @@ payload(void)
             val_time_delay_ms(TIMEOUT_MEDIUM);
 
             end_count = val_mpam_read_csumon(msc_index);
-            val_print(ACS_PRINT_DEBUG, "\n       End Count = 0x%lx", end_count);
+            val_print(DEBUG, "\n       End Count = 0x%lx", end_count);
 
             /* Disable CSU MON */
             val_mpam_csumon_disable(msc_index);
@@ -241,7 +240,7 @@ payload(void)
             val_mem_issue_dsb();
 
             /***  Scenario 2: Buffer copy with 50% CASSOC settings  ***/
-            val_print(ACS_PRINT_DEBUG, "\n       Scenario 2: 50 percent CASSOC setting", 0);
+            val_print(DEBUG, "\n       Scenario 2: 50 percent CASSOC setting");
 
             /* Disable CCAP and CPOR settings -> Set them to max */
             if (val_mpam_supports_cpor(msc_index))
@@ -268,7 +267,7 @@ payload(void)
             /* Program MPAM2_EL2 with test_partid-1 and default PMG */
             status = val_mpam_program_el2(test_partid - 1, DEFAULT_PMG);
             if (status) {
-                val_print(ACS_PRINT_ERR, "\n       MPAM2_EL2 programming failed", 0);
+                val_print(ERROR, "\n       MPAM2_EL2 programming failed");
                 /* Free the buffers to the heap manager */
                 val_pe_cache_invalidate_range((uint64_t)src_buf, BUFFER_SIZE);
                 val_pe_cache_invalidate_range((uint64_t)dest_buf, BUFFER_SIZE);
@@ -276,12 +275,12 @@ payload(void)
 
                 val_memory_free_aligned(src_buf);
                 val_memory_free_aligned(dest_buf);
-                val_set_status(index, RESULT_FAIL(TEST_NUM, 03));
+                val_set_status(index, RESULT_FAIL(03));
                 return;
             }
 
             start_count = val_mpam_read_csumon(msc_index);
-            val_print(ACS_PRINT_DEBUG, "\n       Start Count = 0x%lx", start_count);
+            val_print(DEBUG, "\n       Start Count = 0x%lx", start_count);
 
             /* Start mem copy */
             val_memcpy(src_buf, dest_buf, BUFFER_SIZE);
@@ -289,7 +288,7 @@ payload(void)
             val_time_delay_ms(TIMEOUT_MEDIUM);
 
             end_count = val_mpam_read_csumon(msc_index);
-            val_print(ACS_PRINT_DEBUG, "\n       End Count = 0x%lx", end_count);
+            val_print(DEBUG, "\n       End Count = 0x%lx", end_count);
 
             /* Disable CSU MON */
             val_mpam_csumon_disable(msc_index);
@@ -302,7 +301,7 @@ payload(void)
             val_mem_issue_dsb();
 
             /***  Scenario 3: Buffer copy with 25% CASSOC settings  ***/
-            val_print(ACS_PRINT_DEBUG, "\n       Scenario 3: 25 percent CASSOC setting", 0);
+            val_print(DEBUG, "\n       Scenario 3: 25 percent CASSOC setting");
 
             /* Disable CCAP and CPOR settings -> Set them to max */
             if (val_mpam_supports_cpor(msc_index))
@@ -329,7 +328,7 @@ payload(void)
             /* Program MPAM2_EL2 with test_partid-2 and default PMG */
             status = val_mpam_program_el2(test_partid - 2, DEFAULT_PMG);
             if (status) {
-                val_print(ACS_PRINT_ERR, "\n       MPAM2_EL2 programming failed", 0);
+                val_print(ERROR, "\n       MPAM2_EL2 programming failed");
                 /* Free the buffers to the heap manager */
                 val_pe_cache_invalidate_range((uint64_t)src_buf, BUFFER_SIZE);
                 val_pe_cache_invalidate_range((uint64_t)dest_buf, BUFFER_SIZE);
@@ -337,12 +336,12 @@ payload(void)
 
                 val_memory_free_aligned(src_buf);
                 val_memory_free_aligned(dest_buf);
-                val_set_status(index, RESULT_FAIL(TEST_NUM, 04));
+                val_set_status(index, RESULT_FAIL(04));
                 return;
             }
 
             start_count = val_mpam_read_csumon(msc_index);
-            val_print(ACS_PRINT_DEBUG, "\n       Start Count = 0x%lx", start_count);
+            val_print(DEBUG, "\n       Start Count = 0x%lx", start_count);
 
             /* Start mem copy */
             val_memcpy(src_buf, dest_buf, BUFFER_SIZE);
@@ -350,7 +349,7 @@ payload(void)
             val_time_delay_ms(TIMEOUT_MEDIUM);
 
             end_count = val_mpam_read_csumon(msc_index);
-            val_print(ACS_PRINT_DEBUG, "\n       End Count = 0x%lx", end_count);
+            val_print(DEBUG, "\n       End Count = 0x%lx", end_count);
 
             /* Disable CSU MON */
             val_mpam_csumon_disable(msc_index);
@@ -364,10 +363,10 @@ payload(void)
                expected to decrease in each scenario, resulting in reduced CSU MON counter */
 
             if (!((counter[0] > counter[1]) && (counter[1] > counter[2]))) {
-                val_print(ACS_PRINT_ERR, "\n       Unexpected cache usage behavior observed", 0);
-                val_print(ACS_PRINT_ERR, "\n       CASSOC 100 percent count = 0x%lx", counter[0]);
-                val_print(ACS_PRINT_ERR, "\n       CASSOC 50 percent count  = 0x%lx", counter[1]);
-                val_print(ACS_PRINT_ERR, "\n       CASSOC 25 percent count  = 0x%lx", counter[2]);
+                val_print(ERROR, "\n       Unexpected cache usage behavior observed");
+                val_print(ERROR, "\n       CASSOC 100 percent count = 0x%lx", counter[0]);
+                val_print(ERROR, "\n       CASSOC 50 percent count  = 0x%lx", counter[1]);
+                val_print(ERROR, "\n       CASSOC 25 percent count  = 0x%lx", counter[2]);
                 test_fail++;
             }
 
@@ -389,11 +388,11 @@ payload(void)
     }
 
     if (test_skip)
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 3));
+        val_set_status(index, RESULT_SKIP(3));
     else if (test_fail)
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 5));
+        val_set_status(index, RESULT_FAIL(5));
     else
-        val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+        val_set_status(index, RESULT_PASS);
 
     return;
 }

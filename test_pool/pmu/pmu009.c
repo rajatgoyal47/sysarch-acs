@@ -45,15 +45,15 @@ static void payload(void)
 
 
     pmu_node_count = val_pmu_get_info(PMU_NODE_COUNT, 0);
-    val_print(ACS_PRINT_DEBUG, "\n       PMU NODES = %d", pmu_node_count);
+    val_print(DEBUG, "\n       PMU NODES = %d", pmu_node_count);
 
     if (pmu_node_count == 0) {
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
-        val_print(ACS_PRINT_TEST, "\n       No PMU nodes found in APMT table", 0);
-        val_print(ACS_PRINT_TEST, "\n       The test must be considered fail"
-                                   " if system has CoreSight PMU", 0);
-        val_print(ACS_PRINT_TEST, "\n       For non CoreSight PMU, manually verify A.4 PMU rules "
-                                   "in the SBSA specification", 0);
+        val_print(INFO, "\n       No PMU nodes found in APMT table");
+        val_print(INFO, "\n       The test must be considered fail"
+                                   " if system has CoreSight PMU");
+        val_print(INFO, "\n       For non CoreSight PMU, manually verify A.4 PMU rules "
+                                   "in the SBSA specification");
+        val_set_status(index, RESULT_SKIP(02));
         return;
     }
 
@@ -62,10 +62,10 @@ static void payload(void)
         cs_com |= val_pmu_get_info(PMU_NODE_CS_COM, node_index);
     }
     if (cs_com != 0x1) {
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 03));
-        val_print(ACS_PRINT_TEST, "\n       No CoreSight PMU nodes found", 0);
-        val_print(ACS_PRINT_TEST, "\n       For non CoreSight PMU, manually verify A.4 PMU rules "
-                                   "in the SBSA specification", 0);
+        val_print(INFO, "\n       No CoreSight PMU nodes found");
+        val_print(INFO, "\n       For non CoreSight PMU, manually verify A.4 PMU rules "
+                                   "in the SBSA specification");
+        val_set_status(index, RESULT_SKIP(03));
         return;
     }
 
@@ -74,22 +74,22 @@ static void payload(void)
     ret_status = val_pmu_get_multi_traffic_support_interface(&interface_acpiid,
                                                                           &num_traffic_support);
     if (ret_status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
-        val_set_status(index, RESULT_WARN(TEST_NUM, 1));
+        val_set_status(index, RESULT_WARNING(1));
         return;
     }
 
     /* PMU info table index for the interface */
     pmu_node_index = val_pmu_get_index_acpiid(interface_acpiid);
     if (pmu_node_index == PMU_INVALID_INDEX) {
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 05));
+        val_set_status(index, RESULT_SKIP(05));
         return;
     }
 
     /* Get number of monitor to the interface pmu node */
     num_mon = val_pmu_get_monitor_count(pmu_node_index);
     if (num_mon == 0) {
-        val_print(ACS_PRINT_ERR, "\n       PMU node must support atleast 1 counter", 0);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 5));
+        val_print(ERROR, "\n       PMU node must support atleast 1 counter");
+        val_set_status(index, RESULT_FAIL(5));
         return;
     }
 
@@ -101,10 +101,10 @@ static void payload(void)
 
             status = val_pmu_configure_monitor(pmu_node_index, config_events[i], mon_index);
             if (status) {
-                val_print(ACS_PRINT_ERR,
+                val_print(ERROR,
                         "\n       Required PMU Event 0x%x not supported", config_events[i]);
-                val_print(ACS_PRINT_ERR, " at node %d", pmu_node_index);
-                val_set_status(index, RESULT_FAIL(TEST_NUM, 6));
+                val_print(ERROR, " at node %d", pmu_node_index);
+                val_set_status(index, RESULT_FAIL(6));
                 return;
             }
             val_pmu_enable_monitor(pmu_node_index, mon_index);
@@ -113,11 +113,11 @@ static void payload(void)
             ret_status = val_generate_traffic(interface_acpiid, pmu_node_index, mon_index,
                                                                         config_events[i]);
             if (ret_status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
-                  val_set_status(index, RESULT_WARN(TEST_NUM, 2));
+                  val_set_status(index, RESULT_WARNING(2));
                   return;
             } else if (ret_status) {
-                val_print(ACS_PRINT_ERR, "\n       workload generate function failed", 0);
-                val_set_status(index, RESULT_FAIL(TEST_NUM, 7));
+                val_print(ERROR, "\n       workload generate function failed");
+                val_set_status(index, RESULT_FAIL(7));
                 return;
             }
             mon_count_value = val_pmu_read_count(pmu_node_index, mon_index);
@@ -126,11 +126,11 @@ static void payload(void)
             ret_status = val_pmu_check_monitor_count_value(interface_acpiid, mon_count_value,
                                                                              config_events[i]);
             if (ret_status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
-                  val_set_status(index, RESULT_WARN(TEST_NUM, 3));
+                  val_set_status(index, RESULT_WARNING(3));
                   return;
             } else if (ret_status) {
-                val_print(ACS_PRINT_ERR, "\n       count value not as expected", 0);
-                val_set_status(index, RESULT_FAIL(TEST_NUM, 8));
+                val_print(ERROR, "\n       count value not as expected");
+                val_set_status(index, RESULT_FAIL(8));
                 return;
             }
 
@@ -141,7 +141,7 @@ static void payload(void)
     /* Disable PMU monitors */
     val_pmu_disable_all_monitors(pmu_node_index);
 
-    val_set_status(index, RESULT_PASS(TEST_NUM, 9));
+    val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

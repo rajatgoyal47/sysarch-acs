@@ -28,10 +28,10 @@
 #define ACS_ACPI_SIGNATURE(A, B, C, D)  ((D << 24) | (C << 16) | (B << 8) | (A))
 #define PRINT_ACPI_NAME_FROM_SIGNATURE(sig)                    \
   do {                                     \
-    val_print(ACS_PRINT_DEBUG, "\n         Table : %c", (char)((sig) & 0xFF));          \
-    val_print(ACS_PRINT_DEBUG, "%c", (char)(((sig) >> 8) & 0xFF));   \
-    val_print(ACS_PRINT_DEBUG, "%c", (char)(((sig) >> 16) & 0xFF));  \
-    val_print(ACS_PRINT_DEBUG, "%c", (char)(((sig) >> 24) & 0xFF)); \
+    val_print(DEBUG, "\n         Table : %c", (char)((sig) & 0xFF));          \
+    val_print(DEBUG, "%c", (char)(((sig) >> 8) & 0xFF));   \
+    val_print(DEBUG, "%c", (char)(((sig) >> 16) & 0xFF));  \
+    val_print(DEBUG, "%c", (char)(((sig) >> 24) & 0xFF)); \
   } while (0)
 
 #define DRTM_1_0_FN_BASE            0xC4000110

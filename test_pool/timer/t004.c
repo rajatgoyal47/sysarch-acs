@@ -34,9 +34,9 @@ isr()
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  val_print(ACS_PRINT_INFO, "\n       Received sys timer interrupt   ", 0);
+  val_print(TRACE, "\n       Received sys timer interrupt   ");
   val_timer_disable_system_timer((addr_t)cnt_base_n);
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
   val_gic_end_of_interrupt(intid);
 }
 
@@ -53,8 +53,8 @@ payload()
   uint64_t timer_num = val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS, 0);
 
   if (!timer_num) {
-      val_print(ACS_PRINT_DEBUG, "\n       No System timers are defined  ", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+      val_print(DEBUG, "\n       No System timers are defined  ");
+      val_set_status(index, RESULT_SKIP(1));
       return;
   }
 
@@ -71,16 +71,16 @@ payload()
       //Read CNTACR to determine whether access permission from NS state is permitted
       status = val_timer_skip_if_cntbase_access_not_allowed(timer_num);
       if (status == ACS_STATUS_SKIP) {
-          val_print(ACS_PRINT_WARN,
-                    "\n       Security doesn't allow access to timer registers      ", 0);
-          val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+          val_print(WARN,
+                    "\n       Security doesn't allow access to timer registers      ");
+          val_set_status(index, RESULT_SKIP(2));
           return;
       }
 
       cnt_base_n = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N, timer_num);
       if (cnt_base_n == 0) {
-          val_print(ACS_PRINT_WARN, "\n       CNT_BASE_N is zero                 ", 0);
-          val_set_status(index, RESULT_SKIP(TEST_NUM, 3));
+          val_print(WARN, "\n       CNT_BASE_N is zero                 ");
+          val_set_status(index, RESULT_SKIP(3));
           return;
       }
 
@@ -88,15 +88,15 @@ payload()
 
       /* Check intid is SPI or ESPI */
       if (!(IsSpi(intid)) && !(val_gic_is_valid_espi(intid))) {
-          val_print(ACS_PRINT_ERR, "\n       Interrupt-%d is neither SPI nor ESPI", intid);
-          val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+          val_print(ERROR, "\n       Interrupt-%d is neither SPI nor ESPI", intid);
+          val_set_status(index, RESULT_FAIL(1));
           return;
       }
 
       /* Install ISR */
       if (val_gic_install_isr(intid, isr)) {
-          val_print(ACS_PRINT_ERR, "\n       GIC Install Handler Failed...", 0);
-          val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+          val_print(ERROR, "\n       GIC Install Handler Failed...");
+          val_set_status(index, RESULT_FAIL(2));
           return;
       }
 
@@ -107,15 +107,15 @@ payload()
       ;
 
       if (timeout == 0) {
-          val_print(ACS_PRINT_ERR, "\n       Sys timer interrupt not received on %d   ", intid);
-          val_set_status(index, RESULT_FAIL(TEST_NUM, 3));
+          val_print(ERROR, "\n       Sys timer interrupt not received on %d   ", intid);
+          val_set_status(index, RESULT_FAIL(3));
           return;
       }
   }
 
   if (!ns_timer) {
-      val_print(ACS_PRINT_WARN, "\n       No non-secure systimer implemented", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 5));
+      val_print(WARN, "\n       No non-secure systimer implemented");
+      val_set_status(index, RESULT_SKIP(5));
       return;
   }
 

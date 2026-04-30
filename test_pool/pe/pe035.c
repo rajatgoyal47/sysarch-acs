@@ -31,9 +31,9 @@ static void payload(void)
     /* Read ID_AA64MMFR2_EL1.FWB[43:40] for stage 2 control of memory types and cacheability */
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64MMFR2_EL1), 40, 43);
     if (data == 0x1)
-        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+        val_set_status(index, RESULT_PASS);
     else
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+        val_set_status(index, RESULT_FAIL(01));
 }
 
 uint32_t pe035_entry(uint32_t num_pe)

@@ -48,17 +48,17 @@ void payload(void)
     for (msc_index = 0; msc_index < total_nodes; msc_index++) {
 
       if (!val_mpam_msc_supports_ris(msc_index)) {
-        val_print(ACS_PRINT_DEBUG, "\n       MSC index %d does not support RIS", msc_index);
+        val_print(DEBUG, "\n       MSC index %d does not support RIS", msc_index);
         continue;
       }
 
       if (!val_mpam_msc_supports_esr(msc_index)) {
-        val_print(ACS_PRINT_DEBUG, "\n       MSC index %d does not support ESR", msc_index);
+        val_print(DEBUG, "\n       MSC index %d does not support ESR", msc_index);
         continue;
       }
 
       if (!val_mpam_msc_supports_extd_esr(msc_index)) {
-        val_print(ACS_PRINT_DEBUG, "\n       MSC index %d does not support EXTD_ESR", msc_index);
+        val_print(DEBUG, "\n       MSC index %d does not support EXTD_ESR", msc_index);
         continue;
       }
 
@@ -67,7 +67,7 @@ void payload(void)
 
       status = val_mpam_msc_reset_errcode(msc_index);
       if (!status) {
-        val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+        val_set_status(pe_index, RESULT_FAIL(01));
         return;
       }
 
@@ -76,7 +76,7 @@ void payload(void)
       max_ris_index = val_mpam_get_max_ris_count(msc_index);
       if (max_ris_index == 0xF) {
         /* Maximum RIS Supported, Skip This MSC */
-        val_print(ACS_PRINT_DEBUG, "\n       MSC index %d supports all RIS", msc_index);
+        val_print(DEBUG, "\n       MSC index %d supports all RIS", msc_index);
         continue;
       }
 
@@ -91,7 +91,7 @@ void payload(void)
              BITFIELD_SET(PART_SEL_RIS, programmed_ris);
 
       val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, data);
-      val_print(ACS_PRINT_DEBUG, "\n       Value written to MPAMCFG_PART_SEL is %llx", data);
+      val_print(DEBUG, "\n       Value written to MPAMCFG_PART_SEL is %llx", data);
 
       /* Access MPAMCFG_* register to cause the error */
       val_mpam_mmr_read(msc_index, REG_MPAMCFG_CMAX);
@@ -104,15 +104,15 @@ void payload(void)
 
       if ((esr_value >> ESR_ERRCODE_SHIFT) & ESR_ERRCODE_MASK) {
         if (((esr_value >> ESR_RIS_SHIFT) & ESR_RIS_MASK) != programmed_ris) {
-          val_print(ACS_PRINT_ERR, "\n       ESR.RIS mismatch MPAMCFG access: expected 0x%x",
+          val_print(ERROR, "\n       ESR.RIS mismatch MPAMCFG access: expected 0x%x",
                               programmed_ris);
-          val_print(ACS_PRINT_ERR, ", Received 0x%x",
+          val_print(ERROR, ", Received 0x%x",
                               ((esr_value >> ESR_RIS_SHIFT) & ESR_RIS_MASK));
           test_fail++;
         }
       } else {
         /* Print Warning for Mismatch in Error Code */
-        val_print(ACS_PRINT_WARN, "\n       ERRCODE mismatch MPAMCFG access: Received 0x%x",
+        val_print(WARN, "\n       ERRCODE mismatch MPAMCFG access: Received 0x%x",
                                     ((esr_value >> ESR_ERRCODE_SHIFT) & ESR_ERRCODE_MASK));
       }
 
@@ -129,7 +129,7 @@ void payload(void)
                BITFIELD_SET(MON_SEL_RIS, programmed_ris);
 
         val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MON_SEL, data);
-        val_print(ACS_PRINT_DEBUG, "\n       Value written to MSMON_CFG_MON_SEL is %llx", data);
+        val_print(DEBUG, "\n       Value written to MSMON_CFG_MON_SEL is %llx", data);
 
         /* Access MSMON_CFG_* register to cause the error */
         val_mpam_mmr_read(msc_index, REG_MSMON_CFG_MBWU_FLT);
@@ -142,15 +142,15 @@ void payload(void)
 
         if ((esr_value >> ESR_ERRCODE_SHIFT) & ESR_ERRCODE_MASK) {
           if (((esr_value >> ESR_RIS_SHIFT) & ESR_RIS_MASK) != programmed_ris) {
-            val_print(ACS_PRINT_ERR, "\n       ESR.RIS mismatch MSMON_CFG access: expected 0x%x",
+            val_print(ERROR, "\n       ESR.RIS mismatch MSMON_CFG access: expected 0x%x",
                                 programmed_ris);
-            val_print(ACS_PRINT_ERR, ", Received 0x%x",
+            val_print(ERROR, ", Received 0x%x",
                                 ((esr_value >> ESR_RIS_SHIFT) & ESR_RIS_MASK));
             test_fail++;
           }
         } else {
           /* Print Warning for Mismatch in Error Code */
-          val_print(ACS_PRINT_WARN, "\n       ERRCODE mismatch MSMON_CFG access: Received 0x%x",
+          val_print(WARN, "\n       ERRCODE mismatch MSMON_CFG access: Received 0x%x",
                                       ((esr_value >> ESR_ERRCODE_SHIFT) & ESR_ERRCODE_MASK));
         }
 
@@ -164,11 +164,11 @@ void payload(void)
     }
 
     if (test_skip)
-        val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+        val_set_status(pe_index, RESULT_SKIP(01));
     else if (test_fail)
-        val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
+        val_set_status(pe_index, RESULT_FAIL(02));
     else
-        val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+        val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t error013_entry(void)

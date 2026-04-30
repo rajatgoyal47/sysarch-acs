@@ -29,45 +29,42 @@ freeAcsMem(void)
 {
     val_pe_free_info_table();
     if (acs_is_module_enabled(PE)          ||
+      acs_is_module_enabled(GIC)           ||
+      acs_is_module_enabled(TIMER)         ||
+      acs_is_module_enabled(WATCHDOG)      ||
+      acs_is_module_enabled(PERIPHERAL)    ||
+      acs_is_module_enabled(POWER_WAKEUP)  ||
+      acs_is_module_enabled(PCIE))
+       val_gic_free_info_table();
+
+    if (acs_is_module_enabled(TIMER)       ||
         acs_is_module_enabled(GIC)         ||
-        acs_is_module_enabled(PCIE)        ||
-        acs_is_module_enabled(MPAM)        ||
-        acs_is_module_enabled(RAS)         ||
-        acs_is_module_enabled(ETE)         ||
-        acs_is_module_enabled(PMU))
-        val_gic_free_info_table();
-    if (acs_is_module_enabled(GIC)          ||
-        acs_is_module_enabled(TIMER))
-        val_timer_free_info_table();
-    if (acs_is_module_enabled(WATCHDOG))
-        val_wd_free_info_table();
-    if (acs_is_module_enabled(MPAM))
-        val_cache_free_info_table();
-    if (acs_is_module_enabled(MPAM))
-    {
-        val_mpam_free_info_table();
-        val_hmat_free_info_table();
-        val_srat_free_info_table();
-        val_pcc_free_info_table();
-    }
-   if (acs_is_module_enabled(PCIE))
+        acs_is_module_enabled(WATCHDOG)    ||
+        acs_is_module_enabled(POWER_WAKEUP))
+       val_timer_free_info_table();
+
+    if (acs_is_module_enabled(WATCHDOG)    ||
+        acs_is_module_enabled(POWER_WAKEUP))
+       val_wd_free_info_table();
+
+
+    if (acs_is_module_enabled(PCIE)        ||
+        acs_is_module_enabled(GIC)         ||
+        acs_is_module_enabled(SMMU))
        val_pcie_free_info_table();
-   if (acs_is_module_enabled(SMMU)   ||
-       acs_is_module_enabled(MEM_MAP) ||
+
+   if (acs_is_module_enabled(SMMU)         ||
+       acs_is_module_enabled(GIC)          ||
+       acs_is_module_enabled(MEM_MAP)      ||
        acs_is_module_enabled(PCIE))
        val_iovirt_free_info_table();
-   if (acs_is_module_enabled(PE)     ||
-       acs_is_module_enabled(PCIE)   ||
-       acs_is_module_enabled(MEM_MAP) ||
-       acs_is_module_enabled(MPAM))
+
+    if (acs_is_module_enabled(PE)          ||
+        acs_is_module_enabled(PCIE)        ||
+        acs_is_module_enabled(PERIPHERAL)  ||
+        acs_is_module_enabled(MEM_MAP))
        val_peripheral_free_info_table();
-   if (acs_is_module_enabled(PMU))
-       val_pmu_free_info_table();
-   if (acs_is_module_enabled(RAS))
-   {
-       val_ras2_free_info_table();
-       val_ras_free_info_table();
-   }
+
    if (acs_is_module_enabled(TPM))
         val_tpm2_free_info_table();
 
@@ -78,56 +75,48 @@ freeAcsMem(void)
 /* This routine will furnish global variables with user defined config and set any
    default values for the ACS */
 static uint32_t
-apply_user_config_and_defaults(void)
+apply_user_config_and_defaults(acs_run_request_t *ctx, acs_execution_policy_t *policy)
 {
+    if (ctx == NULL || policy == NULL)
+        return ACS_STATUS_FAIL;
+
+    acs_load_run_request_defaults(ctx);
+    acs_load_execution_policy_defaults(policy);
+
     /* Set user defined compliance level to be run for
        as defined pal/baremetal/target/../include/platform_override_fvp.h  */
-    g_level_value  = PLATFORM_OVERRIDE_PCBSA_LEVEL;
-    g_print_level  = PLATFORM_OVERRIDE_PRINT_LEVEL;
+    ctx->level_value = PLATFORM_OVERRIDE_PCBSA_LEVEL;
+    policy->print_level = PLATFORM_OVERRIDE_PRINT_LEVEL;
 
-    /* Set user defined configuration from pal/baremetal/target/../src/platform_cfg_fvp.c*/
-    if (g_rule_count) {
-        g_rule_list = g_rule_list_arr;
-    }
-    if (g_skip_rule_count) {
-        g_skip_rule_list = g_skip_rule_list_arr;
-    }
-    if (g_num_modules) {
-        g_execute_modules = g_execute_modules_arr;
-    }
-    if (g_num_skip_modules) {
-        g_skip_modules = g_skip_modules_arr;
-    }
-
-    /* Set default values for g_print_mmio */
-    g_print_mmio = 0;
+    /* Disable MMIO trace prints by default for standalone baremetal runs. */
+    policy->print_mmio = 0;
 
     /* If selected rule count is zero, default to PCBSA */
-    if (g_rule_count == 0) {
-        /* Standalone PCBSA Baremetal app, set g_arch_selection to PCBSA */
-        g_arch_selection = ARCH_PCBSA;
+    if (ctx->rule_count == 0) {
+        /* Standalone PCBSA Baremetal app, default the run request to PCBSA */
+        ctx->arch_selection = ARCH_PCBSA;
     }
 
     /* Check sanity of value of level if not valid default to extremes */
-    if (g_level_value < PCBSA_LEVEL_1) {
-        val_print(g_print_level, "\nPCBSA Level %d is not supported.\n", g_level_value);
-        val_print(g_print_level, "\nSetting PCBSA level to %d\n", PCBSA_LEVEL_1);
-        g_level_value = PCBSA_LEVEL_1;
-    } else if (g_level_value >= PCBSA_LEVEL_SENTINEL) {
-        val_print(g_print_level, "\nPCBSA Level %d is not supported.\n", g_level_value);
-        val_print(g_print_level, "\nSetting PCBSA level to %d\n", PCBSA_LEVEL_1);
-        g_level_value = PCBSA_LEVEL_1;
+    if (ctx->level_value < PCBSA_LEVEL_1) {
+        val_print(policy->print_level, "\nPCBSA Level %d is not supported.\n", ctx->level_value);
+        val_print(policy->print_level, "\nSetting PCBSA level to %d\n", PCBSA_LEVEL_1);
+        ctx->level_value = PCBSA_LEVEL_1;
+    } else if (ctx->level_value >= PCBSA_LEVEL_SENTINEL) {
+        val_print(policy->print_level, "\nPCBSA Level %d is not supported.\n", ctx->level_value);
+        val_print(policy->print_level, "\nSetting PCBSA level to %d\n", PCBSA_LEVEL_1);
+        ctx->level_value = PCBSA_LEVEL_1;
     }
 
     /* Check sanity of print level, default accordingly */
-    if (g_print_level < ACS_PRINT_INFO) {
-        val_print(ACS_PRINT_ERR, "\nPrint Level %d is not supported.\n", g_print_level);
-        val_print(ACS_PRINT_ERR, "\nSetting Print level to %d\n", ACS_PRINT_INFO);
-        g_print_level = ACS_PRINT_INFO;
-    } else if (g_print_level > ACS_PRINT_ERR) {
-        val_print(ACS_PRINT_ERR, "\nPrint Level %d is not supported.\n", g_print_level);
-        val_print(ACS_PRINT_ERR, "\nSetting Print level to %d\n", ACS_PRINT_ERR);
-        g_print_level = ACS_PRINT_ERR;
+    if (policy->print_level < TRACE) {
+        val_print(ERROR, "\nPrint Level %d is not supported.\n", policy->print_level);
+        val_print(ERROR, "\nSetting Print level to %d\n", TRACE);
+        policy->print_level = TRACE;
+    } else if (policy->print_level > ERROR) {
+        val_print(ERROR, "\nPrint Level %d is not supported.\n", policy->print_level);
+        val_print(ERROR, "\nSetting Print level to %d\n", ERROR);
+        policy->print_level = ERROR;
     }
 
     return ACS_STATUS_PASS;
@@ -146,63 +135,73 @@ ShellAppMainpcbsa(void)
 {
     uint32_t Status;
     void     *branch_label;
+    acs_run_request_t *ctx;
+    acs_execution_policy_t *policy;
 
-    Status = apply_user_config_and_defaults();
+    acs_reset_run_request();
+    ctx = acs_get_run_request_mut();
+    policy = acs_get_execution_policy_mut();
+
+    Status = apply_user_config_and_defaults(ctx, policy);
     if (Status != ACS_STATUS_PASS) {
-        val_print(ACS_PRINT_ERR, "\napply_user_config_and_defaults() failed, Exiting...\n", 0);
+        val_print(ERROR, "\napply_user_config_and_defaults() failed, Exiting...\n");
         goto exit_acs;
     }
 
-    /* apply any compile-time test/module overrides before
-    *  we look at g_num_modules and build masks.
-    */
-    acs_apply_compile_params();
-    /* apply any EL3-supplied test/module overrides before
-    *  we look at g_rule_list/g_skip_rule_list/g_num_modules and build masks.
-    */
-    acs_apply_el3_params();
+    /* Apply any compile-time test/module overrides before we consume the run request. */
+    acs_apply_compile_params(ctx, policy);
+    /* Apply any EL3-supplied selection overrides before we consume the run request. */
+    acs_apply_el3_params(ctx, policy);
 
 #if ACS_ENABLE_MMU
-    val_print(ACS_PRINT_TEST, " Enabling MMU\n", 0);
+    val_print(INFO, " Enabling MMU\n");
 
     /* Create MMU page tables before enabling the MMU at EL2 */
-    if (val_setup_mmu())
+    if (val_setup_mmu()) {
+        acs_release_run_request(ctx);
         return ACS_STATUS_FAIL;
+    }
 
     /* Enable Stage-1 MMU */
-    if (val_enable_mmu())
+    if (val_enable_mmu()) {
+        acs_release_run_request(ctx);
         return ACS_STATUS_FAIL;
+    }
 #else
-    val_print(ACS_PRINT_TEST, "Skipping MMU setup/enable (ACS_ENABLE_MMU=0)\n", 0);
+    val_print(INFO, "Skipping MMU setup/enable (ACS_ENABLE_MMU=0)\n");
 #endif
 
-    val_print(ACS_PRINT_TEST, "\n\n PC BSA Architecture Compliance Suite\n", 0);
-    val_print(ACS_PRINT_TEST, "\n          Version %d.", PC_BSA_ACS_MAJOR_VER);
-    val_print(ACS_PRINT_TEST, "%d.", PC_BSA_ACS_MINOR_VER);
-    val_print(ACS_PRINT_TEST, "%d\n", PC_BSA_ACS_SUBMINOR_VER);
+    val_print(INFO, "\n\n PC BSA Architecture Compliance Suite\n");
+    val_print(INFO, "\n          Version %d.", PC_BSA_ACS_MAJOR_VER);
+    val_print(INFO, "%d.", PC_BSA_ACS_MINOR_VER);
+    val_print(INFO, "%d\n", PC_BSA_ACS_SUBMINOR_VER);
 
-    val_print(ACS_PRINT_TEST, LEVEL_PRINT_FORMAT(g_level_value, g_level_filter_mode,
-                PCBSA_LEVEL_FR), g_level_value);
+    val_print(INFO, LEVEL_PRINT_FORMAT(ctx->level_value, ctx->level_filter_mode,
+                PCBSA_LEVEL_FR), ctx->level_value);
 
-    val_print(ACS_PRINT_TEST, "(Print level is %2d)\n\n", g_print_level);
+    val_print(INFO, "(Print level is %2d)\n\n", policy->print_level);
 
-    val_print(ACS_PRINT_TEST, " Creating Platform Information Tables\n", 0);
+    val_print(INFO, " Creating Platform Information Tables\n");
 
     Status = createPeInfoTable();
-    if (Status)
+    if (Status) {
+        acs_release_run_request(ctx);
         return Status;
+    }
 
-    if (acs_is_module_enabled(PE)          ||
-      acs_is_module_enabled(GIC)         ||
-      acs_is_module_enabled(PCIE)        ||
-      acs_is_module_enabled(MPAM)        ||
-      acs_is_module_enabled(RAS)         ||
-      acs_is_module_enabled(ETE)         ||
-      acs_is_module_enabled(PMU))
+    if (acs_is_module_enabled(PE)         ||
+      acs_is_module_enabled(GIC)          ||
+      acs_is_module_enabled(TIMER)        ||
+      acs_is_module_enabled(WATCHDOG)     ||
+      acs_is_module_enabled(PERIPHERAL)   ||
+      acs_is_module_enabled(POWER_WAKEUP) ||
+      acs_is_module_enabled(PCIE))
     {
         Status = createGicInfoTable();
-        if (Status)
+        if (Status) {
+            acs_release_run_request(ctx);
             return Status;
+        }
     }
 
     /* Initialise exception vector, so any unexpected exception gets handled
@@ -211,73 +210,71 @@ ShellAppMainpcbsa(void)
     branch_label = &&print_test_status;
     val_pe_context_save(AA64ReadSp(), (uint64_t)branch_label);
     val_pe_initialize_default_exception_handler(val_pe_default_esr);
-    if (acs_is_module_enabled(GIC)          ||
-        acs_is_module_enabled(TIMER))
+    if (acs_is_module_enabled(TIMER)       ||
+        acs_is_module_enabled(GIC)         ||
+        acs_is_module_enabled(WATCHDOG)    ||
+        acs_is_module_enabled(POWER_WAKEUP))
         createTimerInfoTable();
-    if (acs_is_module_enabled(WATCHDOG))
+
+    if (acs_is_module_enabled(WATCHDOG)    ||
+        acs_is_module_enabled(POWER_WAKEUP))
         createWatchdogInfoTable();
-    if (acs_is_module_enabled(MPAM))
-        createCacheInfoTable();
-    if (acs_is_module_enabled(MPAM))
-    {
-        createPccInfoTable();
-        createMpamInfoTable();
-        createHmatInfoTable();
-        createSratInfoTable();
-    }
-    if (acs_is_module_enabled(PCIE))
+
+    if (acs_is_module_enabled(PCIE)        ||
+        acs_is_module_enabled(GIC)         ||
+        acs_is_module_enabled(SMMU))
         createPcieInfoTable();
+
     if (acs_is_module_enabled(SMMU)        ||
-        acs_is_module_enabled(MEM_MAP)      ||
+        acs_is_module_enabled(GIC)         ||
+        acs_is_module_enabled(MEM_MAP)     ||
         acs_is_module_enabled(PCIE))
         createIoVirtInfoTable();
+
     if (acs_is_module_enabled(PE)          ||
         acs_is_module_enabled(PCIE)        ||
-        acs_is_module_enabled(MEM_MAP)      ||
-        acs_is_module_enabled(MPAM))
+        acs_is_module_enabled(PERIPHERAL)  ||
+        acs_is_module_enabled(MEM_MAP))
         createPeripheralInfoTable();
+
     if (acs_is_module_enabled(PE)          ||
         acs_is_module_enabled(SMMU)        ||
         acs_is_module_enabled(MEM_MAP))
         createMemoryInfoTable();
-    if (acs_is_module_enabled(PMU))
-        createPmuInfoTable();
-    if (acs_is_module_enabled(RAS))
-    {
-        createRasInfoTable();
-        createRas2InfoTable();
-    }
+
     if (acs_is_module_enabled(TPM))
-    {
        createTpm2InfoTable();
-    }
 
     createDmaInfoTable();
     createSmbiosInfoTable();
     val_allocate_shared_mem();
 
 
-    if ((g_rule_count > 0 && g_rule_list != NULL) || (g_arch_selection != ARCH_NONE)) {
+    if ((ctx->rule_count > 0 && ctx->rule_list != NULL) || (ctx->arch_selection != ARCH_NONE)) {
         /* Merge arch rules if any, then apply CLI filters (-skip, -m, -skipmodule) */
-        g_rule_count = filter_rule_list_by_cli(&g_rule_list, g_rule_count);
-        if (g_rule_count == 0 || g_rule_list == NULL) {
-            val_print(ACS_PRINT_ERR, "\nRule list empty, nothing to execute, Exiting...\n", 0);
+        filter_rule_list_by_cli(ctx);
+        if (ctx->rule_count == 0 || ctx->rule_list == NULL) {
+            val_print(ERROR, "\nRule list empty, nothing to execute, Exiting...\n");
+            acs_release_run_request(ctx);
             return -1;
         }
 
         /* Run rule based test orchestrator */
-        run_tests(g_rule_list, g_rule_count);
+        run_tests(ctx);
     } else {
-        val_print(ACS_PRINT_ERR, "\nInvalid rule list or arch selected, Exiting...\n", 0);
+        val_print(ERROR, "\nInvalid rule list or arch selected, Exiting...\n");
+        acs_release_run_request(ctx);
         return -1;
     }
 
 print_test_status:
     val_print_acs_test_status_summary();
-    val_print(ACS_PRINT_ERR, "\n      *** PC BSA tests complete. Reset the system. ***\n\n", 0);
+    val_print(INFO, "\n      *** PC BSA tests complete. Reset the system. ***\n\n");
 
 exit_acs:
     freeAcsMem();
+    /* Release any request-owned CLI/EL3 selection lists before leaving ACS. */
+    acs_release_run_request(ctx);
 
     val_pe_context_restore(AA64WriteSp(g_stack_pointer));
     return val_exit_acs();

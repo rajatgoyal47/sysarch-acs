@@ -37,8 +37,12 @@ UINT8   *gSharedMemory;
 VOID
 pal_mmio_write8(UINT64 addr, UINT8 data)
 {
-  if (g_print_mmio || (g_curr_module & g_enable_module))
-      acs_print(ACS_PRINT_INFO, L" pal_mmio_write8 Address = %llx  Data = %lx\n", addr, data);
+  if (acs_policy_get_print_mmio() || (g_curr_module & g_enable_module))
+      pal_print_msg(ACS_PRINT_INFO,
+                    " %a Address = %llx  Data = %lx\n",
+                    __func__,
+                    addr,
+                    data);
 
   *(volatile UINT8 *)addr = data;
 }
@@ -55,8 +59,12 @@ pal_mmio_write8(UINT64 addr, UINT8 data)
 VOID
 pal_mmio_write16(UINT64 addr, UINT16 data)
 {
-  if (g_print_mmio || (g_curr_module & g_enable_module))
-      acs_print(ACS_PRINT_INFO, L" pal_mmio_write16 Address = %llx  Data = %lx\n", addr, data);
+  if (acs_policy_get_print_mmio() || (g_curr_module & g_enable_module))
+      pal_print_msg(ACS_PRINT_INFO,
+                    " %a Address = %llx  Data = %lx\n",
+                    __func__,
+                    addr,
+                    data);
 
   *(volatile UINT16 *)addr = data;
 }
@@ -73,8 +81,12 @@ pal_mmio_write16(UINT64 addr, UINT16 data)
 VOID
 pal_mmio_write64(UINT64 addr, UINT64 data)
 {
-  if (g_print_mmio || (g_curr_module & g_enable_module))
-      acs_print(ACS_PRINT_INFO, L" pal_mmio_write64 Address = %llx  Data = %llx\n", addr, data);
+  if (acs_policy_get_print_mmio() || (g_curr_module & g_enable_module))
+      pal_print_msg(ACS_PRINT_INFO,
+                    " %a Address = %llx  Data = %llx\n",
+                    __func__,
+                    addr,
+                    data);
 
   *(volatile UINT64 *)addr = data;
 }
@@ -94,8 +106,12 @@ pal_mmio_read8(UINT64 addr)
 
   data = (*(volatile UINT8 *)addr);
 
-  if (g_print_mmio || (g_curr_module & g_enable_module))
-      acs_print(ACS_PRINT_INFO, L" pal_mmio_read8 Address = %lx  Data = %lx\n", addr, data);
+  if (acs_policy_get_print_mmio() || (g_curr_module & g_enable_module))
+      pal_print_msg(ACS_PRINT_INFO,
+                    " %a Address = %lx  Data = %lx\n",
+                    __func__,
+                    addr,
+                    data);
 
   return data;
 }
@@ -115,8 +131,12 @@ pal_mmio_read16(UINT64 addr)
 
   data = (*(volatile UINT16 *)addr);
 
-  if (g_print_mmio || (g_curr_module & g_enable_module))
-      acs_print(ACS_PRINT_INFO, L" pal_mmio_read16 Address = %lx  Data = %lx\n", addr, data);
+  if (acs_policy_get_print_mmio() || (g_curr_module & g_enable_module))
+      pal_print_msg(ACS_PRINT_INFO,
+                    " %a Address = %lx  Data = %lx\n",
+                    __func__,
+                    addr,
+                    data);
 
   return data;
 }
@@ -136,8 +156,12 @@ pal_mmio_read64(UINT64 addr)
 
   data = (*(volatile UINT64 *)addr);
 
-  if (g_print_mmio || (g_curr_module & g_enable_module))
-      acs_print(ACS_PRINT_INFO, L" pal_mmio_read64 Address = %lx  Data = %lx\n", addr, data);
+  if (acs_policy_get_print_mmio() || (g_curr_module & g_enable_module))
+      pal_print_msg(ACS_PRINT_INFO,
+                    " %a Address = %lx  Data = %lx\n",
+                    __func__,
+                    addr,
+                    data);
 
   return data;
 }
@@ -157,8 +181,12 @@ pal_mmio_read(UINT64 addr)
 
   data = (*(volatile UINT32 *)addr);
 
-  if (g_print_mmio || (g_curr_module & g_enable_module))
-      acs_print(ACS_PRINT_INFO, L" pal_mmio_read Address = %lx  Data = %x\n", addr, data);
+  if (acs_policy_get_print_mmio() || (g_curr_module & g_enable_module))
+      pal_print_msg(ACS_PRINT_INFO,
+                    " %a Address = %lx  Data = %x\n",
+                    __func__,
+                    addr,
+                    data);
 
   return data;
 }
@@ -176,8 +204,12 @@ VOID
 pal_mmio_write(UINT64 addr, UINT32 data)
 {
 
-  if (g_print_mmio || (g_curr_module & g_enable_module))
-      acs_print(ACS_PRINT_INFO, L" pal_mmio_write Address = %llx  Data = %x\n", addr, data);
+  if (acs_policy_get_print_mmio() || (g_curr_module & g_enable_module))
+      pal_print_msg(ACS_PRINT_INFO,
+                    " %a Address = %llx  Data = %x\n",
+                    __func__,
+                    addr,
+                    data);
 
   *(volatile UINT32 *)addr = data;
 }
@@ -190,21 +222,27 @@ pal_mmio_write(UINT64 addr, UINT32 data)
 
   @return None
 **/
+
 VOID
-pal_print(CHAR8 *string, UINT64 data)
+pal_print(UINT64 data)
 {
-  if(g_acs_log_file_handle)
+  CHAR8 *buf = (CHAR8 *)(UINTN)data;
+
+  if (g_acs_log_file_handle)
   {
-    CHAR8 Buffer[1024];
-    UINTN BufferSize = 1;
-    EFI_STATUS Status = 0;
-    BufferSize = AsciiSPrint(Buffer, 1024, string, data);
-    AsciiPrint(Buffer);
-    Status = ShellWriteFile(g_acs_log_file_handle, &BufferSize, (VOID*)Buffer);
-    if(EFI_ERROR(Status))
-      acs_print(ACS_PRINT_ERR, L" Error in writing to log file\n");
-  } else
-      AsciiPrint(string, data);
+    UINTN BufferSize = AsciiStrLen(buf);
+    EFI_STATUS Status;
+
+    AsciiPrint("%a", buf);
+    Status = ShellWriteFile(g_acs_log_file_handle, &BufferSize, (VOID *)buf);
+    if (EFI_ERROR(Status))
+      pal_print_msg(ACS_PRINT_ERR,
+                    " Error in writing to log file\n");
+  }
+  else
+  {
+    AsciiPrint("%a", buf);
+  }
 }
 
 /**
@@ -214,13 +252,18 @@ pal_print(CHAR8 *string, UINT64 data)
 VOID
 pal_warn_not_implemented(const CHAR8 *api_name)
 {
+  CHAR8 Buffer[512];
+
   if (api_name == NULL)
     return;
 
-  pal_print("\n       %a is not implemented."
-            "\n       Please implement the PAL function in test suite or"
-            "\n       conduct an offline review for this rule.\n",
-              (UINT64)(UINTN)api_name);
+  AsciiSPrint(Buffer, sizeof(Buffer),
+              "\n       %a is not implemented."
+              "\n       Please implement the PAL function in test suite or"
+              "\n       conduct an offline review for this rule.\n",
+              api_name);
+
+  pal_print((UINT64)(UINTN)Buffer);
 }
 
 /**
@@ -279,44 +322,9 @@ pal_mem_free(VOID *Buffer)
   UINT32 Status;
   Status = gBS->FreePool(Buffer);
   if (EFI_ERROR(Status)) {
-    acs_print(ACS_PRINT_ERR, L"\n       Failed to free memory    ");
+    pal_print_msg(ACS_PRINT_ERR,
+                  "\n       Failed to free memory    ");
   }
-}
-
-/**
-  @brief  Compare the contents of the src and dest buffers
-  @param  Src   - source buffer to be compared
-  @param  Dest  - destination buffer to be compared
-  @param  Len   - Length of the comparison to be performed
-
-  @return Zero if the buffer contecnts are same, else Nonzero
-**/
-UINT32
-pal_mem_compare (
-  VOID *Src,
-  VOID *Dest,
-  UINT32 Len
-  )
-{
-  return CompareMem (Src, Dest, Len);
-}
-
-/**
-  @brie a buffer with a known specified input value
-  @param  Buf   - Pointer to the buffer to fill
-  @param  Size  - Number of bytes in buffer to fill
-  @param  Value - Value to fill buffer with
-
-  @return None
-**/
-VOID
-pal_mem_set (
-  VOID *Buf,
-  UINT32 Size,
-  UINT8 Value
-  )
-{
-  SetMem(Buf, Size, Value);
 }
 
 /**
@@ -337,10 +345,14 @@ pal_mem_allocate_shared(UINT32 num_pe, UINT32 sizeofentry)
                                (num_pe * sizeofentry),
                                (VOID **) &gSharedMemory );
 
-  acs_print(ACS_PRINT_INFO, L" Shared memory is %llx\n", gSharedMemory);
+  pal_print_msg(ACS_PRINT_INFO,
+                " Shared memory is %llx\n",
+                gSharedMemory);
 
   if (EFI_ERROR(Status)) {
-    acs_print(ACS_PRINT_ERR, L" Allocate Pool shared memory failed %x\n", Status);
+    pal_print_msg(ACS_PRINT_ERR,
+                  " Allocate Pool shared memory failed %x\n",
+                  Status);
   }
   pal_pe_data_cache_ops_by_va((UINT64)&gSharedMemory, CLEAN_AND_INVALIDATE);
 
@@ -399,7 +411,9 @@ pal_mem_alloc (
                               (VOID **) &Buffer);
   if (EFI_ERROR(Status))
   {
-    acs_print(ACS_PRINT_ERR, L" Allocate Pool failed %x\n", Status);
+    pal_print_msg(ACS_PRINT_ERR,
+                  " Allocate Pool failed %x\n",
+                  Status);
     return NULL;
   }
 
@@ -430,7 +444,9 @@ pal_mem_calloc (
                               (VOID **) &Buffer);
   if (EFI_ERROR(Status))
   {
-    acs_print(ACS_PRINT_ERR, L" Allocate Pool failed %x\n", Status);
+    pal_print_msg(ACS_PRINT_ERR,
+                  " Allocate Pool failed %x\n",
+                  Status);
     return NULL;
   }
 
@@ -467,45 +483,6 @@ pal_mem_phys_to_virt (
   )
 {
   return (VOID*)Pa;
-}
-
-/**
-  @brief  Compares two strings
-
-  @param  FirstString   The pointer to a Null-terminated ASCII string.
-  @param  SecondString  The pointer to a Null-terminated ASCII string.
-  @param  Length        The maximum number of ASCII characters for compare.
-
-  @return Zero if strings are identical, else non-zero value
-**/
-UINT32
-pal_strncmp (
-  CHAR8 *FirstString,
-  CHAR8 *SecondString,
-  UINT32 Length
-  )
-{
-  return AsciiStrnCmp(FirstString, SecondString, Length);
-}
-
-/**
-  Copies a source buffer to a destination buffer, and returns the destination buffer.
-
-  @param  DestinationBuffer   The pointer to the destination buffer of the memory copy.
-  @param  SourceBuffer        The pointer to the source buffer of the memory copy.
-  @param  Length              The number of bytes to copy from SourceBuffer to DestinationBuffer.
-
-  @return DestinationBuffer.
-
-**/
-VOID *
-pal_memcpy (
-  VOID *DestinationBuffer,
-  VOID *SourceBuffer,
-  UINT32 Length
-  )
-{
-  return CopyMem (DestinationBuffer, SourceBuffer, Length);
 }
 
 /**
@@ -558,7 +535,9 @@ pal_mem_alloc_pages (
                                &PageBase);
   if (EFI_ERROR(Status))
   {
-    acs_print(ACS_PRINT_ERR, L" Allocate Pages failed %x\n", Status);
+    pal_print_msg(ACS_PRINT_ERR,
+                  " Allocate Pages failed %x\n",
+                  Status);
     return NULL;
   }
 
@@ -612,7 +591,8 @@ pal_mem_free_aligned(VOID *Buffer)
     UINT32 Status;
     Status = gBS->FreePool(((VOID **)Buffer)[-1]);
     if (EFI_ERROR (Status)) {
-        acs_print(ACS_PRINT_ERR, L"\n       Failed to free aligned memory    ");
+        pal_print_msg(ACS_PRINT_ERR,
+                      "\n       Failed to free aligned memory    ");
     }
 }
 
@@ -659,7 +639,9 @@ pal_mem_alloc_at_address (
                                &PageBase);
   if (EFI_ERROR(Status))
   {
-    acs_print(ACS_PRINT_ERR, L" Allocate Pages failed %x\n", Status);
+    pal_print_msg(ACS_PRINT_ERR,
+                  " Allocate Pages failed %x\n",
+                  Status);
     return NULL;
   }
 
@@ -708,14 +690,18 @@ pal_mem_alloc_cacheable (
                                EFI_SIZE_TO_PAGES(Size),
                                &Address);
   if (EFI_ERROR(Status)) {
-    acs_print(ACS_PRINT_ERR, L" Allocate Pool failed %x\n", Status);
+    pal_print_msg(ACS_PRINT_ERR,
+                  " Allocate Pool failed %x\n",
+                  Status);
     return NULL;
   }
 
   /* Check Whether Cpu architectural protocol is installed */
   Status = gBS->LocateProtocol ( &gEfiCpuArchProtocolGuid, NULL, (VOID **)&Cpu);
   if (EFI_ERROR(Status)) {
-    acs_print(ACS_PRINT_ERR, L" Could not get Cpu Arch Protocol %x\n", Status);
+    pal_print_msg(ACS_PRINT_ERR,
+                  " Could not get Cpu Arch Protocol %x\n",
+                  Status);
     return NULL;
   }
 
@@ -725,7 +711,9 @@ pal_mem_alloc_cacheable (
                                      Size,
                                      EFI_MEMORY_WB);
   if (EFI_ERROR (Status)) {
-    acs_print(ACS_PRINT_ERR, L" Could not Set Memory Attribute %x\n", Status);
+    pal_print_msg(ACS_PRINT_ERR,
+                  " Could not Set Memory Attribute %x\n",
+                  Status);
     return NULL;
   }
 
@@ -774,16 +762,36 @@ pal_mem_set_wb_executable (
   /* Step 1: Locate CPU Architectural Protocol */
   Status = gBS->LocateProtocol(&gEfiCpuArchProtocolGuid, NULL, (VOID **)&Cpu);
   if (EFI_ERROR(Status)) {
-      acs_print(ACS_PRINT_ERR, L"Could not get CPU Arch Protocol: %x\n", Status);
+      pal_print_msg(ACS_PRINT_ERR,
+                    "Could not get CPU Arch Protocol: %x\n",
+                    Status);
       return 1;
   }
 
   /* Step 2: Set Memory Attributes to Ensure Execution */
   Status = Cpu->SetMemoryAttributes(Cpu, (EFI_PHYSICAL_ADDRESS) addr, Size, EFI_MEMORY_WB);
   if (EFI_ERROR(Status)) {
-      acs_print(ACS_PRINT_ERR, L"Could not set memory attributes: %x\n", Status);
+      pal_print_msg(ACS_PRINT_ERR,
+                    "Could not set memory attributes: %x\n",
+                    Status);
       return 1;
   }
 
   return 0;
+}
+
+void pal_uart_putc(char c)
+{
+    CHAR8 ch = (CHAR8)c;
+
+    AsciiPrint("%c", ch);
+
+    if (g_acs_log_file_handle) {
+        UINTN n = 1;
+        EFI_STATUS Status = ShellWriteFile(g_acs_log_file_handle, &n, &ch);
+        if (EFI_ERROR(Status)) {
+            pal_print_msg(ACS_PRINT_ERR,
+                          " Error in writing to log file\n");
+        }
+    }
 }

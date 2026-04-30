@@ -36,8 +36,8 @@ void intr_handler(void)
     uint32_t pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
     uint32_t ctl;
 
-    val_print(ACS_PRINT_DEBUG, "\n       Received Oflow error interrupt %d     ", intr_num);
-    val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+    val_print(DEBUG, "\n       Received Oflow error interrupt %d     ", intr_num);
+    val_set_status(pe_index, RESULT_PASS);
 
     ctl = val_mpam_mmr_read(msc_index, REG_MSMON_CFG_MBWU_CTL);
     ctl &= ~(((uint32_t)1 << MBWU_CTL_OFLOW_STATUS_BIT_SHIFT) |
@@ -100,7 +100,7 @@ void payload(void)
 
             if (val_mpam_get_info(MPAM_MSC_RSRC_TYPE, msc_index, rsrc_index)
                                                                         != MPAM_RSRC_TYPE_MEMORY) {
-                val_print(ACS_PRINT_TEST, "\n       MSC %d not a memory node. Skipping MSC",
+                val_print(INFO, "\n       MSC %d not a memory node. Skipping MSC",
                             msc_index);
                 continue;
             }
@@ -115,9 +115,9 @@ void payload(void)
                             val_mpam_get_mbwumon_count(msc_index) : 0;
             }
 
-            val_print(ACS_PRINT_DEBUG, "\n       MSC Index: %d", msc_index);
-            val_print(ACS_PRINT_DEBUG, "\n       MBWU Monitors: %d", mon_count);
-            val_print(ACS_PRINT_DEBUG, "\n       Overflow Interrupt: %d", intr_num);
+            val_print(DEBUG, "\n       MSC Index: %d", msc_index);
+            val_print(DEBUG, "\n       MBWU Monitors: %d", mon_count);
+            val_print(DEBUG, "\n       Overflow Interrupt: %d", intr_num);
 
             /*
             * Skip this MSC if it doesn't implement overflow interrupt
@@ -129,7 +129,7 @@ void payload(void)
             /* Register the interrupt handler */
             status = val_gic_install_isr(intr_num, intr_handler);
             if (status) {
-                val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+                val_set_status(pe_index, RESULT_FAIL(01));
                 val_mpam_reg_write(MPAM2_EL2, mpam2_el2_temp);
                 return;
             }
@@ -149,8 +149,8 @@ void payload(void)
             dest_buf = (void *)val_mem_alloc_at_address(base + buf_size, buf_size);
 
             if ((src_buf == NULL) || (dest_buf == NULL)) {
-                val_print(ACS_PRINT_ERR, "\n       Mem allocation for buffers failed", 0x0);
-                val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
+                val_print(ERROR, "\n       Mem allocation for buffers failed", 0x0);
+                val_set_status(pe_index, RESULT_FAIL(02));
                 val_mpam_reg_write(MPAM2_EL2, mpam2_el2_temp);
                 return;
             }
@@ -158,9 +158,9 @@ void payload(void)
             data = val_mpam_mmr_read(msc_index, REG_MSMON_CFG_MBWU_CTL);
             data = data | (1 << MBWU_CTL_ENABLE_SHIFT);
             val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MBWU_CTL, data);
-            val_print(ACS_PRINT_DEBUG, "\n       MSMON_CFG_MBWU_CTL is %llx",
+            val_print(DEBUG, "\n       MSMON_CFG_MBWU_CTL is %llx",
                 val_mpam_mmr_read(msc_index, REG_MSMON_CFG_MBWU_CTL));
-            val_print(ACS_PRINT_DEBUG, "\n       Monitor count is %llx",
+            val_print(DEBUG, "\n       Monitor count is %llx",
                                                     val_mpam_memory_mbwumon_read_count(msc_index));
 
             /* wait for MAX_NRDY_USEC after msc config change */
@@ -178,9 +178,9 @@ void payload(void)
             timeout = TIMEOUT_LARGE;
             while ((--timeout > 0) && (isr_completion_flag == 0));
 
-            val_print(ACS_PRINT_DEBUG, "\n       MSMON_CFG_MBWU_CTL is %llx",
+            val_print(DEBUG, "\n       MSMON_CFG_MBWU_CTL is %llx",
                                             val_mpam_mmr_read(msc_index, REG_MSMON_CFG_MBWU_CTL));
-            val_print(ACS_PRINT_DEBUG, "\n       Monitor count is %llx",
+            val_print(DEBUG, "\n       Monitor count is %llx",
                                                 val_mpam_memory_mbwumon_read_count(msc_index));
             /* Free the buffers after return from overflow interrupt */
             val_mem_free_at_address(base, buf_size);
@@ -191,9 +191,9 @@ void payload(void)
             val_mpam_memory_mbwumon_reset(msc_index);
 
             if (isr_completion_flag == 0) {
-                val_print(ACS_PRINT_ERR,
+                val_print(ERROR,
                     "\n       MSC MSMON Oflow Err Interrupt not received on %d", intr_num);
-                val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 03));
+                val_set_status(pe_index, RESULT_FAIL(03));
                 val_mpam_reg_write(MPAM2_EL2, mpam2_el2_temp);
                 return;
             }
@@ -203,9 +203,9 @@ void payload(void)
 
             if ((((esr_value >> ESR_ERRCODE_SHIFT) & ESR_ERRCODE_MASK) != 0) ||
                   (((esr_value >> ESR_OVRWR_SHIFT) & ESR_OVRWR_MASK) != 0)) {
-                val_print(ACS_PRINT_ERR,
+                val_print(ERROR,
                     "\n       MPAMF_ESR.ERRCODE/OVRWR is not cleared by ISR for MSC %d", msc_index);
-                val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 04));
+                val_set_status(pe_index, RESULT_FAIL(04));
                 val_mpam_reg_write(MPAM2_EL2, mpam2_el2_temp);
                 return;
             }
@@ -217,11 +217,11 @@ void payload(void)
 
     /* Set the test status to Skip if none of the MPAM nodes implement error interrupts */
     if (intr_count == 0) {
-        val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+        val_set_status(pe_index, RESULT_SKIP(01));
         return;
     }
 
-    val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+    val_set_status(pe_index, RESULT_PASS);
     return;
 }
 

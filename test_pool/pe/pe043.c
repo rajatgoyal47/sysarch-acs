@@ -36,13 +36,13 @@ static void payload(void)
     data_csv2 = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 56, 59);
     data_csv3 = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 60, 63);
 
-    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       ID_AA64PFR0_EL1.CSV2 = %llx", data_csv2, index);
-    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       ID_AA64PFR0_EL1.CSV3 = %llx", data_csv3, index);
+    val_print_primary_pe(DEBUG, "\n       ID_AA64PFR0_EL1.CSV2 = %llx", data_csv2, index);
+    val_print_primary_pe(DEBUG, "\n       ID_AA64PFR0_EL1.CSV3 = %llx", data_csv3, index);
 
     if (((data_csv2 == 2) || (data_csv2 == 3)) && (data_csv3 == 1))
-        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+        val_set_status(index, RESULT_PASS);
     else
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+        val_set_status(index, RESULT_FAIL(01));
 }
 
 uint32_t pe043_entry(uint32_t num_pe)

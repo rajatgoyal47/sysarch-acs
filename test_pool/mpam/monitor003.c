@@ -60,16 +60,16 @@ static void payload(void)
    /* Get the Index for LLC */
     llc_index = val_cache_get_llc_index();
     if (llc_index == CACHE_TABLE_EMPTY) {
-        val_print(ACS_PRINT_ERR, "\n       Cache info table empty", 0);
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
+        val_print(ERROR, "\n       Cache info table empty");
+        val_set_status(index, RESULT_SKIP(01));
         return;
     }
 
     /* Get the cache identifier for LLC */
     cache_identifier = val_cache_get_info(CACHE_ID, llc_index);
     if (cache_identifier == INVALID_CACHE_INFO) {
-        val_print(ACS_PRINT_ERR, "\n       LLC invalid in PPTT", 0);
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+        val_print(ERROR, "\n       LLC invalid in PPTT");
+        val_set_status(index, RESULT_SKIP(02));
         return;
     }
 
@@ -101,14 +101,14 @@ static void payload(void)
       }
     }
 
-    val_print(ACS_PRINT_DEBUG, "\n       CPOR Nodes = %d", cpor_nodes);
-    val_print(ACS_PRINT_DEBUG, "\n       Cache Max Size = 0x%x", cache_maxsize);
-    val_print(ACS_PRINT_DEBUG, "\n       Number of CSU Monitors = %d", csumon_count);
+    val_print(DEBUG, "\n       CPOR Nodes = %d", cpor_nodes);
+    val_print(DEBUG, "\n       Cache Max Size = 0x%x", cache_maxsize);
+    val_print(DEBUG, "\n       Number of CSU Monitors = %d", csumon_count);
 
     /* Skip the test if CSU monitors/ nodes supporting Cache Portion Partitoning are 0
     */
     if (csumon_count == 0 || cpor_nodes == 0) {
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 03));
+        val_set_status(index, RESULT_SKIP(03));
         return;
     }
 
@@ -178,16 +178,17 @@ static void payload(void)
         src_buf = (void *)val_memory_alloc_pages(num_pages);
         dest_buf = (void *)val_memory_alloc_pages(num_pages);
 
-        val_print(ACS_PRINT_DEBUG, "\n       buf_size            = 0x%x", buf_size);
+        val_print(DEBUG, "\n       buf_size            = 0x%x", buf_size);
 
         if ((src_buf == NULL) || (dest_buf == NULL)) {
-            val_print(ACS_PRINT_ERR, "\n       Mem allocation failed", 0);
-            val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+            val_print(ERROR, "\n       Mem allocation failed");
+            val_set_status(index, RESULT_FAIL(01));
             if (src_buf != NULL)
                 val_memory_free_pages(src_buf, num_pages);
             if (dest_buf != NULL)
                 val_memory_free_pages(dest_buf, num_pages);
             return;
+
         }
 
         /* Configure CSU monitors with partid1 */
@@ -195,7 +196,7 @@ static void payload(void)
             val_mpam_configure_csu_mon(msc_index, partid1, DEFAULT_PMG, 0);
 
         storage_value1 = val_mpam_read_csumon(msc_index);
-        val_print(ACS_PRINT_DEBUG, "\n       Initial Value 1 = 0x%x", storage_value1);
+        val_print(DEBUG, "\n       Initial Value 1 = 0x%x", storage_value1);
 
         /* Enable CSU monitoring */
         val_mpam_csumon_enable(msc_index);
@@ -213,7 +214,7 @@ static void payload(void)
 
         /* Read Cache storage value */
         storage_value1 = val_mpam_read_csumon(msc_index);
-        val_print(ACS_PRINT_DEBUG, "\n       Storage Value 1 = 0x%x", storage_value1);
+        val_print(DEBUG, "\n       Storage Value 1 = 0x%x", storage_value1);
 
         val_pe_cache_invalidate_range((uint64_t)src_buf, buf_size);
         val_pe_cache_invalidate_range((uint64_t)dest_buf, buf_size);
@@ -225,7 +226,7 @@ static void payload(void)
 
         /* Read Cache storage value */
         storage_value2 = val_mpam_read_csumon(msc_index);
-        val_print(ACS_PRINT_DEBUG, "\n       Initial Value 2 = 0x%x", storage_value2);
+        val_print(DEBUG, "\n       Initial Value 2 = 0x%x", storage_value2);
 
         /* Enable CSU monitoring */
         val_mpam_csumon_enable(msc_index);
@@ -243,14 +244,14 @@ static void payload(void)
 
         /* Read Cache storage value for PMG2 */
         storage_value2 = val_mpam_read_csumon(msc_index);
-        val_print(ACS_PRINT_DEBUG, "\n       Storage Value 2 = 0x%x", storage_value2);
+        val_print(DEBUG, "\n       Storage Value 2 = 0x%x", storage_value2);
 
         /* Disable the monitor */
         val_mpam_csumon_disable(msc_index);
 
         /* Test fails if storage_value1 is zero or storage_value2 is non zero */
         if (!storage_value1 || storage_value2) {
-            val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
+            val_set_status(index, RESULT_FAIL(02));
 
             /*Restore MPAM2_EL2 settings */
             val_mpam_reg_write(MPAM2_EL2, mpam2_el2_temp);
@@ -287,7 +288,7 @@ static void payload(void)
       }
     }
 
-    val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+    val_set_status(index, RESULT_PASS);
     return;
 }
 

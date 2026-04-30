@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2020, 2024-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2020, 2024-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,8 @@
 #ifndef __GIC_SYS_REGS_H__
 #define __GIC_SYS_REGS_H__
 
+#include "val_sysreg_gic.h"
+
 #define LPI_MIN_ID      8192
 
 typedef enum {
@@ -30,16 +32,5 @@ typedef enum {
 
 uint64_t val_gic_reg_read(uint32_t reg_id);
 void     val_gic_reg_write(uint32_t reg_id, uint64_t write_data);
-
-uint64_t GicReadIchHcr(void);
-uint64_t GicReadIchMisr(void);
-
-void GicWriteIchHcr(uint64_t write_data);
-void GicWriteIccIgrpen1(uint64_t write_data);
-void GicWriteIccBpr1(uint64_t write_data);
-void GicWriteIccPmr(uint64_t write_data);
-void GicClearDaif(void);
-void TestExecuteBarrier(void);
-void GicWriteHcr(uint64_t write_data);
 
 #endif // __GIC_SYS_REGS_H__

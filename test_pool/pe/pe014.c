@@ -33,9 +33,9 @@ static void check_pauth_algorithm(uint32_t index, uint64_t data1, uint32_t data2
 
     if (((VAL_EXTRACT_BITS(data1, 4, 7) != 0) && (VAL_EXTRACT_BITS(data1, 24, 27) != 0)) ||
         ((VAL_EXTRACT_BITS(data2, 8, 11) != 0) && (VAL_EXTRACT_BITS(data2, 12, 15) != 0)))
-        val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+        val_set_status(index, RESULT_PASS);
     else
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+        val_set_status(index, RESULT_FAIL(1));
 }
 
 static
@@ -50,8 +50,8 @@ payload()
     uint64_t data2 = val_pe_reg_read(ID_AA64ISAR2_EL1);
 
     if (index == primary_pe_idx) {
-        val_print(ACS_PRINT_DEBUG, "\n       ID_AA64ISAR1_EL1 = %llx", data1);
-        val_print(ACS_PRINT_DEBUG, "\n       ID_AA64ISAR2_EL1 = %llx", data2);
+        val_print(DEBUG, "\n       ID_AA64ISAR1_EL1 = %llx", data1);
+        val_print(DEBUG, "\n       ID_AA64ISAR2_EL1 = %llx", data2);
     }
      /* PAuth is optional, For PAuth authentication support atleast one of generic or address
       * authentication of any one of the standard algorithm is needed
@@ -71,7 +71,7 @@ payload()
         (VAL_EXTRACT_BITS(data1, 8, 11) == 0) && (VAL_EXTRACT_BITS(data1, 28, 31) == 0)) {
 
         /* Pointer signing not implemented, Skip the test */
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+        val_set_status(index, RESULT_SKIP(1));
         return;
     }
 

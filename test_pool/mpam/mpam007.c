@@ -53,50 +53,50 @@ static void payload(void)
     /* If PE not implements FEAT_MPAM, FAIL the test */
     if (!((VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 40, 43) > 0) ||
         (VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR1_EL1), 16, 19) > 0))) {
-            val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+            val_set_status(index, RESULT_FAIL(01));
             return;
     }
 
     /* If MPAM table not present, or no MSC
        found in table fail the test */
     msc_node_cnt = val_mpam_get_msc_count();
-    val_print(ACS_PRINT_DEBUG, "\n       MSC count = %d", msc_node_cnt);
+    val_print(DEBUG, "\n       MSC count = %d", msc_node_cnt);
 
     if (msc_node_cnt == 0) {
-        val_print(ACS_PRINT_ERR, "\n       MSC count is 0", 0);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
+        val_print(ERROR, "\n       MSC count is 0");
+        val_set_status(index, RESULT_FAIL(02));
         return;
     }
 
     /* Find the PPTT LLC cache identifier */
     pptt_llc_index = val_cache_get_llc_index();
     if (pptt_llc_index == CACHE_TABLE_EMPTY) {
-        val_print(ACS_PRINT_DEBUG, "\n       PPTT table empty", 0);
+        val_print(DEBUG, "\n       PPTT table empty");
     } else {
         pptt_cache_id = val_cache_get_info(CACHE_ID, pptt_llc_index);
         if (pptt_cache_id == INVALID_CACHE_INFO) {
-            val_print(ACS_PRINT_DEBUG, "\n       LLC invalid in PPTT", 0);
+            val_print(DEBUG, "\n       LLC invalid in PPTT");
         } else {
 
             /* visit each MSC node and check for PPTT cache resources */
             for (msc_index = 0; msc_index < msc_node_cnt; msc_index++) {
                 rsrc_node_cnt = val_mpam_get_info(MPAM_MSC_RSRC_COUNT, msc_index, 0);
 
-                val_print(ACS_PRINT_DEBUG, "\n       MSC index  = %d", msc_index);
-                val_print(ACS_PRINT_DEBUG, "\n       Resource count = %d", rsrc_node_cnt);
+                val_print(DEBUG, "\n       MSC index  = %d", msc_index);
+                val_print(DEBUG, "\n       Resource count = %d", rsrc_node_cnt);
 
                 ris_supported = val_mpam_msc_supports_ris(msc_index);
-                val_print(ACS_PRINT_INFO, "\n       RIS support = %d", ris_supported);
+                val_print(TRACE, "\n       RIS support = %d", ris_supported);
 
                 for (rsrc_index = 0; rsrc_index < rsrc_node_cnt; rsrc_index++) {
                     /* check whether the resource location is PPTT cache */
                     if (val_mpam_get_info(MPAM_MSC_RSRC_TYPE, msc_index, rsrc_index) ==
                                                                         MPAM_RSRC_TYPE_PE_CACHE) {
-                        val_print(ACS_PRINT_DEBUG, "\n       rsrc index  = %d", rsrc_index);
+                        val_print(DEBUG, "\n       rsrc index  = %d", rsrc_index);
                         desc1 = val_mpam_get_info(MPAM_MSC_RSRC_DESC1, msc_index, rsrc_index);
 
                         /* match pptt llc cache id */
-                        val_print(ACS_PRINT_DEBUG, "\n       rsrc descriptor 1  = %llx", desc1);
+                        val_print(DEBUG, "\n       rsrc descriptor 1  = %llx", desc1);
                         if (desc1 == pptt_cache_id) {
                             pptt_llc_msc_found = 1;
                             /* Select resource instance if RIS feature implemented */
@@ -105,12 +105,12 @@ static void payload(void)
 
                             /* Check CPOR are present */
                             if (val_mpam_supports_cpor(msc_index)) {
-                                val_print(ACS_PRINT_DEBUG,
+                                val_print(DEBUG,
                                     "\n       CPOR Supported by LLC for rsrc_index %d", rsrc_index);
                                 pptt_llc_cpor_supported = 1;
                                 break;
                             }
-                            val_print(ACS_PRINT_DEBUG,
+                            val_print(DEBUG,
                               "\n       CPOR Not Supported by LLC for rsrc_index %d", rsrc_index);
                         }
                     }
@@ -122,33 +122,33 @@ static void payload(void)
     }
 
     if (!pptt_llc_msc_found) {
-        val_print(ACS_PRINT_DEBUG, "\n       No MSC found on PPTT LLC", 0);
+        val_print(DEBUG, "\n       No MSC found on PPTT LLC");
     } else if (!pptt_llc_cpor_supported) {
-        val_print(ACS_PRINT_DEBUG, "\n       CPOR unsupported by PPTT LLC", 0);
+        val_print(DEBUG, "\n       CPOR unsupported by PPTT LLC");
     }
 
     /* test mem-side cache for cpor support */
-    val_print(ACS_PRINT_DEBUG, "\n\n       Testing mem-side caches for CPOR support", 0);
+    val_print(DEBUG, "\n\n       Testing mem-side caches for CPOR support");
     pe_prox_domain = val_srat_get_info(SRAT_GICC_PROX_DOMAIN, val_pe_get_uid(index));
     /* visit each MSC node and check for mem cache resources */
     for (msc_index = 0; msc_index < msc_node_cnt; msc_index++) {
         rsrc_node_cnt = val_mpam_get_info(MPAM_MSC_RSRC_COUNT, msc_index, 0);
 
-        val_print(ACS_PRINT_DEBUG, "\n       MSC index  = %d", msc_index);
-        val_print(ACS_PRINT_DEBUG, "\n       Resource count = %d", rsrc_node_cnt);
+        val_print(DEBUG, "\n       MSC index  = %d", msc_index);
+        val_print(DEBUG, "\n       Resource count = %d", rsrc_node_cnt);
 
         ris_supported = val_mpam_msc_supports_ris(msc_index);
-        val_print(ACS_PRINT_INFO, "\n       RIS support = %d", ris_supported);
+        val_print(TRACE, "\n       RIS support = %d", ris_supported);
 
         for (rsrc_index = 0; rsrc_index < rsrc_node_cnt; rsrc_index++) {
             /* check whether the resource type is a mem-cache */
             if (val_mpam_get_info(MPAM_MSC_RSRC_TYPE, msc_index, rsrc_index) ==
                 MPAM_RSRC_TYPE_MEM_SIDE_CACHE) {
-                val_print(ACS_PRINT_DEBUG, "\n       rsrc index  = %d", rsrc_index);
+                val_print(DEBUG, "\n       rsrc index  = %d", rsrc_index);
                 desc1 = val_mpam_get_info(MPAM_MSC_RSRC_DESC1, msc_index, rsrc_index);
                 desc2 = val_mpam_get_info(MPAM_MSC_RSRC_DESC2, msc_index, rsrc_index);
-                val_print(ACS_PRINT_DEBUG, "\n       rsrc descriptor 1  = %llx", desc1);
-                val_print(ACS_PRINT_DEBUG, "\n       rsrc descriptor 2  = %llx", desc2);
+                val_print(DEBUG, "\n       rsrc descriptor 1  = %llx", desc1);
+                val_print(DEBUG, "\n       rsrc descriptor 2  = %llx", desc2);
 
                 /* check if mem-side cache matches with PE proximity domain
                    and cache level == 1 for mem-side LLC (based on assumption that
@@ -162,13 +162,13 @@ static void payload(void)
 
                     /* Check CPOR are present */
                     if (val_mpam_supports_cpor(msc_index)) {
-                        val_print(ACS_PRINT_DEBUG,
+                        val_print(DEBUG,
                                   "\n       CPOR Supported by mem-side cache with rsrc_index %d",
                   rsrc_index);
                         memside_llc_cpor_supported = 1;
                         break;
                     }
-                    val_print(ACS_PRINT_DEBUG,
+                    val_print(DEBUG,
                               "\n       CPOR Not Supported by mem-side cache with rsrc_index %d",
                    rsrc_index);
                 }
@@ -179,38 +179,40 @@ static void payload(void)
     }
 
     if (!mem_llc_msc_found) {
-        val_print(ACS_PRINT_DEBUG, "\n       No MSC found on mem-side LLC", 0);
+        val_print(DEBUG, "\n       No MSC found on mem-side LLC");
     } else if (!memside_llc_cpor_supported) {
-        val_print(ACS_PRINT_DEBUG, "\n       CPOR unsupported by mem-side LLC", 0);
+        val_print(DEBUG, "\n       CPOR unsupported by mem-side LLC");
     }
 
     /* if both PPTT LLC and mem-side cache MSCs found, read user input to
        know which should be considered as Last level System Cache */
     if (pptt_llc_msc_found && mem_llc_msc_found) {
-        if (g_sys_last_lvl_cache == SLC_TYPE_UNKNOWN) {
-            val_print(ACS_PRINT_ERR, "\n       PPTT and memside LLC MSC found, Please provide"
-                      "System Last-Level cache info via -slc cmdline option \n", 0);
-            val_set_status(index, RESULT_FAIL(TEST_NUM, 03));
+        if (acs_policy_get_sys_last_lvl_cache() == SLC_TYPE_UNKNOWN) {
+            val_print(ERROR, "\n       PPTT and memside LLC MSC found, Please provide"
+                      "System Last-Level cache info via -slc cmdline option \n");
+            val_set_status(index, RESULT_FAIL(03));
             return;
-        } else if (g_sys_last_lvl_cache == SLC_TYPE_PPTT_CACHE && pptt_llc_cpor_supported) {
-            val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+        } else if (acs_policy_get_sys_last_lvl_cache() == SLC_TYPE_PPTT_CACHE &&
+                   pptt_llc_cpor_supported) {
+            val_set_status(index, RESULT_PASS);
             return;
-        } else if (g_sys_last_lvl_cache == SLC_TYPE_MEMSIDE_CACHE && memside_llc_cpor_supported) {
-            val_set_status(index, RESULT_PASS(TEST_NUM, 02));
+        } else if (acs_policy_get_sys_last_lvl_cache() == SLC_TYPE_MEMSIDE_CACHE &&
+                   memside_llc_cpor_supported) {
+            val_set_status(index, RESULT_PASS);
             return;
         } else {
-            val_set_status(index, RESULT_FAIL(TEST_NUM, 04));
-            val_print(ACS_PRINT_ERR, "\n       CPOR unsupported by System last-level cache", 0);
+            val_print(ERROR, "\n       CPOR unsupported by System last-level cache");
+            val_set_status(index, RESULT_FAIL(04));
             return;
         }
     }
 
     /* if either of PPTT LLC or mem-side LLC supports cache portioning (CPOR) pass the test */
     if (pptt_llc_cpor_supported || memside_llc_cpor_supported) {
-        val_set_status(index, RESULT_PASS(TEST_NUM, 03));
+        val_set_status(index, RESULT_PASS);
     }
     else {
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 05));
+        val_set_status(index, RESULT_FAIL(05));
     }
 
     return;

@@ -40,8 +40,8 @@ payload()
   /* get total number of RAS2 memory info blocks */
   num_of_mem_blocks = val_ras2_get_mem_info(RAS2_NUM_MEM_BLOCK, 0);
   if (num_of_mem_blocks == 0) {
-    val_print(ACS_PRINT_DEBUG, "\n       No nodes in RAS2 table or RAS2 table not present", 0);
-    val_set_status(index, RESULT_WARN(TEST_NUM, 01));
+    val_print(DEBUG, "\n       No nodes in RAS2 table or RAS2 table not present");
+    val_set_status(index, RESULT_WARNING(01));
     return;
   }
 
@@ -49,7 +49,7 @@ payload()
       /* check whether current NUMA node (proximity domain) support patrol scrubbing */
       scrub_support = val_ras2_get_mem_info(RAS2_SCRUB_SUPPORT, i);
       if (scrub_support == 0) {
-          val_print(ACS_PRINT_DEBUG,
+          val_print(DEBUG,
                     "\n       Patrol scrubbing not supported by proximity domain: 0x%x",
                     val_ras2_get_mem_info(RAS2_PROX_DOMAIN, i));
           fail_cnt++;
@@ -57,11 +57,11 @@ payload()
   }
 
   if (fail_cnt) {
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+    val_set_status(index, RESULT_FAIL(01));
     return;
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+  val_set_status(index, RESULT_PASS);
   return;
 }
 

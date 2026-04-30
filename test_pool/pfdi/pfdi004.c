@@ -42,7 +42,7 @@ check_feature()
   status_buffer->x0 = status;
   val_pfdi_invalidate_ret_params(status_buffer);
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
   return;
 }
 
@@ -57,9 +57,9 @@ static void payload_feature_check(void *arg)
   g_pfdi_feature_check_details = (PFDI_RET_PARAMS *)
                     val_memory_calloc(num_pe, sizeof(PFDI_RET_PARAMS));
   if (g_pfdi_feature_check_details == NULL) {
-    val_print(ACS_PRINT_ERR,
-                "\n       Allocation for PFDI Feature Check Function Failed", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+    val_print(ERROR,
+                "\n       Allocation for PFDI Feature Check Function Failed");
+    val_set_status(index, RESULT_FAIL(1));
     return;
   }
 
@@ -80,8 +80,8 @@ static void payload_feature_check(void *arg)
       while ((--timeout) && (IS_RESULT_PENDING(val_get_status(i))));
 
       if (timeout == 0) {
-        val_print(ACS_PRINT_ERR, "\n       **Timed out** for PE index = %d", i);
-        val_set_status(i, RESULT_FAIL(TEST_NUM, 2));
+        val_print(ERROR, "\n       **Timed out** for PE index = %d", i);
+        val_set_status(i, RESULT_FAIL(2));
         goto free_pfdi_details;
       }
     }
@@ -95,27 +95,27 @@ static void payload_feature_check(void *arg)
     run_fail = 0;
 
     if (status_buffer->x0 < PFDI_ACS_SUCCESS) {
-      val_print(ACS_PRINT_ERR, "\n       PFDI Feature Check function failed err = %ld",
+      val_print(ERROR, "\n       PFDI Feature Check function failed err = %ld",
                                                         status_buffer->x0);
-      val_print(ACS_PRINT_ERR, " on PE index = %d", i);
+      val_print(ERROR, " on PE index = %d", i);
       run_fail++;
     }
 
     if ((status_buffer->x1 != 0) || (status_buffer->x2 != 0) ||
         (status_buffer->x3 != 0) || (status_buffer->x4 != 0)) {
-      val_print(ACS_PRINT_ERR, "\n       Registers X1-X4 are not zero:", 0);
-      val_print(ACS_PRINT_ERR, " x1=0x%llx", status_buffer->x1);
-      val_print(ACS_PRINT_ERR, " x2=0x%llx", status_buffer->x2);
-      val_print(ACS_PRINT_ERR, " x3=0x%llx", status_buffer->x3);
-      val_print(ACS_PRINT_ERR, " x4=0x%llx", status_buffer->x4);
-      val_print(ACS_PRINT_ERR, "\n       Failed on PE = %d", i);
+      val_print(ERROR, "\n       Registers X1-X4 are not zero:");
+      val_print(ERROR, " x1=0x%llx", status_buffer->x1);
+      val_print(ERROR, " x2=0x%llx", status_buffer->x2);
+      val_print(ERROR, " x3=0x%llx", status_buffer->x3);
+      val_print(ERROR, " x4=0x%llx", status_buffer->x4);
+      val_print(ERROR, "\n       Failed on PE = %d", i);
       run_fail++;
     }
 
     if (run_fail)
-      val_set_status(i, RESULT_FAIL(TEST_NUM, 3));
+      val_set_status(i, RESULT_FAIL(3));
     else
-      val_set_status(i, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(i, RESULT_PASS);
   }
 
 free_pfdi_details:

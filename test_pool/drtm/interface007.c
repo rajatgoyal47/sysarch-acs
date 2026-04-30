@@ -32,23 +32,23 @@ payload(uint32_t num_pe)
 
   /*Status lessthan zero are error case*/
   if (status < DRTM_ACS_SUCCESS) {
-    val_print(ACS_PRINT_ERR, "\n       DRTM query Min memory req feature failed err=%d", status);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+    val_print(ERROR, "\n       DRTM query Min memory req feature failed err=%d", status);
+    val_set_status(index, RESULT_FAIL(1));
     return;
   }
 
   /*Status grater than zero indicates availability of feature bits in return value*/
   if (status > DRTM_ACS_SUCCESS) {
-    val_print(ACS_PRINT_DEBUG, "\n       Minimum size of DLME data 0x%X 4KB pages",
+    val_print(DEBUG, "\n       Minimum size of DLME data 0x%X 4KB pages",
                  VAL_EXTRACT_BITS(features_mem_req, 0, 31));
-    val_print(ACS_PRINT_DEBUG, "\n       Minimum size of Normal World DCE 0x%X 4KB pages",
+    val_print(DEBUG, "\n       Minimum size of Normal World DCE 0x%X 4KB pages",
                  VAL_EXTRACT_BITS(features_mem_req, 32, 63));
   } else {
-    val_print(ACS_PRINT_ERR,
-              "\n       Min memory requirement feature value not available in return value", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+    val_print(ERROR,
+              "\n       Min memory requirement feature value not available in return value");
+    val_set_status(index, RESULT_FAIL(2));
   }
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

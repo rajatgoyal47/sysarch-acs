@@ -37,13 +37,13 @@ payload()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
 
-  if (!(g_el1skiptrap_mask & EL1SKIPTRAP_CNTPCT)) {
+  if (!(acs_policy_get_el1skiptrap_mask() & EL1SKIPTRAP_CNTPCT)) {
    /* Check non-secure physical timer interrupt */
    intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
    if (IS_PPI_RESERVED(intid))
    {
-       val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
-       val_print(ACS_PRINT_ERR, "\n       Interrupt ID is reserved for future SBSA usage ", 0);
+       val_print(ERROR, "\n       Interrupt ID is reserved for future SBSA usage ");
+       val_set_status(index, RESULT_FAIL(01));
        return;
      }
 
@@ -51,8 +51,8 @@ payload()
    intid = val_timer_get_info(TIMER_INFO_VIR_EL1_INTID, 0);
    if (IS_PPI_RESERVED(intid))
    {
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
-      val_print(ACS_PRINT_ERR, "\n       Interrupt ID is reserved for future SBSA usage ", 0);
+      val_print(ERROR, "\n       Interrupt ID is reserved for future SBSA usage ");
+      val_set_status(index, RESULT_FAIL(02));
       return;
      }
   }
@@ -60,8 +60,8 @@ payload()
   intid = val_timer_get_info(TIMER_INFO_VIR_EL2_INTID, 0);
   if (IS_PPI_RESERVED(intid))
   {
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 03));
-      val_print(ACS_PRINT_ERR, "\n       Interrupt ID is reserved for future SBSA usage ", 0);
+      val_print(ERROR, "\n       Interrupt ID is reserved for future SBSA usage ");
+      val_set_status(index, RESULT_FAIL(03));
       return;
   }
 
@@ -69,8 +69,8 @@ payload()
   intid = val_timer_get_info(TIMER_INFO_PHY_EL2_INTID, 0);
   if (IS_PPI_RESERVED(intid))
   {
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 04));
-      val_print(ACS_PRINT_ERR, "\n       Interrupt ID is reserved for future SBSA usage ", 0);
+      val_print(ERROR, "\n       Interrupt ID is reserved for future SBSA usage ");
+      val_set_status(index, RESULT_FAIL(04));
       return;
   }
 
@@ -78,8 +78,8 @@ payload()
   intid = val_pe_get_gmain_gsiv(index);
   if (IS_PPI_RESERVED(intid))
   {
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 05));
-      val_print(ACS_PRINT_ERR, "\n       Interrupt ID is reserved for future SBSA usage ", 0);
+      val_print(ERROR, "\n       Interrupt ID is reserved for future SBSA usage ");
+      val_set_status(index, RESULT_FAIL(05));
       return;
   }
 
@@ -87,12 +87,12 @@ payload()
   intid = val_pe_get_pmu_gsiv(index);
   if (IS_PPI_RESERVED(intid))
   {
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 06));
-      val_print(ACS_PRINT_ERR, "\n       Interrupt ID is reserved for future SBSA usage ", 0);
+      val_print(ERROR, "\n       Interrupt ID is reserved for future SBSA usage ");
+      val_set_status(index, RESULT_FAIL(06));
       return;
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+  val_set_status(index, RESULT_PASS);
 
 }
 

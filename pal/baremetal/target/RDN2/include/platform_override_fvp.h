@@ -146,7 +146,7 @@
 #define PLATFORM_OVERRIDE_GICITS5_BASE       0x30180000
 #define PLATFORM_OVERRIDE_GICITS5_ID         0x5
 #define PLATFORM_OVERRIDE_GICCIRD_LENGTH     0x0
-#define PLATFORM_OVERRIDE_GICRIRD_LENGTH     (0x20000*8)
+#define PLATFORM_OVERRIDE_GICRIRD_LENGTH     0x1000000
 
 /*
  *Secure EL1 timer Flags, Non-Secure EL1 timer Flags, EL2 timer Flags,
@@ -261,8 +261,10 @@
 
 #define PLATFORM_OVERRIDE_MAX_SID              24
 
-/* TIMEOUT should be in Microsecond 5us to 2 sec */
+/* Wakeup/WD timeout (us); range 500us to 2 sec */
 #define PLATFORM_OVERRIDE_TIMEOUT              1000   /* time out for DUT */
+/* Timer test timeout (us); range 500us to 2 sec */
+#define PLATFORM_OVERRIDE_TIMER_TIMEOUT        10000
 
 /* FAIL safe timeout (> PLATFORM_OVERRIDE_TIMEOUT) */
 #define PLATFORM_OVERRIDE_FAILSAFE_TIMEOUT     (PLATFORM_OVERRIDE_TIMEOUT * 2)

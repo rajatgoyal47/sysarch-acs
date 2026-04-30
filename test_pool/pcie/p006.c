@@ -45,8 +45,8 @@ payload(void)
   /* Allocate memory for interrupt mappings */
   intr_map = val_aligned_alloc(MEM_ALIGN_4K, sizeof(PERIPHERAL_IRQ_MAP));
   if (!intr_map) {
-    val_print(ACS_PRINT_ERR, "\n       Memory allocation error", 0);
-    val_set_status(pe_index, RESULT_FAIL (TEST_NUM, 1));
+    val_print(ERROR, "\n       Memory allocation error");
+    val_set_status(pe_index, RESULT_FAIL(1));
     return;
   }
 
@@ -62,7 +62,7 @@ payload(void)
       if ((dp_type != RP) && (dp_type != EP) && (dp_type != DP) && (dp_type != UP))
           continue;
 
-      val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
+      val_print(DEBUG, "\n       BDF - 0x%x", bdf);
 
       /* Read Interrupt Line Register */
       val_pcie_read_cfg(bdf, TYPE01_ILR, &reg_value);
@@ -75,12 +75,12 @@ payload(void)
       if (status) {
         // Report warn if the Legacy IRQ map does not exist
         if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
-            val_set_status(pe_index, RESULT_WARN(TEST_NUM, 1));
+            val_set_status(pe_index, RESULT_WARNING(1));
             return;
         } else {
-            val_print (ACS_PRINT_DEBUG,
+            val_print (DEBUG,
                         "\n       PCIe Legacy IRQs unmapped. Skipping BDF %llx", bdf);
-            val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 2));
+            val_set_status(pe_index, RESULT_SKIP(2));
             continue;
         }
       }
@@ -94,11 +94,11 @@ payload(void)
       if ((intr_line >= 32 && intr_line <= 1019) ||
           (val_gic_espi_supported() && (intr_line >= 4096 &&
                             intr_line <= val_gic_max_espi_val())))  {
-          val_print(ACS_PRINT_INFO, "\n Int is SPI", 0);
+          val_print(TRACE, "\n Int is SPI");
       }
       else {
-          val_print(ACS_PRINT_ERR, "\n Int id %d is not SPI", intr_line);
-          val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 3));
+          val_print(ERROR, "\n Int id %d is not SPI", intr_line);
+          val_set_status(pe_index, RESULT_FAIL(3));
           return;
       }
   }
@@ -106,9 +106,9 @@ payload(void)
   val_memory_free_aligned(intr_map);
 
   if (test_skip == 1)
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+      val_set_status(pe_index, RESULT_SKIP(1));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

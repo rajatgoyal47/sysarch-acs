@@ -48,8 +48,8 @@ payload(void)
 
   comp_count = val_cxl_get_component_info(CXL_COMPONENT_INFO_COUNT, 0);
   if (comp_count == 0) {
-    val_print(ACS_PRINT_INFO, "\n       No CXL components discovered", 0);
-    val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+    val_print(TRACE, "\n       No CXL components discovered");
+    val_set_status(pe_index, RESULT_SKIP(1));
     return;
   }
 
@@ -66,7 +66,7 @@ payload(void)
 
     smmu_idx = val_iovirt_get_rc_smmu_index(seg_num, rid);
     if (smmu_idx == ACS_INVALID_INDEX) {
-      val_print(ACS_PRINT_ERR,
+      val_print(ERROR,
                 "\n       CXL Type1/Type2 component not behind SMMU, BDF: 0x%x",
                 bdf);
       test_fail++;
@@ -75,7 +75,7 @@ payload(void)
 
     smmu_rev = val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, smmu_idx);
     if (smmu_rev < 3u) {
-      val_print(ACS_PRINT_ERR, "\n       CXL path SMMU is not SMMUv3, index: %u", smmu_idx);
+      val_print(ERROR, "\n       CXL path SMMU is not SMMUv3, index: %u", smmu_idx);
       test_fail++;
       continue;
     }
@@ -83,18 +83,18 @@ payload(void)
     idr0 = val_smmu_read_cfg(SMMUv3_IDR0, smmu_idx);
     ats_supported = VAL_EXTRACT_BITS(idr0, SMMUV3_ATS_BIT, SMMUV3_ATS_BIT);
     if (ats_supported == 0) {
-      val_print(ACS_PRINT_ERR, "\n       SMMUv3 ATS unsupported, index: %u", smmu_idx);
+      val_print(ERROR, "\n       SMMUv3 ATS unsupported, index: %u", smmu_idx);
       test_fail++;
     }
   }
 
   if (test_skip == 0) {
-    val_print(ACS_PRINT_INFO, "\n       No CXL Type1/Type2 components discovered", 0);
-    val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 2));
+    val_print(TRACE, "\n       No CXL Type1/Type2 components discovered");
+    val_set_status(pe_index, RESULT_SKIP(2));
   } else if (test_fail) {
-    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 1));
+    val_set_status(pe_index, RESULT_FAIL(1));
   } else {
-    val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+    val_set_status(pe_index, RESULT_PASS);
   }
 }
 

@@ -46,7 +46,7 @@ esr(uint64_t interrupt_type, void *context)
   /* Update the ELR to point to next instrcution */
   val_pe_update_elr(context, (uint64_t)branch_to_test);
 
-  val_print(ACS_PRINT_ERR, "\n       Error : Received Exception of type %d", interrupt_type);
+  val_print(ERROR, "\n       Error : Received Exception of type %d", interrupt_type);
   val_set_status(index, TEST_FAIL);
 }
 
@@ -161,27 +161,27 @@ isr()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   uart_disable_txintr();
-  val_print(ACS_PRINT_DEBUG, "\n       Received interrupt on %d     ", int_id);
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_print(DEBUG, "\n       Received interrupt on %d     ", int_id);
+  val_set_status(index, RESULT_PASS);
   val_gic_end_of_interrupt(int_id);
 }
 
 static
-test_status_t
+uint32_t
 check_arm_generic_uart()
 {
 
   uint32_t count = val_peripheral_get_info(NUM_UART, 0);
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint32_t interface_type;
-  test_status_t status = TEST_STATUS_UNKNOWN;
+  uint32_t status = TEST_STATE_UNKNOWN;
 
   val_pe_install_esr(EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS, esr);
   val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
 
   branch_to_test = &&exception_taken;
   if (count == 0) {
-      val_print(ACS_PRINT_ERR, "\n       No UART defined by Platform      ", 0);
+      val_print(ERROR, "\n       No UART defined by Platform      ");
       if (g_build_sbsa)
           return TEST_FAIL;
       else
@@ -221,7 +221,7 @@ exception_taken:
 }
 
 static
-test_status_t
+uint32_t
 check_uart_16550()
 {
   uint64_t count = val_peripheral_get_info(NUM_UART, 0);
@@ -243,7 +243,7 @@ check_uart_16550()
   uint32_t test_fail = 0;
 
   if (count == 0) {
-      val_print(ACS_PRINT_ERR, "\n       No UART defined by Platform      ", 0);
+      val_print(ERROR, "\n       No UART defined by Platform      ");
       if (g_build_sbsa)
           return TEST_FAIL;
       else
@@ -257,7 +257,7 @@ check_uart_16550()
            || interface_type == COMPATIBLE_GENERIC_16550)
       {
           test_skip = 0;
-          val_print(ACS_PRINT_DEBUG,
+          val_print(DEBUG,
               "\n         UART 16550 found with instance: %x",
               count - 1);
 
@@ -265,7 +265,7 @@ check_uart_16550()
           uart_base = val_peripheral_get_info(UART_BASE0, count - 1);
           if (uart_base == 0)
           {
-              val_print(ACS_PRINT_ERR, "\n         UART base must be specified"
+              val_print(ERROR, "\n         UART base must be specified"
                                        " for instance: %x", count - 1);
               return TEST_FAIL;
           }
@@ -286,7 +286,7 @@ check_uart_16550()
               width_mask = WIDTH_BIT32;
               break;
           default:
-              val_print(ACS_PRINT_ERR, "\n         UART access width must be specified"
+              val_print(ERROR, "\n         UART access width must be specified"
                                        " for instance: %x", count - 1);
               return TEST_FAIL;
           }
@@ -297,15 +297,15 @@ check_uart_16550()
           {
               if (baud_rate != 0)
               {
-                  val_print(ACS_PRINT_ERR, "\n         Baud rate %d outside"
+                  val_print(ERROR, "\n         Baud rate %d outside"
                                            " supported range", baud_rate);
-                  val_print(ACS_PRINT_ERR, " for instance %x", count - 1);
+                  val_print(ERROR, " for instance %x", count - 1);
                   test_fail = 1;
               }
           }
 
-          val_print(ACS_PRINT_ERR, "\nDEBUG: uart_base %llx", uart_base);
-          val_print(ACS_PRINT_ERR, "\nDEBUG: access_width %d", access_width);
+          val_print(ERROR, "\nDEBUG: uart_base %llx", uart_base);
+          val_print(ERROR, "\nDEBUG: access_width %d", access_width);
 
 
           /* Check the read/write property of Line Control Register */
@@ -317,7 +317,7 @@ check_uart_16550()
           uart_16550_reg_write(uart_base, LCR, reg_shift, width_mask, lcr_reg);
           if ((lcr_scratch2 != 0) || (lcr_scratch3 != 0xFF))
           {
-              val_print(ACS_PRINT_ERR, "\n   LCR register are not read/write"
+              val_print(ERROR, "\n   LCR register are not read/write"
                                        " for instance: %x", count - 1);
               test_fail = 1;
           }
@@ -331,7 +331,7 @@ check_uart_16550()
           uart_16550_reg_write(uart_base, IER, reg_shift, width_mask, ier_reg);
           if ((ier_scratch2 != 0) || (ier_scratch3 != 0xF))
           {
-              val_print(ACS_PRINT_ERR, "\n   IER register[0:3] are not read/write"
+              val_print(ERROR, "\n   IER register[0:3] are not read/write"
                                        " for instance: %x", count - 1);
               test_fail = 1;
           }
@@ -343,7 +343,7 @@ check_uart_16550()
           uart_16550_reg_write(uart_base, MCR, reg_shift, width_mask, mcr_reg);
           if ((msr_status & 0xF0) != CTS_DCD_EN)
           {
-              val_print(ACS_PRINT_ERR, "\n   Loopback test mode failed"
+              val_print(ERROR, "\n   Loopback test mode failed"
                                        " for instance: %x", count - 1);
               test_fail = 1;
           }
@@ -366,7 +366,7 @@ static
 void
 payload_check_uart_compliance()
 {
-  test_status_t gen_uart_status, uart_16550_status;
+  uint32_t gen_uart_status, uart_16550_status;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   /* Run the checks for Arm generic UART and 16550 compatible UART */
@@ -375,13 +375,13 @@ payload_check_uart_compliance()
 
   /* Pass if UART is found and is either one of the type required by test */
   if (gen_uart_status == TEST_PASS || uart_16550_status == TEST_PASS)
-      val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(index, RESULT_PASS);
   /* Skip if UART not found by test */
   else if (gen_uart_status == TEST_SKIP || uart_16550_status == TEST_SKIP)
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+      val_set_status(index, RESULT_SKIP(1));
   /* Fail if neither passed or both skipped */
   else
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+      val_set_status(index, RESULT_FAIL(1));
   return;
 }
 
@@ -395,11 +395,11 @@ payload_check_arm_generic_uart_interrupt()
   uint32_t interface_type;
 
   if (count == 0) {
-      val_print(ACS_PRINT_ERR, "\n       No UART defined by Platform      ", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM1, 1));
+      val_print(ERROR, "\n       No UART defined by Platform      ");
+      val_set_status(index, RESULT_SKIP(1));
       return;
   }
-  val_set_status(index, RESULT_SKIP(TEST_NUM1, 2));
+  val_set_status(index, RESULT_SKIP(2));
   while (count != 0) {
       timeout = TIMEOUT_LARGE;
       int_id    = val_peripheral_get_info(UART_GSIV, count - 1);
@@ -416,8 +416,8 @@ payload_check_arm_generic_uart_interrupt()
 
               /* Check int_id is SPI or ESPI */
               if (!(IsSpi(int_id)) && !(val_gic_is_valid_espi(int_id))) {
-                 val_print(ACS_PRINT_ERR, "\n       Interrupt-%d is neither SPI nor ESPI", int_id);
-                 val_set_status(index, RESULT_FAIL(TEST_NUM1, 2));
+                 val_print(ERROR, "\n       Interrupt-%d is neither SPI nor ESPI", int_id);
+                 val_set_status(index, RESULT_FAIL(2));
                  return;
               }
 
@@ -431,35 +431,35 @@ payload_check_arm_generic_uart_interrupt()
 
               /* Install ISR */
               if (val_gic_install_isr(int_id, isr)) {
-                 val_print(ACS_PRINT_ERR, "\n       GIC Install Handler Failed...", 0);
-                 val_set_status(index, RESULT_FAIL(TEST_NUM1, 3));
+                 val_print(ERROR, "\n       GIC Install Handler Failed...");
+                 val_set_status(index, RESULT_FAIL(3));
                  return;
               }
 
               uart_enable_txintr();
-              val_print_raw(l_uart_base, g_print_level,
+              val_print_raw(l_uart_base, acs_policy_get_print_level(),
                             "\n       Test Message                          ", 0);
 
               while ((--timeout > 0) && (IS_RESULT_PENDING(val_get_status(index)))) {
               };
 
               if (timeout == 0) {
-                 val_print(ACS_PRINT_ERR,
+                 val_print(ERROR,
                  "\n       Did not receive UART interrupt on %d  ",
                  int_id);
                  test_fail++;
               }
           } else {
-              val_set_status(index, RESULT_SKIP(TEST_NUM1, 3));
+              val_set_status(index, RESULT_SKIP(3));
           }
       }
       count--;
   }
 
   if (test_fail)
-    val_set_status(index, RESULT_FAIL(TEST_NUM1, 4));
+    val_set_status(index, RESULT_FAIL(4));
   else
-    val_set_status(index, RESULT_PASS(TEST_NUM1, 2));
+    val_set_status(index, RESULT_PASS);
 
   return;
 }

@@ -26,7 +26,6 @@
 #include "val/include/acs_val.h"
 #include "val/include/acs_memory.h"
 
-bool   g_pcie_skip_dp_nic_ms = 0;
 extern EFI_SYSTEM_TABLE *mySystemTable;
 extern EFI_HANDLE myImageHandle;
 extern char _textbsa;
@@ -34,13 +33,10 @@ typedef unsigned long efi_status_t;
 efi_status_t  mem_model_execute_tests(EFI_HANDLE myImageHandle, EFI_SYSTEM_TABLE *mySystemTable);
 
 #include "acs.h"
-UINT32  g_pcie_p2p;
-UINT32  g_pcie_cache_present;
 UINT32  g_bsa_level;
 UINT32  g_bsa_only_level = 0;
 UINT32  g_sbsa_level;
 UINT32  g_sbsa_only_level = 0;
-UINT32  g_print_level;
 UINT32  g_sw_view[3] = {1, 1, 1}; //Operating System, Hypervisor, Platform Security
 UINT32  *g_skip_test_num;
 UINT32  g_num_skip;
@@ -50,19 +46,14 @@ UINT32  g_acs_tests_fail;
 UINT64  g_stack_pointer;
 UINT64  g_exception_ret_addr;
 UINT64  g_ret_addr;
-UINT32  g_timeout_pass;
-UINT32  g_timeout_fail;
 UINT32  g_build_sbsa = 0;
 UINT32  g_build_pcbsa = 0;
-UINT32  g_print_mmio;
 UINT32  g_curr_module;
 UINT32  g_enable_module;
 UINT32  *g_execute_tests;
-UINT32  g_crypto_support = TRUE;
 UINT32  g_num_tests = 0;
 UINT32  *g_execute_modules;
 UINT32  g_num_modules = 0;
-UINT32  g_el1skiptrap_mask = 0;
 
 SHELL_FILE_HANDLE g_acs_log_file_handle;
 SHELL_FILE_HANDLE g_dtb_log_file_handle;
@@ -123,8 +114,8 @@ HelpMsg (
          "-no_crypto_ext  Pass this flag if cryptography extension not supported due to export restrictions\n"
          "-p2p    Pass this flag to indicate that PCIe Hierarchy Supports Peer-to-Peer\n"
          "-cache  Pass this flag to indicate that if the test system supports PCIe address translation cache\n"
-         "-timeout <n> \n"
-         "        Set pass timeout (in microseconds) for wakeup tests (500 us - 2 sec)\n"
+         "-timeout <microseconds> \n"
+         "        Set pass timeout (delay in microseconds) for wakeup & WD & timer tests (500us - 2sec)\n"
          "        Example: -timeout 2000 \n"
          "-os     Enable the execution of operating system tests\n"
          "-hyp    Enable the execution of hypervisor tests\n"
@@ -182,6 +173,10 @@ command_init ()
   UINT32             Status;
   UINT32             i;
   UINT32             ReadVerbosity;
+  acs_execution_policy_t *policy;
+
+  acs_reset_execution_policy();
+  policy = acs_get_execution_policy_mut();
 
   //
   // Process Command Line arguments
@@ -233,8 +228,10 @@ command_init ()
   /* Parse -timeout */
   CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-timeout");
   if (CmdLineArg == NULL) {
-      g_timeout_pass = WAKEUP_WD_PASS_TIMEOUT_DEFAULT;
-      g_timeout_fail = g_timeout_pass * WAKEUP_WD_FAILSAFE_TIMEOUT_MULTIPLIER;
+      policy->timeout_pass = WAKEUP_WD_PASS_TIMEOUT_DEFAULT;
+      policy->timeout_fail =
+          policy->timeout_pass * WAKEUP_WD_FAILSAFE_TIMEOUT_MULTIPLIER;
+      policy->timer_timeout_us = TIMER_TIMEOUT_DEFAULT;
   } else {
       /* Accept a single value; ignore any trailing delimiters */
       CHAR16 buf[64];
@@ -264,37 +261,40 @@ command_init ()
           i--;
       }
 
-      g_timeout_pass = (UINT32)StrDecimalToUintn(buf);
-      g_timeout_fail = g_timeout_pass * WAKEUP_WD_FAILSAFE_TIMEOUT_MULTIPLIER;
-      if (!(g_timeout_pass >= WAKEUP_WD_PASS_TIMEOUT_THRESHOLD &&
-            g_timeout_pass <= WAKEUP_WD_PASS_TIMEOUT_MAX_THRESHOLD)) {
+      policy->timeout_pass = (UINT32)StrDecimalToUintn(buf);
+      policy->timeout_fail =
+          policy->timeout_pass * WAKEUP_WD_FAILSAFE_TIMEOUT_MULTIPLIER;
+      policy->timer_timeout_us = policy->timeout_pass;
+      if (!(policy->timeout_pass >= TIMEOUT_THRESHOLD &&
+            policy->timeout_pass <= TIMEOUT_MAX_THRESHOLD)) {
           Print(L"Invalid -timeout: pass timeout range should be within 500ms and 2sec\n");
           return SHELL_INVALID_PARAMETER;
       }
 
-      Print(L"Timeouts (us): PASS=%d, FAIL=%d\n", g_timeout_pass, g_timeout_fail);
+      Print(L"Timeouts (us): PASS=%d, FAIL=%d\n",
+            policy->timeout_pass, policy->timeout_fail);
   }
 
     // Options with Values
   CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-v");
   if (CmdLineArg == NULL) {
-    g_print_level = G_PRINT_LEVEL;
+    policy->print_level = G_PRINT_LEVEL;
   } else {
     ReadVerbosity = StrDecimalToUintn(CmdLineArg);
     while (ReadVerbosity/10) {
       g_enable_module |= (1 << ReadVerbosity%10);
       ReadVerbosity /= 10;
     }
-    g_print_level = ReadVerbosity;
-    if (g_print_level > 5) {
-      g_print_level = G_PRINT_LEVEL;
+    policy->print_level = ReadVerbosity;
+    if (policy->print_level > 5) {
+      policy->print_level = G_PRINT_LEVEL;
     }
   }
 
   if (ShellCommandLineGetFlag (ParamPackage, L"-mmio")) {
-    g_print_mmio = TRUE;
+    policy->print_mmio = TRUE;
   } else {
-    g_print_mmio = FALSE;
+    policy->print_mmio = FALSE;
   }
 
   g_bsa_level = G_BSA_LEVEL;
@@ -421,7 +421,7 @@ command_init ()
 
   // Options with Flags
   if ((ShellCommandLineGetFlag (ParamPackage, L"-no_crypto_ext")))
-     g_crypto_support = FALSE;
+     policy->crypto_support = FALSE;
 
   // Options with Values
   if (ShellCommandLineGetFlag (ParamPackage, L"-t")) {
@@ -502,21 +502,21 @@ command_init ()
   }
 
   if (ShellCommandLineGetFlag (ParamPackage, L"-skip-dp-nic-ms")) {
-    g_pcie_skip_dp_nic_ms = TRUE;
+    policy->pcie_skip_dp_nic_ms = TRUE;
   } else {
-    g_pcie_skip_dp_nic_ms = FALSE;
+    policy->pcie_skip_dp_nic_ms = FALSE;
   }
 
   if (ShellCommandLineGetFlag (ParamPackage, L"-p2p")) {
-    g_pcie_p2p = TRUE;
+    policy->pcie_p2p = TRUE;
   } else {
-    g_pcie_p2p = FALSE;
+    policy->pcie_p2p = FALSE;
   }
 
   if (ShellCommandLineGetFlag (ParamPackage, L"-cache")) {
-    g_pcie_cache_present = TRUE;
+    policy->pcie_cache_present = TRUE;
   } else {
-    g_pcie_cache_present = FALSE;
+    policy->pcie_cache_present = FALSE;
   }
 
   CmdLineArg  = ShellCommandLineGetValue (ParamPackage, L"-el1skiptrap");
@@ -551,11 +551,11 @@ command_init ()
         token[tlen] = L'\0';
 
         if (w_ascii_streq_caseins(token, L"pmsidr")) {
-          g_el1skiptrap_mask |= EL1SKIPTRAP_PMSIDR;
+          policy->el1skiptrap_mask |= EL1SKIPTRAP_PMSIDR;
         } else if (w_ascii_streq_caseins(token, L"cntpct")) {
-          g_el1skiptrap_mask |= EL1SKIPTRAP_CNTPCT;
+          policy->el1skiptrap_mask |= EL1SKIPTRAP_CNTPCT;
         } else if (w_ascii_streq_caseins(token, L"devmem")) {
-          g_el1skiptrap_mask |= EL1SKIPTRAP_DEVMEM;
+          policy->el1skiptrap_mask |= EL1SKIPTRAP_DEVMEM;
         } else {
           Print(L"Invalid -el1skiptrap token: %s\n", token);
           HelpMsg();
@@ -708,20 +708,20 @@ execute_tests()
   VOID               *branch_label;
   UINT32             Status;
 
-  val_print(ACS_PRINT_TEST, "\n\n BSA Architecture Compliance Suite", 0);
-  val_print(ACS_PRINT_TEST, "\n          Version %d.", BSA_ACS_MAJOR_VER);
-  val_print(ACS_PRINT_TEST, "%d.", BSA_ACS_MINOR_VER);
-  val_print(ACS_PRINT_TEST, "%d\n", BSA_ACS_SUBMINOR_VER);
+  val_print(INFO, "\n\n BSA Architecture Compliance Suite");
+  val_print(INFO, "\n          Version %d.", BSA_ACS_MAJOR_VER);
+  val_print(INFO, "%d.", BSA_ACS_MINOR_VER);
+  val_print(INFO, "%d\n", BSA_ACS_SUBMINOR_VER);
 
 
-  val_print(ACS_PRINT_TEST, BSA_LEVEL_PRINT_FORMAT(g_bsa_level, g_bsa_only_level),
+  val_print(INFO, BSA_LEVEL_PRINT_FORMAT(g_bsa_level, g_bsa_only_level),
                                    (g_bsa_level > BSA_MAX_LEVEL_SUPPORTED) ? 0 : g_bsa_level);
 
   if (g_bsa_only_level)
     g_bsa_level = 0;
 
-  val_print(ACS_PRINT_TEST, "(Print level is %2d)\n\n", g_print_level);
-  val_print(ACS_PRINT_TEST, "\n Creating Platform Information Tables\n", 0);
+  val_print(INFO, "(Print level is %2d)\n\n", acs_policy_get_print_level());
+  val_print(INFO, "\n Creating Platform Information Tables\n");
 
 
   Status = createPeInfoTable();
@@ -756,11 +756,11 @@ execute_tests()
   val_pe_initialize_default_exception_handler(val_pe_default_esr);
 
 print_test_status:
-  val_print(ACS_PRINT_ERR, "\n     -------------------------------------------------------\n", 0);
-  val_print(ACS_PRINT_ERR, "     Total Tests run  = %4d", g_acs_tests_total);
-  val_print(ACS_PRINT_ERR, "  Tests Passed  = %4d", g_acs_tests_pass);
-  val_print(ACS_PRINT_ERR, "  Tests Failed = %4d\n", g_acs_tests_fail);
-  val_print(ACS_PRINT_ERR, "     -------------------------------------------------------\n", 0);
+  val_print(ERROR, "\n     -------------------------------------------------------\n");
+  val_print(ERROR, "     Total Tests run  = %4d", g_acs_tests_total);
+  val_print(ERROR, "  Tests Passed  = %4d", g_acs_tests_pass);
+  val_print(ERROR, "  Tests Failed = %4d\n", g_acs_tests_fail);
+  val_print(ERROR, "     -------------------------------------------------------\n");
 
   freeBsaAcsMem();
 
@@ -768,12 +768,12 @@ print_test_status:
     ShellCloseFile(&g_dtb_log_file_handle);
   }
 
-  val_print(ACS_PRINT_ERR, "\n      *** BSA tests complete. Reset the system. ***\n\n", 0);
+  val_print(ERROR, "\n      *** BSA tests complete. Reset the system. ***\n\n");
 
   /***  Starting memory model consistency tests ***/
-  val_print(ACS_PRINT_ERR, "\n\n      *** Starting memory model consistency tests ***  \n", 0);
-  val_print(ACS_PRINT_ERR, "\nInitializing kvm-unit-tests framework ...", 0);
-  val_print(ACS_PRINT_ERR, "\nLoad address of the image is: 0x%lx\n", (unsigned long)&_textbsa);
+  val_print(ERROR, "\n\n      *** Starting memory model consistency tests ***  \n");
+  val_print(ERROR, "\nInitializing kvm-unit-tests framework ...");
+  val_print(ERROR, "\nLoad address of the image is: 0x%lx\n", (unsigned long)&_textbsa);
   mem_model_execute_tests(myImageHandle, mySystemTable);
 
   if (g_acs_log_file_handle) {

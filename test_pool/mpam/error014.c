@@ -48,7 +48,7 @@ payload(void)
 
         /* Check if Error Status Register Supported */
         if (!val_mpam_msc_supports_esr(msc_index)) {
-            val_print(ACS_PRINT_DEBUG, "\n       MSC index %d does not support ESR", msc_index);
+            val_print(DEBUG, "\n       MSC index %d does not support ESR", msc_index);
             continue;
         }
 
@@ -57,7 +57,7 @@ payload(void)
         status    = val_mpam_msc_reset_errcode(msc_index);
 
         if (!status) {
-            val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+            val_set_status(pe_index, RESULT_FAIL(01));
             return;
         }
 
@@ -66,13 +66,13 @@ payload(void)
         if (val_mpam_msc_supports_mon(msc_index)) {
             if (val_mpam_supports_csumon(msc_index)) {
                 mon_count += val_mpam_get_csumon_count(msc_index);
-                val_print(ACS_PRINT_DEBUG,
+                val_print(DEBUG,
                             "\n       MSC implements %d CSU Monitors", mon_count);
             }
 
             if (val_mpam_msc_supports_mbwumon(msc_index)) {
                 mon_count += val_mpam_get_mbwumon_count(msc_index);
-                val_print(ACS_PRINT_DEBUG,
+                val_print(DEBUG,
                 "\n       MSC implements %d MBWU Monitors", val_mpam_get_mbwumon_count(msc_index));
             }
         }
@@ -80,7 +80,7 @@ payload(void)
         /* CSU/MBWU monitors are required to generate the second error.
            Skip MSC if mon not present */
         if (mon_count == 0) {
-            val_print(ACS_PRINT_WARN, "\n       Cannot generate second error. Skipping MSC\n", 0);
+            val_print(WARN, "\n       Cannot generate second error. Skipping MSC\n");
             continue;
         }
 
@@ -97,19 +97,19 @@ payload(void)
 
         /* Read Error Status Register and check if the error code is recorded */
         esr_errcode = val_mpam_msc_get_errcode(msc_index);
-        val_print(ACS_PRINT_DEBUG, "\n       Scenario 1 - Error code read is %d", esr_errcode);
+        val_print(DEBUG, "\n       Scenario 1 - Error code read is %d", esr_errcode);
 
         if (esr_errcode != ESR_ERRCODE_PARTID_SEL_RANGE)
         {
-            val_print(ACS_PRINT_ERR, "\n       Expected errcode: %d", ESR_ERRCODE_PARTID_SEL_RANGE);
-            val_print(ACS_PRINT_ERR, "\n       Actual errcode: %d", esr_errcode);
+            val_print(ERROR, "\n       Expected errcode: %d", ESR_ERRCODE_PARTID_SEL_RANGE);
+            val_print(ERROR, "\n       Actual errcode: %d", esr_errcode);
             test_fail++;
         }
 
         /* Check OVRWR bit - should be 0 for first error */
         if (val_mpam_msc_get_esr_ovrwr(msc_index))
         {
-            val_print(ACS_PRINT_ERR, "\n       OVRWR bit is set for first error", 0);
+            val_print(ERROR, "\n       OVRWR bit is set for first error");
             test_fail++;
         }
 
@@ -121,20 +121,20 @@ payload(void)
 
         /* Read Error Status Register and check if the error code is recorded */
         esr_errcode = val_mpam_msc_get_errcode(msc_index);
-        val_print(ACS_PRINT_DEBUG, "\n       Scenario 2 - Error code read is %d", esr_errcode);
+        val_print(DEBUG, "\n       Scenario 2 - Error code read is %d", esr_errcode);
 
         if (esr_errcode != ESR_ERRCODE_MSMONCFG_ID_RANGE)
         {
-            val_print(ACS_PRINT_ERR,
+            val_print(ERROR,
                                     "\n       Expected errcode: %d", ESR_ERRCODE_MSMONCFG_ID_RANGE);
-            val_print(ACS_PRINT_ERR, "\n       Actual errcode: %d", esr_errcode);
+            val_print(ERROR, "\n       Actual errcode: %d", esr_errcode);
             test_fail++;
         }
 
         /* Check OVRWR bit - should be 1 for second error */
         if (val_mpam_msc_get_esr_ovrwr(msc_index) == 0)
         {
-            val_print(ACS_PRINT_ERR, "\n       MPAMF_ESR.OVRWR bit is not set for second error", 0);
+            val_print(ERROR, "\n       MPAMF_ESR.OVRWR bit is not set for second error");
             test_fail++;
         }
 
@@ -147,11 +147,11 @@ payload(void)
     }
 
     if (test_skip)
-        val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+        val_set_status(pe_index, RESULT_SKIP(01));
     else if (test_fail)
-        val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
+        val_set_status(pe_index, RESULT_FAIL(02));
     else
-        val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+        val_set_status(pe_index, RESULT_PASS);
 
     return;
 }

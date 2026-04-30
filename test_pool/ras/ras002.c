@@ -43,10 +43,10 @@ payload()
   /* Get Number of nodes with RAS Functionality */
   status = val_ras_get_info(RAS_INFO_NUM_NODES, 0, &num_node);
   if (status || (num_node == 0)) {
-    val_print(ACS_PRINT_DEBUG, "\n       No RAS Nodes found in AEST table.", 0);
-    val_print(ACS_PRINT_DEBUG, "\n       The test must be considered fail if system \
-                                        components supports RAS nodes", 0);
-    val_set_status(index, RESULT_WARN(TEST_NUM, 01));
+    val_print(DEBUG, "\n       No RAS Nodes found in AEST table.");
+    val_print(DEBUG, "\n       The test must be considered fail if system \
+                                        components supports RAS nodes");
+    val_set_status(index, RESULT_WARNING(01));
     return;
   }
 
@@ -55,7 +55,7 @@ payload()
     /* Get Current Node Type */
     status = val_ras_get_info(RAS_INFO_NODE_TYPE, node_index, &value);
     if (status) {
-      val_print(ACS_PRINT_DEBUG, "\n       Node Type not found index %d", node_index);
+      val_print(DEBUG, "\n       Node Type not found index %d", node_index);
       fail_cnt++;
       break;
     }
@@ -68,7 +68,7 @@ payload()
     if (value == NODE_TYPE_PE) {
       status = val_ras_get_info(RAS_INFO_PE_RES_TYPE, node_index, &value);
       if (status) {
-        val_print(ACS_PRINT_DEBUG, "\n       PE Resource type not found index %d", node_index);
+        val_print(DEBUG, "\n       PE Resource type not found index %d", node_index);
         fail_cnt++;
         break;
       }
@@ -80,7 +80,7 @@ payload()
     /* Get Error Record number for this Node */
     status = val_ras_get_info(RAS_INFO_NUM_ERR_REC, node_index, &num_err_recs);
     if (status || num_err_recs == 0) {
-         val_print(ACS_PRINT_ERR, "\n       RAS Node %d has no error records implemented ",
+         val_print(ERROR, "\n       RAS Node %d has no error records implemented ",
                                    node_index);
          continue;
     }
@@ -90,29 +90,29 @@ payload()
       /* Read FR register of the current error record */
       value = val_ras_reg_read(node_index, RAS_ERR_FR, err_rec_idx);
       if (value == INVALID_RAS_REG_VAL) {
-          val_print(ACS_PRINT_ERR, "\n       Couldn't read ERR<%d>FR register", err_rec_idx);
-          val_print(ACS_PRINT_ERR, "\n       RAS node index: %d", node_index);
+          val_print(ERROR, "\n       Couldn't read ERR<%d>FR register", err_rec_idx);
+          val_print(ERROR, "\n       RAS node index: %d", node_index);
           fail_cnt++;
           continue;
       }
 
       /* Check only if DE[52] != 0 then DUI[17:16] != 0 of FR Register For DUI Control */
       if ((value & ERR_FR_DE_MASK) && !(value & ERR_FR_DUI_MASK)) {
-        val_print(ACS_PRINT_ERR, "\n       DUI not implemented for node_index %d", node_index);
+        val_print(ERROR, "\n       DUI not implemented for node_index %d", node_index);
         fail_cnt++;
         continue;
       }
 
       /* Check only if ERR_FR.CE != 0 -> Check CFI[11:10] != 0 of FR Register For CFI Control */
       if ((value & ERR_FR_CE_MASK) && !(value & ERR_FR_CFI_MASK)) {
-        val_print(ACS_PRINT_ERR, "\n       CFI not implemented for node_index %d", node_index);
+        val_print(ERROR, "\n       CFI not implemented for node_index %d", node_index);
         fail_cnt++;
         continue;
       }
 
       /* Check UI[5:4] != 0 of FR Register For UI Control */
       if (!(value & ERR_FR_UI_MASK)) {
-        val_print(ACS_PRINT_ERR, "\n       UI not implemented for node_index %d", node_index);
+        val_print(ERROR, "\n       UI not implemented for node_index %d", node_index);
         fail_cnt++;
         continue;
       }
@@ -120,11 +120,11 @@ payload()
   }
 
   if (fail_cnt) {
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+    val_set_status(index, RESULT_FAIL(01));
     return;
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

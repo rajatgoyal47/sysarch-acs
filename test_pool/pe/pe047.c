@@ -31,12 +31,12 @@ static void payload(void)
 
     /* Read ID_AA64ISAR1_EL1.SPECRES[43:40] = 0b0001 For CFP, DVP, CPP RCTX Instructions */
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64ISAR1_EL1), 40, 43);
-    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       ID_AA64ISAR1_EL1.SPECRES = %llx", data, index);
+    val_print_primary_pe(DEBUG, "\n       ID_AA64ISAR1_EL1.SPECRES = %llx", data, index);
 
     if (data != 1 && data != 2)
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+        val_set_status(index, RESULT_FAIL(01));
     else
-        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+        val_set_status(index, RESULT_PASS);
 }
 
 uint32_t pe047_entry(uint32_t num_pe)

@@ -48,8 +48,8 @@ payload(uint32_t num_pe)
    * regions not allowed through DRTM_PARAMETERS */
   dma_protection_support = VAL_EXTRACT_BITS(g_drtm_features.dma_prot_features.value, 0, 7);
   if (dma_protection_support != DRTM_DMA_FEATURES_DMA_PROTECTION_REGION) {
-    val_print(ACS_PRINT_ERR, "\n       Not valid for complete DMA protection. Skipping", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+    val_print(ERROR, "\n       Not valid for complete DMA protection. Skipping");
+    val_set_status(index, RESULT_SKIP(1));
     return;
   }
 
@@ -57,23 +57,23 @@ payload(uint32_t num_pe)
    * are not allowed through DRTM_PARAMETERS */
   max_mem_regions = VAL_EXTRACT_BITS(g_drtm_features.dma_prot_features.value, 8, 23);
   if (max_mem_regions == 0) {
-    val_print(ACS_PRINT_ERR, "\n       No regions in DRTM_PARAMETERS allowed. Skipping", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+    val_print(ERROR, "\n       No regions in DRTM_PARAMETERS allowed. Skipping");
+    val_set_status(index, RESULT_SKIP(2));
     return;
   }
 
   /* Allocate Memory For DRTM Parameters 4KB Aligned */
   drtm_params = (DRTM_PARAMETERS *)((uint64_t)val_aligned_alloc(DRTM_SIZE_4K, drtm_params_size));
   if (!drtm_params) {
-    val_print(ACS_PRINT_ERR, "\n    Failed to allocate memory for DRTM Params", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+    val_print(ERROR, "\n    Failed to allocate memory for DRTM Params");
+    val_set_status(index, RESULT_FAIL(1));
     return;
   }
 
   status = val_drtm_init_drtm_params(drtm_params);
   if (status != ACS_STATUS_PASS) {
-    val_print(ACS_PRINT_ERR, "\n       DRTM Init Params failed err=%d", status);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+    val_print(ERROR, "\n       DRTM Init Params failed err=%d", status);
+    val_set_status(index, RESULT_FAIL(2));
     goto free_drtm_params;
   }
 
@@ -84,8 +84,8 @@ payload(uint32_t num_pe)
   mem_desc_table = (DRTM_MEMORY_REGION_DESCRIPTOR_TABLE *)
                         ((uint64_t)val_aligned_alloc(DRTM_SIZE_4K, mem_desc_table_size));
   if (!mem_desc_table) {
-    val_print(ACS_PRINT_ERR, "\n    Failed to allocate memory for Memory Descriptor Table", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 3));
+    val_print(ERROR, "\n    Failed to allocate memory for Memory Descriptor Table");
+    val_set_status(index, RESULT_FAIL(3));
     goto free_drtm_params;
   }
 
@@ -96,8 +96,8 @@ payload(uint32_t num_pe)
   region_address = (DRTM_MEMORY_REGION *)
                         ((uint64_t)val_aligned_alloc(DRTM_SIZE_4K, region_size));
   if (!region_address) {
-    val_print(ACS_PRINT_ERR, "\n    Failed to allocate memory for Memory Regions", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 4));
+    val_print(ERROR, "\n    Failed to allocate memory for Memory Regions");
+    val_set_status(index, RESULT_FAIL(4));
     goto free_mem_desc_table;
   }
 
@@ -118,13 +118,13 @@ payload(uint32_t num_pe)
   status = val_drtm_dynamic_launch(drtm_params);
   /* This will return invalid parameter */
   if (status != DRTM_ACS_MEM_PROTECT_INVALID) {
-    val_print(ACS_PRINT_ERR, "\n       Incorrect Status. Expected = -6 Found = %d", status);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 5));
+    val_print(ERROR, "\n       Incorrect Status. Expected = -6 Found = %d", status);
+    val_set_status(index, RESULT_FAIL(5));
     if (status == DRTM_ACS_SUCCESS) {
       status = val_drtm_unprotect_memory();
       if (status < DRTM_ACS_SUCCESS) {
-        val_print(ACS_PRINT_ERR, "\n       DRTM Unprotect Memory failed err=%d", status);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 6));
+        val_print(ERROR, "\n       DRTM Unprotect Memory failed err=%d", status);
+        val_set_status(index, RESULT_FAIL(6));
       }
     }
     goto free_memory_region;
@@ -134,8 +134,8 @@ payload(uint32_t num_pe)
    * overlap test is skipped */
   max_mem_regions = VAL_EXTRACT_BITS(g_drtm_features.dma_prot_features.value, 8, 23);
   if (max_mem_regions > 1) {
-    val_print(ACS_PRINT_ERR, "\n       Only one memory region is allowed. Skipping R313020", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+    val_print(ERROR, "\n       Only one memory region is allowed. Skipping R313020");
+    val_set_status(index, RESULT_SKIP(2));
     goto free_memory_region;
   }
 
@@ -159,19 +159,19 @@ payload(uint32_t num_pe)
   status = val_drtm_dynamic_launch(drtm_params);
   /* This will return invalid parameter */
   if (status != DRTM_ACS_MEM_PROTECT_INVALID) {
-    val_print(ACS_PRINT_ERR, "\n       Incorrect Status. Expected = -6 Found = %d", status);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 7));
+    val_print(ERROR, "\n       Incorrect Status. Expected = -6 Found = %d", status);
     if (status == DRTM_ACS_SUCCESS) {
       status = val_drtm_unprotect_memory();
       if (status < DRTM_ACS_SUCCESS) {
-        val_print(ACS_PRINT_ERR, "\n       DRTM Unprotect Memory failed err=%d", status);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 8));
+        val_print(ERROR, "\n       DRTM Unprotect Memory failed err=%d", status);
+    val_set_status(index, RESULT_FAIL(7));
+        val_set_status(index, RESULT_FAIL(8));
       }
     }
     goto free_memory_region;
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 
 free_memory_region:
   val_memory_free_aligned((void *)region_address);

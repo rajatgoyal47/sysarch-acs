@@ -26,9 +26,6 @@
 
 static uint32_t g_el1vir_int_received;
 static uint32_t g_failsafe_int_rcvd;
-extern uint32_t g_timeout_pass;
-extern uint32_t g_timeout_fail;
-
 static
 void
 isr_failsafe()
@@ -37,7 +34,7 @@ isr_failsafe()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   val_timer_set_phy_el1(0);
-  val_print(ACS_PRINT_ERR, "       Received Failsafe interrupt\n", 0);
+  val_print(ERROR, "       Received Failsafe interrupt\n");
   g_failsafe_int_rcvd = 1;
 
   /* On some system the failsafe is rcvd just after test interrupt and resulting
@@ -45,8 +42,9 @@ isr_failsafe()
      is hit and test interrupt is not rcvd
   */
   if (g_el1vir_int_received == 0) {
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+      val_set_status(index, RESULT_FAIL(2));
   }
+
   intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
   val_gic_end_of_interrupt(intid);
 }
@@ -56,7 +54,8 @@ void
 wakeup_set_failsafe()
 {
   uint32_t intid;
-  uint32_t timer_expire_val = CEIL_TO_MAX_SYS_TIMEOUT(val_get_timeout_to_ticks(g_timeout_fail));
+  uint32_t timer_expire_val =
+      CEIL_TO_MAX_SYS_TIMEOUT(val_get_timeout_to_ticks(acs_policy_get_timeout_fail()));
   intid = val_timer_get_info(TIMER_INFO_PHY_EL1_INTID, 0);
   val_gic_install_isr(intid, isr_failsafe);
   val_timer_set_phy_el1(timer_expire_val);
@@ -78,13 +77,13 @@ isr2()
 
   /* We received our interrupt, so disable timer from generating further interrupts */
   val_timer_set_vir_el1(0);
-  val_print(ACS_PRINT_INFO, "       Received EL1 VIRT interrupt\n", 0);
+  val_print(TRACE, "       Received EL1 VIRT interrupt\n");
   g_el1vir_int_received = 1;
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
   intid = val_timer_get_info(TIMER_INFO_VIR_EL1_INTID, 0);
   val_gic_end_of_interrupt(intid);
   val_timer_set_phy_el1(0);
-  val_print(ACS_PRINT_DEBUG, "       Clear Failsafe interrupt\n", 0);
+  val_print(DEBUG, "       Clear Failsafe interrupt\n");
 }
 
 static
@@ -94,12 +93,13 @@ payload2()
   uint32_t intid;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint32_t delay_loop = MAX_SPIN_LOOPS;
-  uint32_t timer_expire_val = CEIL_TO_MAX_SYS_TIMEOUT(val_get_timeout_to_ticks(g_timeout_pass));
+  uint32_t timer_expire_val =
+      CEIL_TO_MAX_SYS_TIMEOUT(val_get_timeout_to_ticks(acs_policy_get_timeout_pass()));
 
   intid = val_timer_get_info(TIMER_INFO_VIR_EL1_INTID, 0);
   if (val_gic_install_isr(intid, isr2)) {
-    val_print(ACS_PRINT_WARN, "\n       GIC Install Handler Failed...", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+    val_print(WARN, "\n       GIC Install Handler Failed...");
+    val_set_status(index, RESULT_FAIL(1));
     return;
   }
 
@@ -133,11 +133,11 @@ payload2()
       val_timer_set_vir_el1(0);
       intid = val_timer_get_info(TIMER_INFO_VIR_EL1_INTID, 0);
       val_gic_end_of_interrupt(intid);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
-      val_print(ACS_PRINT_DEBUG,
-                "\n       PE wakeup by some other events/int or didn't enter WFI", 0);
+      val_print(DEBUG,
+                "\n       PE wakeup by some other events/int or didn't enter WFI");
+      val_set_status(index, RESULT_SKIP(1));
   }
-  val_print(ACS_PRINT_INFO, "\n       delay loop remainig value %d", delay_loop);
+  val_print(TRACE, "\n       delay loop remainig value %d", delay_loop);
   return;
 }
 
@@ -148,7 +148,7 @@ u002_entry(uint32_t num_pe)
 
   num_pe = 1;  //This Timer test is run on single processor
 
-  if (!(g_el1skiptrap_mask & EL1SKIPTRAP_CNTPCT)) {
+  if (!(acs_policy_get_el1skiptrap_mask() & EL1SKIPTRAP_CNTPCT)) {
       val_log_context((char8_t *)__FILE__, (char8_t *)__func__, __LINE__);
       status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
 

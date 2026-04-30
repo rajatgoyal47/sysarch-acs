@@ -37,8 +37,8 @@ payload()
 
   msi_frame = val_gic_get_info(GIC_INFO_NUM_MSI_FRAME);
   if (msi_frame == 0) {
-      val_print(ACS_PRINT_DEBUG, "\n       No MSI frame, Skipping               ", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+      val_print(DEBUG, "\n       No MSI frame, Skipping               ");
+      val_set_status(index, RESULT_SKIP(1));
       return;
   }
 
@@ -56,7 +56,7 @@ payload()
     new_data = val_mmio_read(frame_base + GICv2m_MSI_TYPER);
     if (data != new_data) {
       fail_cnt++;
-      val_print(ACS_PRINT_DEBUG, "\n       MSI_TYPER RO Check Failed for instance %d", instance);
+      val_print(DEBUG, "\n       MSI_TYPER RO Check Failed for instance %d", instance);
     }
 
     /* Part 2 : Check SPI ID allocated is b/w 32-1020 */
@@ -65,7 +65,7 @@ payload()
 
     if ((min_spi_id < 32) || (min_spi_id + num_spi) > 1020) {
       fail_cnt++;
-      val_print(ACS_PRINT_DEBUG, "\n       SPI ID Check Failed for instance %d", instance);
+      val_print(DEBUG, "\n       SPI ID Check Failed for instance %d", instance);
     }
 
     /* Part 3 : GICv2m_MSI_IIDR Read Only Register */
@@ -77,18 +77,18 @@ payload()
     new_data = val_mmio_read(frame_base + GICv2m_MSI_IIDR);
     if (data != new_data) {
       fail_cnt++;
-      val_print(ACS_PRINT_DEBUG, "\n       MSI_IIDR RO Check Failed for instance %d", instance);
+      val_print(DEBUG, "\n       MSI_IIDR RO Check Failed for instance %d", instance);
     }
 
   }
 
   if (fail_cnt) {
-      val_print(ACS_PRINT_ERR, "\n       MSI_TYPER Register Check Failed", 0);
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+      val_print(ERROR, "\n       MSI_TYPER Register Check Failed");
+      val_set_status(index, RESULT_FAIL(1));
       return;
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

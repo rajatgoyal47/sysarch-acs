@@ -44,8 +44,8 @@ check_peripheral_dma_capability (void)
   pcie_bdf_list_t *pcie_peripherals_bdf_list = val_pcie_get_pcie_peripheral_bdf_list();
 
   if (pcie_peripherals_bdf_list == NULL || pcie_peripherals_bdf_list->count == 0) {
-      val_print(ACS_PRINT_DEBUG, "\n       Skip as no peripherals detected   ", 0);
-      val_set_status(index, RESULT_SKIP (TEST_NUM, 1));
+      val_print(DEBUG, "\n       Skip as no peripherals detected   ");
+      val_set_status(index, RESULT_SKIP(1));
       return;
   }
 
@@ -54,7 +54,7 @@ check_peripheral_dma_capability (void)
       /* Fail the test if device isn't capable of DMA access */
       if (!(val_pcie_is_devicedma_64bit(pcie_peripherals_bdf_list->dev_bdfs[i]) ||
             val_pcie_is_device_behind_smmu(pcie_peripherals_bdf_list->dev_bdfs[i]))) {
-          val_print(ACS_PRINT_DEBUG, "\n       Failed for BDF = 0x%x",
+          val_print(DEBUG, "\n       Failed for BDF = 0x%x",
                     pcie_peripherals_bdf_list->dev_bdfs[i]);
           fail_cnt++;
       }
@@ -63,9 +63,9 @@ check_peripheral_dma_capability (void)
   }
 
   if (fail_cnt) {
-      val_set_status (index, RESULT_FAIL (TEST_NUM, 01));
+      val_set_status (index, RESULT_FAIL(01));
   } else {
-      val_set_status (index, RESULT_PASS (TEST_NUM, 01));
+      val_set_status (index, RESULT_PASS);
   }
 
 }
@@ -84,8 +84,8 @@ payload_check_dev_dma_if_behind_smmu (void)
   pcie_bdf_list_t *pcie_peripherals_bdf_list = val_pcie_get_pcie_peripheral_bdf_list();
 
   if (pcie_peripherals_bdf_list == NULL || pcie_peripherals_bdf_list->count == 0) {
-      val_print(ACS_PRINT_DEBUG, "\n       Skip as no peripherals detected   ", 0);
-      val_set_status(index, RESULT_SKIP (TEST_NUM1, 1));
+      val_print(DEBUG, "\n       Skip as no peripherals detected   ");
+      val_set_status(index, RESULT_SKIP(1));
       return;
   }
 
@@ -97,7 +97,7 @@ payload_check_dev_dma_if_behind_smmu (void)
           device behind a SMMU */
           test_run = 1;
           if (!(val_pcie_is_devicedma_64bit(pcie_peripherals_bdf_list->dev_bdfs[i]))) {
-            val_print(ACS_PRINT_DEBUG, "\n       Failed for BDF = 0x%x",
+            val_print(DEBUG, "\n       Failed for BDF = 0x%x",
                       pcie_peripherals_bdf_list->dev_bdfs[i]);
           fail_cnt++;
           }
@@ -105,11 +105,11 @@ payload_check_dev_dma_if_behind_smmu (void)
   }
 
   if (!test_run) {
-      val_set_status (index, RESULT_SKIP (TEST_NUM1, 02));
+      val_set_status (index, RESULT_SKIP(02));
   } else if (fail_cnt) {
-      val_set_status (index, RESULT_FAIL (TEST_NUM1, 01));
+      val_set_status (index, RESULT_FAIL(01));
   } else {
-      val_set_status (index, RESULT_PASS (TEST_NUM1, 01));
+      val_set_status (index, RESULT_PASS);
   }
 }
 
@@ -127,8 +127,8 @@ payload_check_if_non_dma_dev_behind_smmu (void)
   pcie_bdf_list_t *pcie_peripherals_bdf_list = val_pcie_get_pcie_peripheral_bdf_list();
 
   if (pcie_peripherals_bdf_list == NULL || pcie_peripherals_bdf_list->count == 0) {
-      val_print(ACS_PRINT_DEBUG, "\n       Skip as no peripherals detected   ", 0);
-      val_set_status(index, RESULT_SKIP (TEST_NUM2, 1));
+      val_print(DEBUG, "\n       Skip as no peripherals detected   ");
+      val_set_status(index, RESULT_SKIP(1));
       return;
   }
 
@@ -142,7 +142,7 @@ payload_check_if_non_dma_dev_behind_smmu (void)
           test_run = 1;
           /* Mark has fail if non DMA device not behind SMMU */
           if (!(val_pcie_is_device_behind_smmu(pcie_peripherals_bdf_list->dev_bdfs[i]))) {
-              val_print(ACS_PRINT_DEBUG, "\n       Failed for BDF = 0x%x",
+              val_print(DEBUG, "\n       Failed for BDF = 0x%x",
                         pcie_peripherals_bdf_list->dev_bdfs[i]);
               fail_cnt++;
           }
@@ -150,11 +150,11 @@ payload_check_if_non_dma_dev_behind_smmu (void)
   }
 
   if (!test_run) {
-      val_set_status (index, RESULT_SKIP (TEST_NUM2, 02));
+      val_set_status (index, RESULT_SKIP(02));
   } else if (fail_cnt) {
-      val_set_status (index, RESULT_FAIL (TEST_NUM2, 01));
+      val_set_status (index, RESULT_FAIL(01));
   } else {
-      val_set_status (index, RESULT_PASS (TEST_NUM2, 01));
+      val_set_status (index, RESULT_PASS);
   }
 }
 

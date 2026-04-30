@@ -30,7 +30,7 @@ check_event_spec_signature(TCG_EFI_SPECID_EVENT *event_spec)
 
   /* Check Event Signature */
   if (val_strncmp((char8_t *)event_spec->signature, "Spec ID Event03", EVENT_SPEC_ID_STR_LEN)) {
-    val_print(ACS_PRINT_ERR, " Event Specification mismatch", 0);
+    val_print(ERROR, " Event Specification mismatch");
     return ACS_STATUS_FAIL;
   }
 
@@ -64,24 +64,24 @@ payload(uint32_t num_pe)
   /* Verify if DLME img auth is supported. If not supported, the test is skipped */
   drtm_feature = val_drtm_get_feature(DRTM_DRTM_FEATURES_DLME_IMG_AUTH);
   if (drtm_feature != DRTM_DLME_IMG_FEAT_DLME_IMG_AUTH_SUPP) {
-    val_print(ACS_PRINT_DEBUG,
-              "\n       DRTM implementation does not support DLME Img Auth, skip check", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+    val_print(DEBUG,
+              "\n       DRTM implementation does not support DLME Img Auth, skip check");
+    val_set_status(index, RESULT_SKIP(1));
     return;
   }
 
   /* Allocate Memory For DRTM Parameters 4KB Aligned */
   drtm_params = (DRTM_PARAMETERS *)((uint64_t)val_aligned_alloc(DRTM_SIZE_4K, drtm_params_size));
   if (!drtm_params) {
-    val_print(ACS_PRINT_ERR, "\n    Failed to allocate memory for DRTM Params", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+    val_print(ERROR, "\n    Failed to allocate memory for DRTM Params");
+    val_set_status(index, RESULT_FAIL(1));
     return;
   }
 
   status = val_drtm_init_drtm_params(drtm_params);
   if (status != ACS_STATUS_PASS) {
-    val_print(ACS_PRINT_ERR, "\n       DRTM Init Params failed err=%d", status);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+    val_print(ERROR, "\n       DRTM Init Params failed err=%d", status);
+    val_set_status(index, RESULT_FAIL(2));
     goto free_drtm_params;
   }
 
@@ -94,16 +94,16 @@ payload(uint32_t num_pe)
   status = val_drtm_dynamic_launch(drtm_params);
   /* This will return only in fail*/
   if (status < DRTM_ACS_SUCCESS) {
-    val_print(ACS_PRINT_ERR, "\n       DRTM Dynamic Launch failed err=%d", status);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 3));
+    val_print(ERROR, "\n       DRTM Dynamic Launch failed err=%d", status);
+    val_set_status(index, RESULT_FAIL(3));
     goto free_dlme_region;
   }
 
   /* Call DRTM Unprotect Memory */
   status = val_drtm_unprotect_memory();
   if (status < DRTM_ACS_SUCCESS) {
-    val_print(ACS_PRINT_ERR, "\n       Unprotect Memory failed err=%d", status);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 4));
+    val_print(ERROR, "\n       Unprotect Memory failed err=%d", status);
+    val_set_status(index, RESULT_FAIL(4));
     goto free_dlme_region;
   }
 
@@ -120,8 +120,8 @@ payload(uint32_t num_pe)
 
   status = check_event_spec_signature(event_spec);
   if (status != ACS_STATUS_PASS) {
-    val_print(ACS_PRINT_ERR, "\n       Event Log signature check failed", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 6));
+    val_print(ERROR, "\n       Event Log signature check failed");
+    val_set_status(index, RESULT_FAIL(6));
     goto free_dlme_region;
   }
 
@@ -139,10 +139,10 @@ payload(uint32_t num_pe)
     if ((event->pcr_index == 0) && (event->event_type == 0) && (event->digests.count == 0)) {
       break;
     }
-    val_print(ACS_PRINT_DEBUG, "\n       EVENT2 : ", 0);
-    val_print(ACS_PRINT_DEBUG, "\n         PCR Index       : %d",    event->pcr_index);
-    val_print(ACS_PRINT_DEBUG, "\n         Event Type      : 0x%x",  event->event_type);
-    val_print(ACS_PRINT_DEBUG, "\n         Digest Count    : 0x%x",  event->digests.count);
+    val_print(DEBUG, "\n       EVENT2 : ");
+    val_print(DEBUG, "\n         PCR Index       : %d",    event->pcr_index);
+    val_print(DEBUG, "\n         Event Type      : 0x%x",  event->event_type);
+    val_print(DEBUG, "\n         Digest Count    : 0x%x",  event->digests.count);
 
     if (event->event_type == DRTM_EVTYPE_ARM_DLME) {
       dlme_image_auth = ACS_STATUS_PASS;
@@ -169,12 +169,12 @@ payload(uint32_t num_pe)
   }
 
   if (dlme_image_auth != ACS_STATUS_PASS) {
-    val_print(ACS_PRINT_ERR, "\n       DLME IMG AUTH not found in Event Log", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 7));
+    val_print(ERROR, "\n       DLME IMG AUTH not found in Event Log");
+    val_set_status(index, RESULT_FAIL(7));
     goto free_dlme_region;
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 
 free_dlme_region:
   val_memory_free_aligned((void *)drtm_params->dlme_region_address);

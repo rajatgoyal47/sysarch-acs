@@ -134,7 +134,7 @@ static void pfdi_error_injection(void)
     val_pfdi_invalidate_ret_params(&err[i]);
   }
 
-  val_set_status(index, RESULT_PASS(test_num, 1));
+  val_set_status(index, RESULT_PASS);
   return;
 }
 
@@ -278,7 +278,7 @@ static void pfdi_error_recovery(void)
     val_data_cache_ops_by_va((addr_t)&rec_buffer->norm_mode_status[i], CLEAN_AND_INVALIDATE);
   }
 
-  val_set_status(index, RESULT_PASS(test_num, 1));
+  val_set_status(index, RESULT_PASS);
   return;
 }
 
@@ -293,9 +293,9 @@ static void payload_pfdi_error_injection(void *arg)
   g_pfdi_force_error_check = (pfdi_force_error_check *)
                     val_memory_calloc(num_pe, sizeof(pfdi_force_error_check));
   if (g_pfdi_force_error_check == NULL) {
-    val_print(ACS_PRINT_ERR,
-                "\n       Allocation for PFDI Force Error Check Failed", 0);
-    val_set_status(index, RESULT_FAIL(test_num, 1));
+    val_print(ERROR,
+                "\n       Allocation for PFDI Force Error Check Failed");
+    val_set_status(index, RESULT_FAIL(1));
     return;
   }
 
@@ -318,8 +318,8 @@ static void payload_pfdi_error_injection(void *arg)
       while ((--timeout) && (IS_RESULT_PENDING(val_get_status(i))));
 
       if (timeout == 0) {
-        val_print(ACS_PRINT_ERR, "\n       **Timed out** for PE index = %d", i);
-        val_set_status(i, RESULT_FAIL(test_num, 2));
+        val_print(ERROR, "\n       **Timed out** for PE index = %d", i);
+        val_set_status(i, RESULT_FAIL(2));
         goto free_pfdi_details;
       }
     }
@@ -335,35 +335,35 @@ static void payload_pfdi_error_injection(void *arg)
       val_pfdi_invalidate_ret_params(&pfdi_buffer->force_err[j]);
 
       if (pfdi_buffer->force_err[j].x0 == PFDI_ACS_ERROR) {
-        val_print(ACS_PRINT_ERR, "\n       PFDI Force Error can not be scheduled for %a",
+        val_print(ERROR, "\n       PFDI Force Error can not be scheduled for %a",
                                                     (uint64_t)pfdi_test_names[j]);
-        val_print(ACS_PRINT_ERR, " status %ld", pfdi_buffer->force_err[j].x0);
-        val_print(ACS_PRINT_ERR, " on PE index %d", i);
+        val_print(ERROR, " status %ld", pfdi_buffer->force_err[j].x0);
+        val_print(ERROR, " on PE index %d", i);
       } else if (pfdi_buffer->force_err[j].x0 != PFDI_ACS_SUCCESS) {
-        val_print(ACS_PRINT_ERR, "\n       PFDI Force Error failed for %a",
+        val_print(ERROR, "\n       PFDI Force Error failed for %a",
                                                     (uint64_t)pfdi_test_names[j]);
-        val_print(ACS_PRINT_ERR, " err %ld", pfdi_buffer->force_err[j].x0);
-        val_print(ACS_PRINT_ERR, " on PE index %d", i);
+        val_print(ERROR, " err %ld", pfdi_buffer->force_err[j].x0);
+        val_print(ERROR, " on PE index %d", i);
         run_fail++;
       }
 
       if ((pfdi_buffer->force_err[j].x1 != 0) || (pfdi_buffer->force_err[j].x2 != 0) ||
            (pfdi_buffer->force_err[j].x3 != 0) || (pfdi_buffer->force_err[j].x4 != 0)) {
-        val_print(ACS_PRINT_ERR, "\n       Registers X1-X4 are not zero:", 0);
-        val_print(ACS_PRINT_ERR, " x1=0x%llx", pfdi_buffer->force_err[j].x1);
-        val_print(ACS_PRINT_ERR, " x2=0x%llx", pfdi_buffer->force_err[j].x2);
-        val_print(ACS_PRINT_ERR, " x3=0x%llx", pfdi_buffer->force_err[j].x3);
-        val_print(ACS_PRINT_ERR, " x4=0x%llx", pfdi_buffer->force_err[j].x4);
-        val_print(ACS_PRINT_ERR, "\n       Failed on PE = %d", i);
-        val_print(ACS_PRINT_ERR, " for %a", (uint64_t)pfdi_test_names[j]);
+        val_print(ERROR, "\n       Registers X1-X4 are not zero:");
+        val_print(ERROR, " x1=0x%llx", pfdi_buffer->force_err[j].x1);
+        val_print(ERROR, " x2=0x%llx", pfdi_buffer->force_err[j].x2);
+        val_print(ERROR, " x3=0x%llx", pfdi_buffer->force_err[j].x3);
+        val_print(ERROR, " x4=0x%llx", pfdi_buffer->force_err[j].x4);
+        val_print(ERROR, "\n       Failed on PE = %d", i);
+        val_print(ERROR, " for %a", (uint64_t)pfdi_test_names[j]);
         run_fail++;
       }
     }
 
     if (run_fail)
-      val_set_status(i, RESULT_FAIL(test_num, 3));
+      val_set_status(i, RESULT_FAIL(3));
     else
-      val_set_status(i, RESULT_PASS(test_num, 1));
+      val_set_status(i, RESULT_PASS);
   }
 
 free_pfdi_details:
@@ -383,9 +383,9 @@ static void payload_pfdi_error_recovery_check(void *arg)
   g_pfdi_err_recovery_check = (pfdi_err_recovery_check *)
                     val_memory_calloc(num_pe, sizeof(pfdi_err_recovery_check));
   if (g_pfdi_err_recovery_check == NULL) {
-    val_print(ACS_PRINT_ERR,
-                "\n       Allocation for PFDI Error Recovery Check Failed", 0);
-    val_set_status(index, RESULT_FAIL(test_num, 2));
+    val_print(ERROR,
+                "\n       Allocation for PFDI Error Recovery Check Failed");
+    val_set_status(index, RESULT_FAIL(2));
     return;
   }
 
@@ -411,8 +411,8 @@ static void payload_pfdi_error_recovery_check(void *arg)
       while ((--timeout) && (IS_RESULT_PENDING(val_get_status(i))));
 
       if (timeout == 0) {
-        val_print(ACS_PRINT_ERR, "\n       **Timed out** for PE index = %d", i);
-        val_set_status(i, RESULT_FAIL(test_num, 2));
+        val_print(ERROR, "\n       **Timed out** for PE index = %d", i);
+        val_set_status(i, RESULT_FAIL(2));
         goto free_pfdi_error_recovery;
       }
     }
@@ -432,55 +432,55 @@ static void payload_pfdi_error_recovery_check(void *arg)
       val_data_cache_ops_by_va((addr_t)&rec_buffer->norm_mode_status[j], CLEAN_AND_INVALIDATE);
 
       if (rec_buffer->force_err_status[j] != PFDI_ACS_SUCCESS) {
-        val_print(ACS_PRINT_ERR, "\n       PFDI Force Error failed for %a",
+        val_print(ERROR, "\n       PFDI Force Error failed for %a",
                                                     (uint64_t)pfdi_test_names[j]);
-        val_print(ACS_PRINT_ERR, " err %ld", rec_buffer->force_err_status[j]);
-        val_print(ACS_PRINT_ERR, " on PE index %d, Skipping the test", i);
+        val_print(ERROR, " err %ld", rec_buffer->force_err_status[j]);
+        val_print(ERROR, " on PE index %d, Skipping the test", i);
         run_skip++;
       }
 
       if (rec_buffer->alt_status[j] == fail_status[j]) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
             "\n       PFDI Scheduled error affected unrelated function, return status %ld",
             rec_buffer->alt_status[j]);
         run_fail++;
       }
 
       if (rec_buffer->rec_status[j].x0 != fail_status[j]) {
-        val_print(ACS_PRINT_ERR, "\n       PFDI return %a", (uint64_t)pfdi_test_names[j]);
-        val_print(ACS_PRINT_ERR, " check failed err  %ld", rec_buffer->rec_status[j].x0);
-        val_print(ACS_PRINT_ERR, " on PE index %d", i);
+        val_print(ERROR, "\n       PFDI return %a", (uint64_t)pfdi_test_names[j]);
+        val_print(ERROR, " check failed err  %ld", rec_buffer->rec_status[j].x0);
+        val_print(ERROR, " on PE index %d", i);
         run_fail++;
       }
 
       if (rec_buffer->norm_mode_status[j] == fail_status[j]) {
-        val_print(ACS_PRINT_ERR, "\n       PFDI Error recovery failed for  %a",
+        val_print(ERROR, "\n       PFDI Error recovery failed for  %a",
                                                     (uint64_t)pfdi_test_names[j]);
-        val_print(ACS_PRINT_ERR, " failed err  %ld", rec_buffer->norm_mode_status[j]);
-        val_print(ACS_PRINT_ERR, " on PE index %d", i);
+        val_print(ERROR, " failed err  %ld", rec_buffer->norm_mode_status[j]);
+        val_print(ERROR, " on PE index %d", i);
         run_fail++;
       }
 
       if ((rec_buffer->rec_status[j].x1 != 0) || (rec_buffer->rec_status[j].x2 != 0) ||
            (rec_buffer->rec_status[j].x3 != 0) || (rec_buffer->rec_status[j].x4 != 0)) {
-        val_print(ACS_PRINT_ERR, "\n       Registers X1-X4 are not zero:", 0);
-        val_print(ACS_PRINT_ERR, " x1=0x%llx", rec_buffer->rec_status[j].x1);
-        val_print(ACS_PRINT_ERR, " x2=0x%llx", rec_buffer->rec_status[j].x2);
-        val_print(ACS_PRINT_ERR, " x3=0x%llx", rec_buffer->rec_status[j].x3);
-        val_print(ACS_PRINT_ERR, " x4=0x%llx", rec_buffer->rec_status[j].x4);
-        val_print(ACS_PRINT_ERR, "\n       Failed on PE = %d", i);
-        val_print(ACS_PRINT_ERR, " for %a", (uint64_t)pfdi_test_names[j]);
+        val_print(ERROR, "\n       Registers X1-X4 are not zero:");
+        val_print(ERROR, " x1=0x%llx", rec_buffer->rec_status[j].x1);
+        val_print(ERROR, " x2=0x%llx", rec_buffer->rec_status[j].x2);
+        val_print(ERROR, " x3=0x%llx", rec_buffer->rec_status[j].x3);
+        val_print(ERROR, " x4=0x%llx", rec_buffer->rec_status[j].x4);
+        val_print(ERROR, "\n       Failed on PE = %d", i);
+        val_print(ERROR, " for %a", (uint64_t)pfdi_test_names[j]);
         run_fail++;
       }
 
     }
 
     if (run_fail)
-      val_set_status(i, RESULT_FAIL(test_num, 3));
+      val_set_status(i, RESULT_FAIL(3));
     else if (run_skip)
-      val_set_status(i, RESULT_SKIP(test_num, 1));
+      val_set_status(i, RESULT_SKIP(1));
     else
-      val_set_status(i, RESULT_PASS(test_num, 1));
+      val_set_status(i, RESULT_PASS);
   }
 
 free_pfdi_error_recovery:

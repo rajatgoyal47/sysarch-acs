@@ -92,8 +92,8 @@ HelpMsg (VOID)
         "        Example: -skipmodule PE,GIC,PCIE\n"
         "-slc    Provide system last level cache type\n"
         "        1 - PPTT PE-side cache,  2 - HMAT mem-side cache\n"
-        "-timeout <n> \n"
-        "        Set pass timeout (in microseconds) for wakeup tests (500 us - 2 sec)\n"
+        "-timeout <microseconds> \n"
+        "        Set pass timeout (delay in microseconds) for wakeup & WD & timer tests (500us - 2sec)\n"
         "        Example: -timeout 2000 \n"
         "-v <n>  Verbosity of the prints\n"
         "        1 prints all, 5 prints only the errors\n");
@@ -122,25 +122,28 @@ freeAcsMem()
 }
 
 static UINT32
-apply_cli_defaults(VOID)
+apply_cli_defaults(acs_run_request_t *ctx)
 {
-    /* Standalone SBSA UEFI app, set g_arch_selection to SBSA if -r empty */
-    if (g_rule_count == 0) {
-        g_arch_selection = ARCH_SBSA;
+    if (ctx == NULL)
+        return ACS_STATUS_FAIL;
+
+    /* Standalone SBSA UEFI app defaults to SBSA if no explicit rules were selected. */
+    if (ctx->rule_count == 0) {
+        ctx->arch_selection = ARCH_SBSA;
     }
 
     /* Set Default level for the run if level filtering CLI options (-l, -only or -fr) is
        not passed and set filter mode to LVL_FILTER_MAX for filter_rule_list_by_cli logic to work
        */
-    if (g_level_filter_mode == LVL_FILTER_NONE) {
-        g_level_value = SBSA_LEVEL_4;
-        g_level_filter_mode = LVL_FILTER_MAX;
+    if (ctx->level_filter_mode == LVL_FILTER_NONE) {
+        ctx->level_value = SBSA_LEVEL_4;
+        ctx->level_filter_mode = LVL_FILTER_MAX;
     }
 
     /* Check sanity of value of level */
-    if (g_level_value >= SBSA_LEVEL_SENTINEL) {
-        val_print(ACS_PRINT_ERR, "\nInvalid level value passed (%d), ", g_level_value);
-        val_print(ACS_PRINT_ERR, "value should be less than %d.", SBSA_LEVEL_SENTINEL);
+    if (ctx->level_value >= SBSA_LEVEL_SENTINEL) {
+        val_print(ERROR, "\nInvalid level value passed (%d), ", ctx->level_value);
+        val_print(ERROR, "value should be less than %d.", SBSA_LEVEL_SENTINEL);
         return ACS_STATUS_FAIL;
     }
 
@@ -156,22 +159,25 @@ execute_tests()
 {
     VOID               *branch_label;
     UINT32             Status;
+    acs_run_request_t  *ctx;
 
-    Status = apply_cli_defaults();
+    ctx = acs_get_run_request_mut();
+
+    Status = apply_cli_defaults(ctx);
     if (Status != ACS_STATUS_PASS) {
         goto exit_acs;
     }
 
-    val_print(ACS_PRINT_ERR, "\n\n SBSA Architecture Compliance Suite\n", 0);
-    val_print(ACS_PRINT_ERR, "    Version %d.", SBSA_ACS_MAJOR_VER);
-    val_print(ACS_PRINT_ERR, "%d.", SBSA_ACS_MINOR_VER);
-    val_print(ACS_PRINT_ERR, "%d\n", SBSA_ACS_SUBMINOR_VER);
+    val_print(ERROR, "\n\n SBSA Architecture Compliance Suite\n");
+    val_print(ERROR, "    Version %d.", SBSA_ACS_MAJOR_VER);
+    val_print(ERROR, "%d.", SBSA_ACS_MINOR_VER);
+    val_print(ERROR, "%d\n", SBSA_ACS_SUBMINOR_VER);
 
-    val_print(ACS_PRINT_TEST, LEVEL_PRINT_FORMAT(g_level_value, g_level_filter_mode,
-              SBSA_LEVEL_FR), g_level_value);
+    val_print(INFO, LEVEL_PRINT_FORMAT(ctx->level_value, ctx->level_filter_mode,
+              SBSA_LEVEL_FR), ctx->level_value);
 
-    val_print(ACS_PRINT_TEST, "(Print level is %2d)\n\n", g_print_level);
-    val_print(ACS_PRINT_TEST, "\n Creating Platform Information Tables\n", 0);
+    val_print(INFO, "(Print level is %2d)\n\n", acs_policy_get_print_level());
+    val_print(INFO, "\n Creating Platform Information Tables\n");
 
     /* Modifying default memory attributes of UEFI*/
     val_setup_mair_register();
@@ -210,26 +216,27 @@ execute_tests()
 
     FlushImage();
 
-    if ((g_rule_count > 0 && g_rule_list != NULL) || (g_arch_selection != ARCH_NONE)) {
+    if ((ctx->rule_count > 0 && ctx->rule_list != NULL) || (ctx->arch_selection != ARCH_NONE)) {
         /* Merge arch rules if any, then apply CLI filters (-skip, -m, -skipmodule) */
-        g_rule_count = filter_rule_list_by_cli(&g_rule_list, g_rule_count);
-        if (g_rule_count == 0 || g_rule_list == NULL)
+        filter_rule_list_by_cli(ctx);
+        if (ctx->rule_count == 0 || ctx->rule_list == NULL)
             goto exit_acs;
 
         /* Print rule selections */
         print_selection_summary();
 
         /* Run rule based test orchestrator */
-        run_tests(g_rule_list, g_rule_count);
+        run_tests(ctx);
     }
 
 print_test_status:
     val_print_acs_test_status_summary();
-    val_print(ACS_PRINT_ERR, "\n      *** SBSA tests complete. Reset the system. ***\n\n", 0);
+    val_print(INFO, "\n      *** SBSA tests complete. Reset the system. ***\n\n");
 
     freeAcsMem();
 
 exit_acs:
+    acs_release_run_request(ctx);
     if (g_acs_log_file_handle) {
         ShellCloseFile(&g_acs_log_file_handle);
     }

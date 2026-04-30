@@ -65,28 +65,32 @@ uint64_t parse_tracestream(uint8_t *trace_bytes, uint64_t trace_size)
     uint64_t byte_index = 0;
     uint64_t pkt_len = 0;
     uint64_t pkt_type = 0;
-    uint64_t length;
+    uint64_t length = 0;
     uint64_t trcidr0_read = val_pe_reg_read(TRCIDR0);
     uint32_t pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       Trace Size: %d ", trace_size, pe_index);
+    val_print_primary_pe(DEBUG, "\n       Trace Size: %d ", trace_size, pe_index);
 
     /* Iterate through trace stream bytes until all are parsed */
     while (byte_index < trace_size) {
-        val_print_primary_pe(ACS_PRINT_DEBUG, "\n       byte_value: %d ",
+        val_print_primary_pe(DEBUG, "\n       byte_value: %d ",
                                                          trace_bytes[byte_index], pe_index);
-        val_print_primary_pe(ACS_PRINT_DEBUG, "\n       Trace index of the byte value: %d ",
+        val_print_primary_pe(DEBUG, "\n       Trace index of the byte value: %d ",
                                                          byte_index, pe_index);
 
         /* Identify and handle packet type based on current header packet byte */
         switch (trace_bytes[byte_index]) {
 
         case TRACE_ALIGNMENT_PKT:
+            if (byte_index + 1 >= trace_size)
+                return TRACE_PKT_INVALID;
             pkt_type = VAL_EXTRACT_BITS(trace_bytes[byte_index + 1], 0, 2);
             pkt_len = (pkt_type != 0) ? DISCARD_OVERFLOW_PKT_LEN : ALIGN_SYNC_PKT_LEN;
             break;
 
         case TRACE_INFO_PKT:
+            if (byte_index + 1 >= trace_size)
+                return TRACE_PKT_INVALID;
             pkt_len = TRACE_INFO_PKT_LEN;
 
             /* Check for CC field (bit 0) */
@@ -122,6 +126,8 @@ uint64_t parse_tracestream(uint8_t *trace_bytes, uint64_t trace_size)
             break;
 
         case TRACE_EXCEPTION_PKT:
+            if (byte_index + 2 >= trace_size)
+                return TRACE_PKT_INVALID;
             uint8_t val2_full = VAL_EXTRACT_BITS(trace_bytes[byte_index + 2], 0, 7);
             uint8_t val2_partial = VAL_EXTRACT_BITS(trace_bytes[byte_index + 2], 2, 7);
 
@@ -131,6 +137,9 @@ uint64_t parse_tracestream(uint8_t *trace_bytes, uint64_t trace_size)
                      val2_full == 0x85 || val2_full == 0x86) {
                 pkt_len = (val2_full < 0x85) ? TRACE_EXCEPTION_32_PKT_LEN :
                                                TRACE_EXCEPTION_64_PKT_LEN;
+
+                if (byte_index + pkt_len > trace_size)
+                    return TRACE_PKT_INVALID;
 
                 if (VAL_EXTRACT_BITS(trace_bytes[byte_index + (pkt_len - 1)], 6, 6))
                     pkt_len = pkt_len + VMID_LAYOUT_LEN;
@@ -146,6 +155,8 @@ uint64_t parse_tracestream(uint8_t *trace_bytes, uint64_t trace_size)
                     break;
                 case EXCEPTION_SHORT_ADDR_PKT:
                     pkt_len = EXCEPTION_SHORT_ADDR_PKT_LEN;
+                    if (byte_index + pkt_len > trace_size)
+                        return TRACE_PKT_INVALID;
                     if (!(trace_bytes[byte_index + (pkt_len - 2)] & CONTINUITY_BIT_MASK))
                         pkt_len = pkt_len - 1;
                     break;
@@ -204,14 +215,21 @@ uint64_t parse_tracestream(uint8_t *trace_bytes, uint64_t trace_size)
         case CTX_32BIT_IS1_PKT:
         case CTX_64BIT_IS0_PKT:
         case CTX_64BIT_IS1_PKT:
+          length = 0;
           if (trace_bytes[byte_index] == TRACE_CONTEXT_PKT)
               length = 2;
-           if ((trace_bytes[byte_index] == CTX_32BIT_IS0_PKT) ||
-               (trace_bytes[byte_index] == CTX_32BIT_IS1_PKT))
+          else if ((trace_bytes[byte_index] == CTX_32BIT_IS0_PKT) ||
+                   (trace_bytes[byte_index] == CTX_32BIT_IS1_PKT))
               length = 6;
-           if ((trace_bytes[byte_index] == CTX_64BIT_IS0_PKT) ||
-               (trace_bytes[byte_index] == CTX_64BIT_IS1_PKT))
+          else if ((trace_bytes[byte_index] == CTX_64BIT_IS0_PKT) ||
+                   (trace_bytes[byte_index] == CTX_64BIT_IS1_PKT))
               length = 10;
+
+          if (length == 0)
+              return TRACE_PKT_INVALID;
+
+          if (byte_index + length > trace_size)
+              return TRACE_PKT_INVALID;
 
             switch (VAL_EXTRACT_BITS(trace_bytes[byte_index + (length - 1)], 6, 7)) {
 
@@ -233,6 +251,8 @@ uint64_t parse_tracestream(uint8_t *trace_bytes, uint64_t trace_size)
         case TARGET_ADDR_SHORT_IS0_PKT:
         case TARGET_ADDR_SHORT_IS1_PKT:
             pkt_len = TRACE_SHORT_PKT_LEN;
+            if (byte_index + pkt_len > trace_size)
+                return TRACE_PKT_INVALID;
             if (!(trace_bytes[byte_index + (pkt_len - 2)] & CONTINUITY_BIT_MASK))
                             pkt_len = pkt_len - 1;
             break;
@@ -248,6 +268,8 @@ uint64_t parse_tracestream(uint8_t *trace_bytes, uint64_t trace_size)
         case Q_SHORT_ADDR_IS0_PKT:
         case Q_SHORT_ADDR_IS1_PKT:
             pkt_len = TRACE_SHORT_PKT_LEN;
+            if (byte_index + pkt_len > trace_size)
+                return TRACE_PKT_INVALID;
             if (!(trace_bytes[byte_index + (pkt_len - 2)] & CONTINUITY_BIT_MASK))
                             pkt_len = pkt_len - 1;
             pkt_len = pkt_len + trace_cbit_len(trace_bytes, byte_index, pkt_len, 5);
@@ -266,6 +288,8 @@ uint64_t parse_tracestream(uint8_t *trace_bytes, uint64_t trace_size)
         case SRC_SHORT_ADDR_IS0_PKT:
         case SRC_SHORT_ADDR_IS1_PKT:
             pkt_len = TRACE_SHORT_PKT_LEN;
+            if (byte_index + pkt_len > trace_size)
+                return TRACE_PKT_INVALID;
             if (!(trace_bytes[byte_index + (pkt_len - 2)] & CONTINUITY_BIT_MASK))
                             pkt_len = pkt_len - 1;
             break;
@@ -301,7 +325,7 @@ uint64_t parse_tracestream(uint8_t *trace_bytes, uint64_t trace_size)
                        ((header & Q_EXACT_MATCH_PKT_MASK) == Q_EXACT_MATCH_PKT_VAL))
                 pkt_len = 1 + trace_cbit_len(trace_bytes, byte_index, 1, 5);
               else {
-                  val_print_primary_pe(ACS_PRINT_DEBUG, "\n       Reserved or Invalid Trace Packet",
+                  val_print_primary_pe(DEBUG, "\n       Reserved or Invalid Trace Packet",
                                                                              0, pe_index);
                   return TRACE_PKT_INVALID;
               }
@@ -321,36 +345,43 @@ uint64_t val_ete_get_trace_timestamp(uint64_t buffer_address)
   uint32_t i = 0;
   uint64_t timestamp = 0;
   uint64_t ts_value = 0;
-  uint32_t ts_start_byte = 0, ts_continue = 0;
+  uint64_t ts_start_byte = 0;
+  uint32_t ts_continue = 0;
+  uint64_t trace_buf_size = sizeof(trace_bytes);
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
 
   val_memcpy(trace_bytes, (void *)buffer_address, 100);
-  ts_start_byte = parse_tracestream(trace_bytes, sizeof(trace_bytes));
-  if (ts_start_byte == TRACE_PKT_INVALID) {
-    val_print_primary_pe(ACS_PRINT_DEBUG, "\n      ETE Parsing failed", 0, index);
-    return 0;
-  }
+    ts_start_byte = parse_tracestream(trace_bytes, trace_buf_size);
+    if ((ts_start_byte == TRACE_PKT_INVALID) || (ts_start_byte >= trace_buf_size)) {
+        val_print_primary_pe(DEBUG, "\n      ETE Parsing failed", 0, index);
+        return 0;
+    }
 
   if ((trace_bytes[ts_start_byte] == TRACE_TIMESTAMP_V1_PKT) ||
       (trace_bytes[ts_start_byte] == TRACE_TIMESTAMP_V2_PKT)) {
-      ts_continue = 1;
-      ts_start_byte++;
-      i = 0;
-      while (ts_continue && (i < 9)) {
-        ts_value = (trace_bytes[ts_start_byte + i] & TS_VALUE_MASK);
-        timestamp = timestamp | ((ts_value << (i * 8)) >> i);
-        ts_continue = (trace_bytes[ts_start_byte + i] & CONTINUITY_BIT_MASK);
-        i++;
-      }
+        ts_continue = 1;
+        ts_start_byte++;
+        i = 0;
+        while (ts_continue && (i < 9) && ((ts_start_byte + i) < trace_buf_size)) {
+            ts_value = (trace_bytes[ts_start_byte + i] & TS_VALUE_MASK);
+            timestamp = timestamp | ((ts_value << (i * 8)) >> i);
+            ts_continue = (trace_bytes[ts_start_byte + i] & CONTINUITY_BIT_MASK);
+            i++;
+        }
+
+        if (ts_continue) {
+            val_print_primary_pe(DEBUG, "\n       Timestamp packet exceeds trace buffer", 0, index);
+            return 0;
+        }
   }
 
   if (timestamp == 0) {
-    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       Timestamp Parsing failed", 0, index);
+    val_print_primary_pe(DEBUG, "\n       Timestamp Parsing failed", 0, index);
     return 0;
   }
   else
-    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       Timestamp Value: 0x%llx", timestamp, index);
+    val_print_primary_pe(DEBUG, "\n       Timestamp Value: 0x%llx", timestamp, index);
 
   return timestamp;
 }
@@ -377,7 +408,7 @@ uint64_t val_ete_generate_trace(uint64_t buffer_addr, uint32_t self_hosted_trace
     AA64EnableETETrace();
 
     /* Read TRBPTR_EL1 before generating the trace */
-    trbptr_before = AA64ReadTrbPtrEl1();
+    trbptr_before = read_trbptr_el1();
 
     /* Generate Trace */
     AA64GenerateETETrace();
@@ -391,7 +422,7 @@ uint64_t val_ete_generate_trace(uint64_t buffer_addr, uint32_t self_hosted_trace
         AA64DisableTFO();
 
     /* Read TRBPTR_EL1 after generating the trace */
-    trbptr_after = AA64ReadTrbPtrEl1();
+    trbptr_after = read_trbptr_el1();
 
     /* If Trace is not generated or timestamp for current PE not updated */
     if (trbptr_before == trbptr_after)

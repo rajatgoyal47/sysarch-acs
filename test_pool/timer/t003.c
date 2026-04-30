@@ -36,8 +36,8 @@ payload()
   uint64_t data1;
 
   if (!timer_num) {
-      val_print(ACS_PRINT_DEBUG, "\n       No System timers are defined  ", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+      val_print(DEBUG, "\n       No System timers are defined  ");
+      val_set_status(index, RESULT_SKIP(1));
       return;
   }
 
@@ -52,16 +52,16 @@ payload()
       cnt_base_n   = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N, timer_num);
 
       if (cnt_ctl_base == 0) {
-          val_print(ACS_PRINT_DEBUG, "\n       CNTCTL BASE is zero             ", 0);
-          val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+          val_print(DEBUG, "\n       CNTCTL BASE is zero             ");
+          val_set_status(index, RESULT_SKIP(2));
           return;
       }
       //Read CNTACR to determine whether access permission from NS state is permitted
       status = val_timer_skip_if_cntbase_access_not_allowed(timer_num);
       if (status == ACS_STATUS_SKIP) {
-          val_print(ACS_PRINT_DEBUG,
-                    "\n       Security doesn't allow access to timer registers      ", 0);
-          val_set_status(index, RESULT_SKIP(TEST_NUM, 3));
+          val_print(DEBUG,
+                    "\n       Security doesn't allow access to timer registers      ");
+          val_set_status(index, RESULT_SKIP(3));
           return;
       }
 
@@ -69,55 +69,55 @@ payload()
       data = val_mmio_read(cnt_ctl_base + CNTTIDR);
       val_mmio_write(cnt_ctl_base + CNTTIDR, 0xFFFFFFFF);
       if (data != val_mmio_read(cnt_ctl_base + CNTTIDR)) {
-          val_print(ACS_PRINT_DEBUG, "\n       Read-write check failed for"
+          val_print(DEBUG, "\n       Read-write check failed for"
               " CNTCTLBase.CNTTIDR, expected value %x ", data);
-          val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+          val_set_status(index, RESULT_FAIL(1));
           return;
       }
 
       if (cnt_base_n == 0) {
-          val_print(ACS_PRINT_DEBUG, "\n       CNT_BASE_N is zero                 ", 0);
-          val_set_status(index, RESULT_SKIP(TEST_NUM, 4));
+          val_print(DEBUG, "\n       CNT_BASE_N is zero                 ");
+          val_set_status(index, RESULT_SKIP(4));
           return;
       }
 
       // Read CNTPCT register
       data1 = val_mmio_read64(cnt_base_n + CNTPCT_LOWER);
-      val_print(ACS_PRINT_DEBUG, "\n       CNTPCT Read value = 0x%llx       ", data1);
+      val_print(DEBUG, "\n       CNTPCT Read value = 0x%llx       ", data1);
 
       // Writes to Read-Only registers must be ignored
       val_mmio_write64(cnt_base_n + CNTPCT_LOWER, (data1 - ARBIT_VALUE));
 
       if (val_mmio_read64(cnt_base_n + CNTPCT_LOWER) < data1) {
-          val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
-          val_print(ACS_PRINT_DEBUG, "\n       CNTBaseN: CNTPCT reg must be read-only ", 0);
+          val_print(DEBUG, "\n       CNTBaseN: CNTPCT reg must be read-only ");
+          val_set_status(index, RESULT_FAIL(2));
           return;
       }
 
       // Read CNTVCT register
       data1 = val_mmio_read64(cnt_base_n + CNTVCT_LOWER);
-      val_print(ACS_PRINT_DEBUG, "\n       CNTVCT Read value = 0x%llx       ", data1);
+      val_print(DEBUG, "\n       CNTVCT Read value = 0x%llx       ", data1);
 
       // Writes to Read-Only registers must be ignored
       val_mmio_write64(cnt_base_n + CNTVCT_LOWER, (data1 - ARBIT_VALUE));
 
       if (val_mmio_read64(cnt_base_n + CNTVCT_LOWER) < data1) {
-          val_set_status(index, RESULT_FAIL(TEST_NUM, 3));
-          val_print(ACS_PRINT_DEBUG, "\n       CNTBaseN: CNTVCT reg must be read-only ", 0);
+          val_print(DEBUG, "\n       CNTBaseN: CNTVCT reg must be read-only ");
+          val_set_status(index, RESULT_FAIL(3));
           return;
       }
 
       // Read CNTFRQ register
       data = val_mmio_read(cnt_base_n + CNTBaseN_CNTFRQ);
-      val_print(ACS_PRINT_DEBUG, "\n       CNTFRQ Read value = 0x%x         ",
+      val_print(DEBUG, "\n       CNTFRQ Read value = 0x%x         ",
                                                                         data);
 
       // Writes to Read-Only registers must be ignored
       val_mmio_write(cnt_base_n + CNTBaseN_CNTFRQ, (data - ARBIT_VALUE));
 
       if (val_mmio_read(cnt_base_n + CNTBaseN_CNTFRQ) != data) {
-          val_set_status(index, RESULT_FAIL(TEST_NUM, 4));
-          val_print(ACS_PRINT_DEBUG, "\n       CNTBaseN: CNTFRQ reg must be read-only ", 0);
+          val_print(DEBUG, "\n       CNTBaseN: CNTFRQ reg must be read-only ");
+          val_set_status(index, RESULT_FAIL(4));
           return;
       }
 
@@ -125,11 +125,11 @@ payload()
       data = 0x3;
       val_mmio_write(cnt_base_n + CNTP_CTL, data);
       if (data != (val_mmio_read(cnt_base_n + CNTP_CTL) & 0x3)) {
-          val_print(ACS_PRINT_ERR, "\n       Read-write check failed for "
+          val_print(ERROR, "\n       Read-write check failed for "
               "CNTBaseN.CNTP_CTL, expected value %x ", data);
-          val_print(ACS_PRINT_DEBUG, "\n       Read value %x ",
+          val_print(DEBUG, "\n       Read value %x ",
                     val_mmio_read(cnt_base_n + CNTP_CTL));
-          val_set_status(index, RESULT_FAIL(TEST_NUM, 5));
+          val_set_status(index, RESULT_FAIL(5));
           val_mmio_write(cnt_base_n + CNTP_CTL, 0x0); // Disable the timer before return
           return;
       }
@@ -142,27 +142,27 @@ payload()
       val_mmio_write(cnt_base_n + CNTP_CVAL_HIGHER, data);
 
       if (data != val_mmio_read(cnt_base_n + CNTP_CVAL_LOWER)) {
-          val_print(ACS_PRINT_DEBUG, "\n       Read-write check failed for "
+          val_print(DEBUG, "\n       Read-write check failed for "
               "CNTBaseN.CNTP_CVAL[31:0], read value %x ",
               val_mmio_read(cnt_base_n + CNTP_CVAL_LOWER));
-          val_set_status(index, RESULT_FAIL(TEST_NUM, 6));
+          val_set_status(index, RESULT_FAIL(6));
           return;
       }
 
       if (data != val_mmio_read(cnt_base_n + CNTP_CVAL_HIGHER)) {
-          val_print(ACS_PRINT_DEBUG, "\n       Read-write check failed for"
+          val_print(DEBUG, "\n       Read-write check failed for"
               " CNTBaseN.CNTP_CVAL[63:32], read value %x ",
               val_mmio_read(cnt_base_n + CNTP_CVAL_HIGHER));
-          val_set_status(index, RESULT_FAIL(TEST_NUM, 7));
+          val_set_status(index, RESULT_FAIL(7));
           return;
       }
 
-      val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(index, RESULT_PASS);
   }
 
   if (!ns_timer) {
-      val_print(ACS_PRINT_DEBUG, "\n       No non-secure systimer implemented", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 5));
+      val_print(DEBUG, "\n       No non-secure systimer implemented");
+      val_set_status(index, RESULT_SKIP(5));
       return;
   }
 

@@ -465,6 +465,14 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .flag             = BASE_RULE,
             .test_num         = ACS_PE_TEST_NUM_BASE  +  48,
         },
+        [S_L6PE_08] = {
+            .test_entry_id    = PE037_ENTRY,
+            .module_id        = PE,
+            .rule_desc        = "Check SPE if implemented",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_PE_TEST_NUM_BASE  +  37,
+        },
         [S_L7PE_02] = {
             .test_entry_id    = PE049_ENTRY,
             .module_id        = PE,
@@ -505,20 +513,6 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .flag             = BASE_RULE,
             .test_num         = ACS_PE_TEST_NUM_BASE + 54,
         },
-        // [S_L7PE_08] = {
-        //     .test_entry_id    = CO35_ENTRY,
-        //     .module_id        = PE,
-        //     .rule_desc        = "Check for data gathering hint",
-        //     .platform_bitmask = 0,
-        //     .flag             = BASE_RULE,
-        // },
-        // [S_L7PE_09] = {
-        //     .test_entry_id    = CO36_ENTRY,
-        //     .module_id        = PE,
-        //     .rule_desc        = "Check WFE Fine tune delay feature",
-        //     .platform_bitmask = 0,
-        //     .flag             = BASE_RULE,
-        // },
         [S_L8PE_01] = {
             .test_entry_id    = PE058_ENTRY,
             .module_id        = PE,
@@ -698,7 +692,7 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
         [S_L5GI_01] = {
             .test_entry_id    = G016_ENTRY,
             .module_id        = GIC,
-            .rule_desc        = "Check Non GIC Interrupts",
+            .rule_desc        = "Check Non standard GICv3 implmentation",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_GIC_TEST_NUM_BASE + 16,
@@ -1331,6 +1325,13 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .flag             = BASE_RULE,
             .test_num         = ACS_SMMU_TEST_NUM_BASE + 12,
         },
+        [S_L5SM_04] = {
+            .test_entry_id    = NULL_ENTRY,
+            .module_id        = SMMU,
+            .rule_desc        = "S-EL2 & SMMU Stage1 and Stage2 support",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = ALIAS_RULE,
+        },
         [S_L6SM_02] = {
             .test_entry_id    = I013_ENTRY,
             .module_id        = SMMU,
@@ -1346,6 +1347,13 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_SMMU_TEST_NUM_BASE + 14,
+        },
+        [S_L6SM_04] = {
+            .test_entry_id    = NULL_ENTRY,
+            .module_id        = SMMU,
+            .rule_desc        = "Check SMMU large VA/TLB/DVM ASID VMID",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = ALIAS_RULE,
         },
         [S_L7SM_01] = {
             .test_entry_id    = I022_ENTRY,
@@ -1523,10 +1531,31 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI | PLATFORM_LINUX,
             .flag             = ALIAS_RULE,
         },
+        [JKZMT] = {
+            .test_entry_id    = NULL_ENTRY,
+            .module_id        = PCIE,
+            .rule_desc        = "Check RCiEP and RCEC PCIe requirements",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI | PLATFORM_LINUX,
+            .flag             = ALIAS_RULE,
+        },
         [B_IEP_1] = {
             .test_entry_id    = NULL_ENTRY,
             .module_id        = PCIE,
             .rule_desc        = "Check i-EP Devices",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI | PLATFORM_LINUX,
+            .flag             = ALIAS_RULE,
+        },
+        [HVZJY] = {
+            .test_entry_id    = NULL_ENTRY,
+            .module_id        = PCIE,
+            .rule_desc        = "Check i-EP PCIe requirements",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI | PLATFORM_LINUX,
+            .flag             = ALIAS_RULE,
+        },
+        [IE_CFG_3] = {
+            .test_entry_id    = NULL_ENTRY,
+            .module_id        = PCIE,
+            .rule_desc        = "Check i-EP configuration space requirements",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI | PLATFORM_LINUX,
             .flag             = ALIAS_RULE,
         },
@@ -2259,13 +2288,6 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .flag             = BASE_RULE,
             .test_num         = ACS_MPAM_TEST_NUM_BASE + 3,
         },
-        // [S_L7MP_07] = {
-        //     .test_entry_id    = mpam004_entry,
-        //     .module_id        = MPAM,
-        //     .rule_desc        = "Check for MBWU counter size",
-        //     .platform_bitmask = 0,
-        //     .flag             = BASE_RULE,
-        // },
         [S_L7MP_08] = {
             .test_entry_id    = MPAM005_ENTRY,
             .module_id        = MPAM,
@@ -2993,6 +3015,421 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_CXL_TEST_NUM_BASE  +  13,
+        },
+        /* Module-only placeholders for uncovered rules. */
+        [B_PE_05] = {
+            .module_id        = PE,
+        },
+        [B_PE_16] = {
+            .module_id        = PE,
+        },
+        [S_L5PE_03] = {
+            .module_id        = PE,
+        },
+        [S_L6PE_07] = {
+            .module_id        = PE,
+        },
+        [S_L8PE_08] = {
+            .module_id        = PE,
+        },
+        [B_PER_04] = {
+            .module_id        = PERIPHERAL,
+        },
+        [B_PER_07] = {
+            .module_id        = PERIPHERAL,
+        },
+        [B_PER_11] = {
+            .module_id        = PERIPHERAL,
+        },
+        [B_MEM_07] = {
+            .module_id        = MEM_MAP,
+        },
+        [B_MEM_08] = {
+            .module_id        = MEM_MAP,
+        },
+        [B_MEM_09] = {
+            .module_id        = MEM_MAP,
+        },
+        [PMU_EV_01] = {
+            .module_id        = PMU,
+        },
+        [PMU_EV_02] = {
+            .module_id        = PMU,
+        },
+        [PMU_EV_03] = {
+            .module_id        = PMU,
+        },
+        [PMU_EV_04] = {
+            .module_id        = PMU,
+        },
+        [PMU_EV_05] = {
+            .module_id        = PMU,
+        },
+        [PMU_EV_06] = {
+            .module_id        = PMU,
+        },
+        [PMU_EV_07] = {
+            .module_id        = PMU,
+        },
+        [PMU_EV_08] = {
+            .module_id        = PMU,
+        },
+        [PMU_EV_09] = {
+            .module_id        = PMU,
+        },
+        [PMU_EV_10] = {
+            .module_id        = PMU,
+        },
+        [PMU_BM_3] = {
+            .module_id        = PMU,
+        },
+        [PMU_BM_4] = {
+            .module_id        = PMU,
+        },
+        [PMU_SYS_7] = {
+            .module_id        = PMU,
+        },
+        [PMU_SEC_1] = {
+            .module_id        = PMU,
+        },
+        [RAS_05] = {
+            .module_id        = RAS,
+        },
+        [RAS_10] = {
+            .module_id        = RAS,
+        },
+        [RAS_12] = {
+            .module_id        = RAS,
+        },
+        [S_RAS_03] = {
+            .module_id        = RAS,
+        },
+        [S_L7RAS_2] = {
+            .module_id        = RAS,
+        },
+        [B_SMMU_07] = {
+            .module_id        = SMMU,
+        },
+        [B_SMMU_12] = {
+            .module_id        = SMMU,
+        },
+        [B_SMMU_17] = {
+            .module_id        = SMMU,
+        },
+        [B_SMMU_24] = {
+            .module_id        = SMMU,
+        },
+        [B_SMMU_25] = {
+            .module_id        = SMMU,
+        },
+        [SMMU_02] = {
+            .module_id        = SMMU,
+        },
+        [S_L3SM_01] = {
+            .module_id        = SMMU,
+        },
+        [P_L1SM_01] = {
+            .module_id        = SMMU,
+        },
+        [B_TIME_03] = {
+            .module_id        = TIMER,
+        },
+        [B_TIME_04] = {
+            .module_id        = TIMER,
+        },
+        [B_TIME_05] = {
+            .module_id        = TIMER,
+        },
+        [B_TIME_10] = {
+            .module_id        = TIMER,
+        },
+        [S_L5TI_01] = {
+            .module_id        = TIMER,
+        },
+        [B_WD_04] = {
+            .module_id        = WATCHDOG,
+        },
+        [B_WD_05] = {
+            .module_id        = WATCHDOG,
+        },
+        [ETE_01] = {
+            .module_id        = ETE,
+        },
+        [B_WAK_01] = {
+            .module_id        = POWER_WAKEUP,
+        },
+        [B_WAK_02] = {
+            .module_id        = POWER_WAKEUP,
+        },
+        [B_WAK_04] = {
+            .module_id        = POWER_WAKEUP,
+        },
+        [B_WAK_05] = {
+            .module_id        = POWER_WAKEUP,
+        },
+        [B_WAK_06] = {
+            .module_id        = POWER_WAKEUP,
+        },
+        [B_WAK_08] = {
+            .module_id        = POWER_WAKEUP,
+        },
+        [B_WAK_10] = {
+            .module_id        = POWER_WAKEUP,
+        },
+        [B_WAK_11] = {
+            .module_id        = POWER_WAKEUP,
+        },
+        [P_L1NV_01] = {
+            .module_id        = NV_STORE,
+        },
+        [P_L1SE_01] = {
+            .module_id        = SECURITY,
+        },
+        [P_L1SE_02] = {
+            .module_id        = SECURITY,
+        },
+        [P_L1SE_03] = {
+            .module_id        = SECURITY,
+        },
+        [P_L1SE_04] = {
+            .module_id        = SECURITY,
+        },
+        [P_L1SE_05] = {
+            .module_id        = SECURITY,
+        },
+        [P_L1TP_02] = {
+            .module_id        = TPM,
+        },
+        [P_L1TP_04] = {
+            .module_id        = TPM,
+        },
+        [IE_BAR_1] = {
+            .module_id        = PCIE,
+        },
+        [IE_BAR_3] = {
+            .module_id        = PCIE,
+        },
+        [IE_PWR_2] = {
+            .module_id        = PCIE,
+        },
+        [IE_PWR_3] = {
+            .module_id        = PCIE,
+        },
+        [IE_RST_3] = {
+            .module_id        = PCIE,
+        },
+        [IE_CFG_1] = {
+            .module_id        = PCIE,
+        },
+        [IE_CFG_2] = {
+            .module_id        = PCIE,
+        },
+        [IE_CFG_4] = {
+            .module_id        = PCIE,
+        },
+        [ITS_06] = {
+            .module_id        = PCIE,
+        },
+        [ITS_07] = {
+            .module_id        = PCIE,
+        },
+        [ITS_08] = {
+            .module_id        = PCIE,
+        },
+        [ITS_DEV_1] = {
+            .module_id        = PCIE,
+        },
+        [ITS_DEV_3] = {
+            .module_id        = PCIE,
+        },
+        [ITS_DEV_5] = {
+            .module_id        = PCIE,
+        },
+        [ITS_DEV_9] = {
+            .module_id        = PCIE,
+        },
+        [PCI_IC_12] = {
+            .module_id        = PCIE,
+        },
+        [PCI_IC_13] = {
+            .module_id        = PCIE,
+        },
+        [PCI_IC_14] = {
+            .module_id        = PCIE,
+        },
+        [PCI_IC_16] = {
+            .module_id        = PCIE,
+        },
+        [PCI_IC_17] = {
+            .module_id        = PCIE,
+        },
+        [PCI_IC_18] = {
+            .module_id        = PCIE,
+        },
+        [PCI_IN_06] = {
+            .module_id        = PCIE,
+        },
+        [PCI_IN_07] = {
+            .module_id        = PCIE,
+        },
+        [PCI_IN_08] = {
+            .module_id        = PCIE,
+        },
+        [PCI_IN_09] = {
+            .module_id        = PCIE,
+        },
+        [PCI_IN_10] = {
+            .module_id        = PCIE,
+        },
+        [PCI_IN_14] = {
+            .module_id        = PCIE,
+        },
+        [PCI_IN_15] = {
+            .module_id        = PCIE,
+        },
+        [PCI_LI_04] = {
+            .module_id        = PCIE,
+        },
+        [PCI_MM_02] = {
+            .module_id        = PCIE,
+        },
+        [PCI_MM_06] = {
+            .module_id        = PCIE,
+        },
+        [PCI_PTM_1] = {
+            .module_id        = PCIE,
+        },
+        [PCI_IO_01] = {
+            .module_id        = PCIE,
+        },
+        [PCI_IEP_1] = {
+            .module_id        = PCIE,
+        },
+        [PCI_PP_01] = {
+            .module_id        = PCIE,
+        },
+        [PCI_SM_01] = {
+            .module_id        = PCIE,
+        },
+        [RE_ACS_3] = {
+            .module_id        = PCIE,
+        },
+        [RE_BAR_1] = {
+            .module_id        = PCIE,
+        },
+        [RE_BAR_3] = {
+            .module_id        = PCIE,
+        },
+        [RE_CFG_1] = {
+            .module_id        = PCIE,
+        },
+        [RE_CFG_2] = {
+            .module_id        = PCIE,
+        },
+        [RE_CFG_3] = {
+            .module_id        = PCIE,
+        },
+        [RE_PWR_2] = {
+            .module_id        = PCIE,
+        },
+        [RE_PWR_3] = {
+            .module_id        = PCIE,
+        },
+        [RE_REC_2] = {
+            .module_id        = PCIE,
+        },
+        [RI_SMU_2] = {
+            .module_id        = PCIE,
+        },
+        [RI_SMU_4] = {
+            .module_id        = PCIE,
+        },
+        [RI_CRS_1] = {
+            .module_id        = PCIE,
+        },
+        [RI_BAR_2] = {
+            .module_id        = PCIE,
+        },
+        [RI_ORD_2] = {
+            .module_id        = PCIE,
+        },
+        [RI_ORD_3] = {
+            .module_id        = PCIE,
+        },
+        [S_L4PCI_1] = {
+            .module_id        = PCIE,
+        },
+        [S_PCIe_01] = {
+            .module_id        = PCIE,
+        },
+        [S_PCIe_05] = {
+            .module_id        = PCIE,
+        },
+        [S_PCIe_06] = {
+            .module_id        = PCIE,
+        },
+        [S_PCIe_09] = {
+            .module_id        = PCIE,
+        },
+        [S_L8RME_1] = {
+            .module_id        = RME,
+        },
+        [P_L1PCI_1] = {
+            .module_id        = PCIE,
+        },
+        [CXL_08] = {
+            .module_id        = CXL,
+        },
+        [S_L7TME_1] = {
+            .module_id        = TME,
+        },
+        [S_L7TME_2] = {
+            .module_id        = TME,
+        },
+        [S_L7TME_3] = {
+            .module_id        = TME,
+        },
+        [S_L7TME_4] = {
+            .module_id        = TME,
+        },
+        [S_L7TME_5] = {
+            .module_id        = TME,
+        },
+        [GPU_01] = {
+            .module_id        = GPU,
+        },
+        [GPU_02] = {
+            .module_id        = GPU,
+        },
+        [V_L1SM_03] = {
+            .module_id        = SMMU,
+        },
+        [V_L1TM_03] = {
+            .module_id        = TIMER,
+        },
+        [V_L1WK_01] = {
+            .module_id        = POWER_WAKEUP,
+        },
+        [V_L1WK_03] = {
+            .module_id        = POWER_WAKEUP,
+        },
+        [V_L1WK_04] = {
+            .module_id        = POWER_WAKEUP,
+        },
+        [V_L1WK_06] = {
+            .module_id        = POWER_WAKEUP,
+        },
+        [V_L1WK_07] = {
+            .module_id        = POWER_WAKEUP,
+        },
+        [V_L1WK_08] = {
+            .module_id        = POWER_WAKEUP,
+        },
+        [V_L1WK_09] = {
+            .module_id        = POWER_WAKEUP,
+        },
+        [V_L2WD_01] = {
+            .module_id        = WATCHDOG,
         },
     };
 
@@ -4032,6 +4469,42 @@ RULE_ID_e bsa_l1_rule_list[] = {
 /* B_WD_00 */
 RULE_ID_e b_wd_00_rule_list[]     = {B_WD_01, B_WD_02, B_WD_03, B_WD_04, B_WD_05,
                                      RULE_ID_SENTINEL};
+/* JKZMT */
+RULE_ID_e jkzmt_rule_list[] = {
+    /* BSA Section E */
+    /* E.1 - Configuration Space */
+    /* VGLFZ excludes these RCiEP/RCEC rules: PCI_IN_04, PCI_IN_05, PCI_IN_06, */
+    /* PCI_IN_08, PCI_IN_09, PCI_IN_10, PCI_IN_11, PCI_IN_12, PCI_IN_13, */
+    /* PCI_IN_17, PCI_IN_18, PCI_IN_19 */
+    PCI_IN_01, PCI_IN_02, PCI_IN_03, PCI_IN_07,
+    PCI_IN_14, PCI_IN_15, PCI_IN_16, PCI_IN_20,
+    /* E.2 - PCIe Memory Space */
+    PCI_MM_01, PCI_MM_02, PCI_MM_03, PCI_MM_04,
+    /* E.3 - PCIe Device View of Memory */
+    PCI_MM_05, PCI_MM_06, PCI_MM_07,
+    /* E.4 - Message Signaled Interrupts */
+    PCI_MSI_1, PCI_MSI_2,
+    /* E.6 - Legacy Interrupts */
+    PCI_LI_01, PCI_LI_02, PCI_LI_03, PCI_LI_04,
+    /* E.7 - System MMU and Device Assignment */
+    PCI_SM_01, PCI_SM_02,
+    /* E.8 - I/O Coherency */
+    PCI_IC_11, PCI_IC_12, PCI_IC_13, PCI_IC_14,
+    PCI_IC_15, PCI_IC_16, PCI_IC_17, PCI_IC_18,
+    /* E.9 - Legacy I/O */
+    PCI_IO_01,
+    /* E.10 - Integrated End Points */
+    PCI_IEP_1,
+    /* E.11 - Peer-to-Peer */
+    PCI_PP_01, PCI_PP_02, PCI_PP_03,
+    PCI_PP_04, PCI_PP_05,
+    /* E.12 - PASID Support */
+    PCI_PAS_1,
+    /* E.13 - PCIe Precision Time Measurement */
+    PCI_PTM_1,
+
+    RULE_ID_SENTINEL
+};
 /* B_REP_1 */
 RULE_ID_e b_rep_1_rule_list[] = {
 /* BSA Section F.1 - Rules Common for RCiEP and I-EP */
@@ -4051,11 +4524,11 @@ RULE_ID_e b_rep_1_rule_list[] = {
 /* BSA Section F.2 - RCiEP */
     /* JKZMT, refers BSA Section E */
         /* E.1 - Configuration Space */
-        PCI_IN_01, PCI_IN_02, PCI_IN_03, PCI_IN_04,
-        PCI_IN_05, PCI_IN_06, PCI_IN_07, PCI_IN_08,
-        PCI_IN_09, PCI_IN_10, PCI_IN_11, PCI_IN_12,
-        PCI_IN_13, PCI_IN_14, PCI_IN_15, PCI_IN_16,
-        PCI_IN_17, PCI_IN_18, PCI_IN_19, PCI_IN_20,
+        /* VGLFZ excludes these RCiEP/RCEC rules: PCI_IN_04, PCI_IN_05, */
+        /* PCI_IN_06, PCI_IN_08, PCI_IN_09, PCI_IN_10, PCI_IN_11, */
+        /* PCI_IN_12, PCI_IN_13, PCI_IN_17, PCI_IN_18, PCI_IN_19 */
+        PCI_IN_01, PCI_IN_02, PCI_IN_03, PCI_IN_07,
+        PCI_IN_14, PCI_IN_15, PCI_IN_16, PCI_IN_20,
         /* E.2 - PCIe Memory Space */
         PCI_MM_01, PCI_MM_02, PCI_MM_03, PCI_MM_04,
         /* E.3 - PCIe Device View of Memory */
@@ -4089,6 +4562,53 @@ RULE_ID_e b_rep_1_rule_list[] = {
 /* BSA Section G.1 - RCiEP Capabilities and Registers */
     RE_REG_1, RE_REG_2, RE_REG_3,
     RE_REC_1, RE_REC_2,
+
+    RULE_ID_SENTINEL
+};
+/* HVZJY */
+RULE_ID_e hvzjy_rule_list[] = {
+    /* BSA Section E */
+    /* E.1 - Configuration Space */
+    PCI_IN_01, PCI_IN_02, PCI_IN_03, PCI_IN_04,
+    PCI_IN_05, PCI_IN_06, PCI_IN_07, PCI_IN_08,
+    PCI_IN_09, PCI_IN_10, PCI_IN_11, PCI_IN_12,
+    PCI_IN_13, PCI_IN_14, PCI_IN_15, PCI_IN_16,
+    PCI_IN_17, PCI_IN_18, PCI_IN_19, PCI_IN_20,
+    /* E.2 - PCIe Memory Space */
+    PCI_MM_01, PCI_MM_02, PCI_MM_03, PCI_MM_04,
+    /* E.3 - PCIe Device View of Memory */
+    PCI_MM_05, PCI_MM_06, PCI_MM_07,
+    /* E.4 - Message Signaled Interrupts */
+    PCI_MSI_1, PCI_MSI_2,
+    /* E.6 - Legacy Interrupts */
+    PCI_LI_01, PCI_LI_02, PCI_LI_03, PCI_LI_04,
+    /* E.7 - System MMU and Device Assignment */
+    PCI_SM_01, PCI_SM_02,
+    /* E.8 - I/O Coherency */
+    PCI_IC_11, PCI_IC_12, PCI_IC_13, PCI_IC_14,
+    PCI_IC_15, PCI_IC_16, PCI_IC_17, PCI_IC_18,
+    /* E.9 - Legacy I/O */
+    PCI_IO_01,
+    /* E.10 - Integrated End Points */
+    PCI_IEP_1,
+    /* E.11 - Peer-to-Peer */
+    PCI_PP_01, PCI_PP_02, PCI_PP_03,
+    PCI_PP_04, PCI_PP_05,
+    /* E.12 - PASID Support */
+    PCI_PAS_1,
+    /* E.13 - PCIe Precision Time Measurement */
+    PCI_PTM_1,
+
+    RULE_ID_SENTINEL
+};
+/* IE_CFG_3 */
+RULE_ID_e ie_cfg_3_rule_list[] = {
+    /* E.1 - Configuration Space */
+    PCI_IN_01, PCI_IN_02, PCI_IN_03, PCI_IN_04,
+    PCI_IN_05, PCI_IN_06, PCI_IN_07, PCI_IN_08,
+    PCI_IN_09, PCI_IN_10, PCI_IN_11, PCI_IN_12,
+    PCI_IN_13, PCI_IN_14, PCI_IN_15, PCI_IN_16,
+    PCI_IN_17, PCI_IN_18, PCI_IN_19, PCI_IN_20,
 
     RULE_ID_SENTINEL
 };
@@ -4141,7 +4661,7 @@ RULE_ID_e b_iep_1_rule_list[] = {
         /* E.13 - PCIe Precision Time Measurement */
         PCI_PTM_1,
     IE_CFG_1, IE_CFG_2,
-    /* IE_CFG_3, covered by HVZJY */
+    /* IE_CFG_3, covered by  (E.1 - Configuration Space) refered by HVZJY for B_IEP_1 */
     IE_CFG_4,
     IE_ORD_4,
     IE_RST_2, IE_RST_3,
@@ -4221,11 +4741,11 @@ RULE_ID_e s_l6pci_1_rule_list[] = {
         /* BSA Section F.2 - RCiEP */
         /* JKZMT, refers BSA Section E */
             /* E.1 - Configuration Space */
-            PCI_IN_01, PCI_IN_02, PCI_IN_03, PCI_IN_04,
-            PCI_IN_05, PCI_IN_06, PCI_IN_07, PCI_IN_08,
-            PCI_IN_09, PCI_IN_10, PCI_IN_11, PCI_IN_12,
-            PCI_IN_13, PCI_IN_14, PCI_IN_15, PCI_IN_16,
-            PCI_IN_17, PCI_IN_18, PCI_IN_19, PCI_IN_20,
+            /* VGLFZ excludes these RCiEP/RCEC rules: PCI_IN_04, PCI_IN_05, */
+            /* PCI_IN_06, PCI_IN_08, PCI_IN_09, PCI_IN_10, PCI_IN_11, */
+            /* PCI_IN_12, PCI_IN_13, PCI_IN_17, PCI_IN_18, PCI_IN_19 */
+            PCI_IN_01, PCI_IN_02, PCI_IN_03, PCI_IN_07,
+            PCI_IN_14, PCI_IN_15, PCI_IN_16, PCI_IN_20,
             /* E.2 - PCIe Memory Space */
             PCI_MM_01, PCI_MM_02, PCI_MM_03, PCI_MM_04,
             /* E.3 - PCIe Device View of Memory */
@@ -4265,8 +4785,13 @@ RULE_ID_e s_l6pci_1_rule_list[] = {
 
         /* BSA Section  F.3 - I-EP */
         /* HVZJY, refers BSA Section E, but covered by JKZMT for S_L6PCI_1, omitting */
+        /* VGLFZ excludes these RCiEP/RCEC rules as part of JKZMT but required under
+           HVZJY adding those excluded rules back */
+        PCI_IN_04, PCI_IN_05, PCI_IN_06, PCI_IN_08,
+        PCI_IN_09, PCI_IN_10, PCI_IN_11, PCI_IN_12,
+        PCI_IN_13, PCI_IN_17, PCI_IN_18, PCI_IN_19,
         IE_CFG_1, IE_CFG_2,
-        /* IE_CFG_3, covered by HVZJY */
+        /* IE_CFG_3, covered by (E.1 - Configuration Space) refered by JKZMT for S_L6PCI_1 */
         IE_CFG_4,
         IE_ORD_4,
         IE_RST_2, IE_RST_3,
@@ -4324,14 +4849,21 @@ RULE_ID_e s_l8cxl_rule_list[] = {
     CXL_04,
     CXL_05,
     CXL_06,
+    CXL_08,
     CXL_09,
     CXL_10,
     CXL_11,
     CXL_12,
     CXL_13,
-
     RULE_ID_SENTINEL
 };
+
+/* S_L5SM_04 */
+RULE_ID_e s_l5sm_04_rule_list[]   = {B_SMMU_09, B_SMMU_20, RULE_ID_SENTINEL};
+
+/* S_L6SM_04 */
+RULE_ID_e s_l6sm_04_rule_list[]   = {B_SMMU_03, B_SMMU_04, B_SMMU_05, B_SMMU_13,
+                                     B_SMMU_14, B_SMMU_23, RULE_ID_SENTINEL};
 
 /* PCBSA alias lists */
 /* P_L2WD_01 */
@@ -4403,12 +4935,14 @@ RULE_ID_e v_l1pr_02_rule_list[]   = {
 
                                      RULE_ID_SENTINEL};
 
-// TODO update all alias rules in xbsa specs
 const alias_rule_map_t alias_rule_map[] = {
     /* BSA alias rules */
     {B_WD_00,   b_wd_00_rule_list},
     {B_PER_08,  b_per_08_rule_list},
+    {JKZMT,     jkzmt_rule_list},
     {B_REP_1,   b_rep_1_rule_list},
+    {HVZJY,     hvzjy_rule_list},
+    {IE_CFG_3,  ie_cfg_3_rule_list},
     {B_IEP_1,   b_iep_1_rule_list},
     {B_SMMU_21, b_smmu_21_rule_list},
 
@@ -4425,6 +4959,8 @@ const alias_rule_map_t alias_rule_map[] = {
     {LVQBC,     lvqbc_rule_list},
     {S_L8CXL_1, s_l8cxl_rule_list},
     {XDGKZ,     xdgkz_rule_list},
+    {S_L5SM_04, s_l5sm_04_rule_list},
+    {S_L6SM_04, s_l6sm_04_rule_list},
 
     /* PCBSA alias rules */
     {P_L1_01,   bsa_l1_rule_list},

@@ -31,33 +31,33 @@ payload()
 
   status = val_iovirt_get_its_info(ITS_NUM_GROUPS, 0, 0, &num_group);
   if (status) {
-      val_print(ACS_PRINT_ERR, "\n       ITS get group number failed          ", 0);
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+      val_print(ERROR, "\n       ITS get group number failed          ");
+      val_set_status(index, RESULT_FAIL(1));
       return;
   }
 
   if (!num_group) {
-      val_print(ACS_PRINT_DEBUG, "\n       No ITS group found            ", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+      val_print(DEBUG, "\n       No ITS group found            ");
+      val_set_status(index, RESULT_SKIP(1));
       return;
   }
-  val_print(ACS_PRINT_DEBUG, "\n       Number of ITS groups = %d", num_group);
+  val_print(DEBUG, "\n       Number of ITS groups = %d", num_group);
   for (i = 0; i < num_group; i++) {
       status = val_iovirt_get_its_info(ITS_GROUP_NUM_BLOCKS, i, 0, &num_blocks);
       if (status) {
-          val_print(ACS_PRINT_ERR, "\n       ITS get number of blocks failed        ", 0);
-          val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+          val_print(ERROR, "\n       ITS get number of blocks failed        ");
           return;
       }
       if (!num_blocks) {
-          val_print(ACS_PRINT_ERR, "\n       No valid ITS Blocks found in group %d  ", i);
-          val_set_status(index, RESULT_FAIL(TEST_NUM, 3));
+          val_print(ERROR, "\n       No valid ITS Blocks found in group %d  ", i);
+          val_set_status(index, RESULT_FAIL(2));
+          val_set_status(index, RESULT_FAIL(3));
           return;
       }
-      val_print(ACS_PRINT_DEBUG, "\n       Number of ITS Blocks = %d        "
+      val_print(DEBUG, "\n       Number of ITS Blocks = %d        "
                                             "      ", num_blocks);
   }
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

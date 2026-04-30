@@ -34,18 +34,18 @@ static void payload(void)
     int_id = val_pe_get_gicc_trbe_interrupt(index);
 
     if (int_id == 1) {
-      val_print_primary_pe(ACS_PRINT_DEBUG,
+      val_print_primary_pe(DEBUG,
                     "\n       GICC TRBE interrupt field needs at least 6.5 ACPI table", 0, index);
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+      val_set_status(index, RESULT_FAIL(01));
       return;
     }
 
-    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       GICC TRBE INTERRUPT GISV = %d", int_id,
+    val_print_primary_pe(DEBUG, "\n       GICC TRBE INTERRUPT GISV = %d", int_id,
                                                                                        index);
     if (val_gic_is_valid_ppi(int_id))
-        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+        val_set_status(index, RESULT_PASS);
     else
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
+        val_set_status(index, RESULT_FAIL(02));
 
 }
 

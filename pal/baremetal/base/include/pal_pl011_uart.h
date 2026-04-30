@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2023-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,7 @@
  * limitations under the License.
 **/
 
-#include <stdint.h>
+#include "acs_stdint.h"
 #include "platform_override_fvp.h"
 
 #ifndef _PAL_UART_PL011_H_
@@ -69,7 +69,6 @@ typedef struct {
 
 /* function prototypes */
 extern void pal_driver_uart_pl011_putc(int c);
-
-#define pal_uart_putc(x) pal_driver_uart_pl011_putc(x)
+void pal_uart_putc(char c);
 
 #endif /* _PAL_UART_PL011_H_ */

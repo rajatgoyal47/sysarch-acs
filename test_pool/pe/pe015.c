@@ -37,9 +37,9 @@ payload()
 
   /* Must support LSE as indicated by ID_AA64ISAR0_EL1.Atomic = 0b0010 or 0b0011 */
   if ((data == 0x2) || (data == 0x3))
-      val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(index, RESULT_PASS);
   else
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+      val_set_status(index, RESULT_FAIL(1));
 
   return;
 

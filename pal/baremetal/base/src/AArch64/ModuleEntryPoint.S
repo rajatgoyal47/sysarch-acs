@@ -17,11 +17,11 @@
 #**/
 
 #include "gcc_types.h"
+#include "pal_sysreg.h"
 
 .text
 .align 3
 
-GCC_ASM_IMPORT(ArmReadMpidr)
 GCC_ASM_IMPORT(PalGetSecondaryStackBase)
 GCC_ASM_IMPORT(PalGetMaxMpidr)
 GCC_ASM_IMPORT(PalGetMmuConfigAddr)
@@ -124,7 +124,7 @@ _MmuEnabled:
   //
 
   // Get ID of this CPU in Multicore system
-  bl    ASM_PFX(ArmReadMpidr)
+  READ_MPIDR_EL1(x0)
   // Keep a copy of the MpId register value
   mov   x10, x0
 

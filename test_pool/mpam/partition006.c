@@ -89,16 +89,16 @@ payload(void)
 
     /* Check if LLC is valid */
     if (llc_index == CACHE_TABLE_EMPTY) {
-        val_print(ACS_PRINT_DEBUG, "\n       No LLC found, skipping test", 0);
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+        val_print(DEBUG, "\n       No LLC found, skipping test");
+        val_set_status(index, RESULT_SKIP(1));
         return;
     }
 
     /* Get the LLC Cache ID */
     cache_identifier = val_cache_get_info(CACHE_ID, llc_index);
     if (cache_identifier == INVALID_CACHE_INFO) {
-        val_print(ACS_PRINT_DEBUG, "\n       Invalid LLC ID, skipping test", 0);
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+        val_print(DEBUG, "\n       Invalid LLC ID, skipping test");
+        val_set_status(index, RESULT_SKIP(2));
         return;
     }
 
@@ -119,7 +119,7 @@ payload(void)
             /* Check if the MSC support selected PARTIDs (max_partid >= 2) */
             max_partid = val_mpam_get_max_partid(msc_index);
             if (max_partid < partid_z) {
-                val_print(ACS_PRINT_DEBUG,
+                val_print(DEBUG,
                           "\n       MSC %d does not support required PARTIDs, skipping",
                           msc_index);
                 continue;
@@ -128,7 +128,7 @@ payload(void)
             /* Skip the MSC if no CSU MON are present */
             num_mon = val_mpam_get_csumon_count(msc_index);
             if (num_mon == 0) {
-                val_print(ACS_PRINT_DEBUG, "\n       MSC %u has no CSU MON, skipping MSC",
+                val_print(DEBUG, "\n       MSC %u has no CSU MON, skipping MSC",
                                                                                         msc_index);
                 continue;
             }
@@ -136,7 +136,7 @@ payload(void)
             /* Check if PARTID Disabling is supported. The test relies on this feature. Skip the
                MSC if endis not present */
             if (!val_mpam_msc_supports_partid_endis(msc_index)) {
-                val_print(ACS_PRINT_DEBUG,
+                val_print(DEBUG,
                           "\n       MSC %d doesn't support PARTID disable, skipping MSC",
                           msc_index);
                 continue;
@@ -144,7 +144,7 @@ payload(void)
 
             /* Step 1: Check if the MSC supports Cache Minimum-Capacity resource control */
             if (!val_mpam_msc_supports_cmin(msc_index)) {
-                val_print(ACS_PRINT_DEBUG,
+                val_print(DEBUG,
                           "\n       MSC %d does not support CMIN-Capacity control, skipping",
                           msc_index);
                 continue;
@@ -159,8 +159,8 @@ payload(void)
             dest_buf = (void *)val_memory_alloc_pages(num_pages);
 
             if ((src_buf == NULL) || (dest_buf == NULL)) {
-                val_print(ACS_PRINT_ERR, "\n       Mem allocation failed", 0);
-                val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+                val_print(ERROR, "\n       Mem allocation failed");
+                val_set_status(index, RESULT_FAIL(01));
                 if (dest_buf != NULL)
                     val_memory_free_pages(dest_buf, num_pages);
                 if (src_buf != NULL)
@@ -173,7 +173,7 @@ payload(void)
 
             status = val_mpam_program_el2(partid_x, DEFAULT_PMG);
             if (status) {
-                val_print(ACS_PRINT_ERR, "\n       MPAM2_EL2 programming failed", 0);
+                val_print(ERROR, "\n       MPAM2_EL2 programming failed");
                 goto cleanup;
             }
 
@@ -199,7 +199,7 @@ payload(void)
 
             /* Read the monitor counter for PARTID_X */
             counter[0] = val_mpam_read_csumon(msc_index);
-            val_print(ACS_PRINT_TEST, "\n       PARTID_X Counter: 0x%x", counter[0]);
+            val_print(INFO, "\n       PARTID_X Counter: 0x%x", counter[0]);
 
             /* Disable CSU MON */
             val_mpam_csumon_disable(msc_index);
@@ -214,7 +214,7 @@ payload(void)
             /* Step 5: Perform a memory workload for PARTID_Y */
             status = val_mpam_program_el2(partid_y, DEFAULT_PMG);
             if (status) {
-                val_print(ACS_PRINT_ERR, "\n       MPAM2_EL2 programming failed", 0);
+                val_print(ERROR, "\n       MPAM2_EL2 programming failed");
                 goto cleanup;
             }
 
@@ -237,18 +237,18 @@ payload(void)
 
             /* Read the monitor counter for PARTID_Y */
             counter[1] = val_mpam_read_csumon(msc_index);
-            val_print(ACS_PRINT_TEST, "\n       PARTID_Y Counter: 0x%x", counter[1]);
+            val_print(INFO, "\n       PARTID_Y Counter: 0x%x", counter[1]);
 
             /* Read PARTID_X counter after the second buffer copy */
             val_mpam_configure_csu_mon(msc_index, partid_x, DEFAULT_PMG, 0);
             if (val_mpam_read_csumon(msc_index) > counter[0]) {
-                val_print(ACS_PRINT_ERR,
-                    "\n       PARTID_X usage increased after PARTID_Y workload, failing test", 0);
+                val_print(ERROR,
+                    "\n       PARTID_X usage increased after PARTID_Y workload, failing test");
                 test_fail = 1;
             }
 
             counter[0] = val_mpam_read_csumon(msc_index);
-            val_print(ACS_PRINT_TEST,
+            val_print(INFO,
                             "\n       PARTID_X Counter after PARTID_Y workload: 0x%x", counter[0]);
 
             val_pe_cache_invalidate_range((uint64_t)dest_buf, BUFFER_SIZE);
@@ -271,13 +271,13 @@ payload(void)
             val_mpam_configure_csu_mon(msc_index, partid_z, DEFAULT_PMG, 0);
 
             counter[2] = val_mpam_read_csumon(msc_index);
-            val_print(ACS_PRINT_TEST,
+            val_print(INFO,
                                     "\n       PARTID_Z Counter before workload: 0x%x", counter[2]);
 
             /* Step 8: Perform a memory workload for PARTID_Z */
             status = val_mpam_program_el2(partid_z, DEFAULT_PMG);
             if (status) {
-                val_print(ACS_PRINT_ERR, "\n       MPAM2_EL2 programming failed", 0);
+                val_print(ERROR, "\n       MPAM2_EL2 programming failed");
                 goto cleanup;
             }
 
@@ -289,40 +289,40 @@ payload(void)
 
             /* Read the monitor counter for PARTID_Z */
             if (val_mpam_read_csumon(msc_index) <= counter[2]) {
-                val_print(ACS_PRINT_ERR,
-                    "\n       PARTID_Z usage did not increase after workload, failing test", 0);
+                val_print(ERROR,
+                    "\n       PARTID_Z usage did not increase after workload, failing test");
                 test_fail = 1;
             }
 
             counter[2] = val_mpam_read_csumon(msc_index);
-            val_print(ACS_PRINT_TEST, "\n       PARTID_Z Counter after workload: %x", counter[2]);
+            val_print(INFO, "\n       PARTID_Z Counter after workload: %x", counter[2]);
 
             /* Read PARTID_X and PARTID_Y counters after PARTID_Z workload */
             val_mpam_configure_csu_mon(msc_index, partid_x, DEFAULT_PMG, 0);
             if (val_mpam_read_csumon(msc_index) > counter[0]) {
-                val_print(ACS_PRINT_ERR,
-                    "\n       PARTID_X usage increased after PARTID_Z workload, failing test", 0);
+                val_print(ERROR,
+                    "\n       PARTID_X usage increased after PARTID_Z workload, failing test");
                 test_fail = 1;
             }
 
             counter[0] = val_mpam_read_csumon(msc_index);
-            val_print(ACS_PRINT_TEST,
+            val_print(INFO,
                             "\n       PARTID_X Counter after PARTID_Z workload: 0x%x", counter[0]);
 
             val_mpam_configure_csu_mon(msc_index, partid_y, DEFAULT_PMG, 0);
             if (val_mpam_read_csumon(msc_index) > counter[1]) {
-                val_print(ACS_PRINT_ERR,
-                    "\n       PARTID_Y usage increased after PARTID_Z workload, failing test", 0);
+                val_print(ERROR,
+                    "\n       PARTID_Y usage increased after PARTID_Z workload, failing test");
                 test_fail = 1;
             }
 
             counter[1] = val_mpam_read_csumon(msc_index);
-            val_print(ACS_PRINT_TEST,
+            val_print(INFO,
                             "\n       PARTID_Y Counter after PARTID_Z workload: 0x%x", counter[1]);
 
             if (counter[1] > counter[0]) {
-                val_print(ACS_PRINT_ERR,
-                    "\n       PARTID_Y usage higher than PARTID_X, failing test", 0);
+                val_print(ERROR,
+                    "\n       PARTID_Y usage higher than PARTID_X, failing test");
                 test_fail = 1;
             }
 
@@ -354,11 +354,11 @@ payload(void)
     }
 
     if (test_skip) {
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 3));
+        val_set_status(index, RESULT_SKIP(3));
     } else if (test_fail) {
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+        val_set_status(index, RESULT_FAIL(2));
     } else {
-        val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+        val_set_status(index, RESULT_PASS);
     }
     return;
 
@@ -389,7 +389,7 @@ cleanup:
     /* Restore MPAM2_EL2 settings */
     val_mpam_reg_write(MPAM2_EL2, saved_el2);
 
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 03));
+    val_set_status(index, RESULT_FAIL(03));
     return;
 }
 

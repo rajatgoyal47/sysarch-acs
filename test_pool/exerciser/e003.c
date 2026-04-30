@@ -61,14 +61,14 @@ static uint32_t test_sequence_check(uint32_t instance)
   for (idx = 0; idx < sizeof(transaction_order)/sizeof(transaction_order[0]); idx++) {
       val_exerciser_get_param(TRANSACTION_TYPE, &idx, &transaction_type, instance);
       if (transaction_type !=  transaction_order[idx]) {
-          val_print(ACS_PRINT_ERR, "\n       Exerciser %d arrival order check failed", instance);
+          val_print(ERROR, "\n       Exerciser %d arrival order check failed", instance);
           return 1;
       }
   }
 
   /* Get number of transactions captured from exerciser */
   if (num_transactions != idx) {
-      val_print(ACS_PRINT_ERR, "\n       Exerciser %d gathering check failed", instance);
+      val_print(ERROR, "\n       Exerciser %d gathering check failed", instance);
       return 1;
   }
 
@@ -234,11 +234,11 @@ cfgspace_transactions_order_check(void)
 
     /* Get exerciser bdf */
     bdf = val_exerciser_get_bdf(instance);
-    val_print(ACS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", bdf);
+    val_print(DEBUG, "\n       Exerciser BDF - 0x%x", bdf);
 
     /* If exerciser doesn't have PCI_CAP skip the bdf */
     if (val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS, &cid_offset) == PCIE_CAP_NOT_FOUND) {
-        val_print(ACS_PRINT_DEBUG,
+        val_print(DEBUG,
             "\n        PCIe Express Capability not found. Skipping exerciser 0x%x", bdf);
         continue;
     }
@@ -255,8 +255,8 @@ cfgspace_transactions_order_check(void)
     }
 
     if (status) {
-        val_print(ACS_PRINT_DEBUG, "\n       Failed in config ioremap for instance 0x%x", instance);
-        val_print(ACS_PRINT_DEBUG, "   Status :0x%x", status);
+        val_print(DEBUG, "\n       Failed in config ioremap for instance 0x%x", instance);
+        val_print(DEBUG, "   Status :0x%x", status);
         continue;
     }
 
@@ -300,21 +300,21 @@ barspace_transactions_order_check(void)
 
     /* Get exerciser bdf */
     bdf = val_exerciser_get_bdf(instance);
-    val_print(ACS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", bdf);
+    val_print(DEBUG, "\n       Exerciser BDF - 0x%x", bdf);
 
     /* Get BAR 0 details for this instance */
     status = val_exerciser_get_data(EXERCISER_DATA_MMIO_SPACE, &e_data, instance);
     if (status == NOT_IMPLEMENTED) {
-        val_print(ACS_PRINT_ERR, "\n      pal_exerciser_get_data() for MMIO not implemented", 0);
+        val_print(ERROR, "\n      pal_exerciser_get_data() for MMIO not implemented");
         continue;
     } else if (status) {
-        val_print(ACS_PRINT_ERR, "\n       Exerciser 0x%x data read error     ", bdf);
+        val_print(ERROR, "\n       Exerciser 0x%x data read error     ", bdf);
         continue;
     }
 
     /* If BAR region is not Prefetchable, skip the exerciser */
     if (e_data.bar_space.type != MMIO_PREFETCHABLE) {
-        val_print(ACS_PRINT_DEBUG,
+        val_print(DEBUG,
                 "\n       BAR region is not prefetchable. Skipping exerciser 0x%x", bdf);
         continue;
     }
@@ -330,8 +330,8 @@ barspace_transactions_order_check(void)
     }
 
     if (status) {
-        val_print(ACS_PRINT_DEBUG, "\n       Failed in config ioremap for instance 0x%x", instance);
-        val_print(ACS_PRINT_DEBUG, "   Status :0x%x", status);
+        val_print(DEBUG, "\n       Failed in config ioremap for instance 0x%x", instance);
+        val_print(DEBUG, "   Status :0x%x", status);
         continue;
     }
 
@@ -364,7 +364,7 @@ payload(void)
      returning SKIP if called for BSA */
   /* TODO revisit could be warning for BSA, since we can't deduce if condition of BSA rule */
   if (g_build_sbsa == 0) {
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+      val_set_status(pe_index, RESULT_SKIP(1));
       return;
   }
 
@@ -372,13 +372,13 @@ payload(void)
   barspace_transactions_order_check();
 
   if (warn_cnt)
-    val_set_status(pe_index, RESULT_WARN(TEST_NUM, 1));
+    val_set_status(pe_index, RESULT_WARNING(1));
   else if (!run_flag)
-    val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 2));
+    val_set_status(pe_index, RESULT_SKIP(2));
   else if (fail_cnt)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, fail_cnt));
+      val_set_status(pe_index, RESULT_FAIL(fail_cnt));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(pe_index, RESULT_PASS);
 
   return;
 }
@@ -394,7 +394,7 @@ e003_entry(uint32_t num_pe)
   status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
   if (status != ACS_STATUS_SKIP) {
       if (val_exerciser_test_init() != ACS_STATUS_PASS)
-          return TEST_SKIP_VAL;
+          return RESULT_SKIP(1);
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
   }
 

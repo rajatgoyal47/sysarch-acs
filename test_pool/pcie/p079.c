@@ -74,7 +74,7 @@ is_sbr_failed (uint32_t bdf)
 
       val_pcie_read_cfg(bdf, TYPE01_BAR + (index * BAR_BASE_SHIFT), &reg_value);
       if ((reg_value >> BAR_BASE_SHIFT) != 0) {
-          val_print(ACS_PRINT_ERR, "\n       BAR%d base addr not cleared", index);
+          val_print(ERROR, "\n       BAR%d base addr not cleared", index);
           check_failed++;
       }
   }
@@ -86,7 +86,7 @@ is_sbr_failed (uint32_t bdf)
   if ((((reg_value >> CR_BME_SHIFT) & CR_BME_MASK) != 0) ||
       (((reg_value >> CR_MSE_SHIFT) & CR_MSE_MASK) != 0))
   {
-      val_print(ACS_PRINT_ERR, "\n       BME/MSE not cleared", 0);
+      val_print(ERROR, "\n       BME/MSE not cleared");
       check_failed++;
   }
 
@@ -135,8 +135,8 @@ payload(void)
           /* Get BDF for iEP_EP under iEP_RP */
           iep_bdf = get_iep_bdf_under_rp(bdf);
           if (iep_bdf == 0x0) {
-              val_print(ACS_PRINT_ERR, "\n       Could Not Find iEP_EP under iEP_RP.", 0);
-              val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+              val_print(ERROR, "\n       Could Not Find iEP_EP under iEP_RP.");
+              val_set_status(pe_index, RESULT_SKIP(01));
               return;
           }
 
@@ -145,15 +145,15 @@ payload(void)
           cfg_space_buf = val_aligned_alloc(MEM_ALIGN_4K, PCIE_CFG_SIZE);
           if (cfg_space_buf == NULL)
           {
-              val_print(ACS_PRINT_ERR, "\n       Memory allocation failed.", 0);
-              val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
+              val_print(ERROR, "\n       Memory allocation failed.");
+              val_set_status(pe_index, RESULT_FAIL(02));
               return;
           }
 
           /* Get configuration space address for iEP_EP */
           cfg_space_addr = val_pcie_get_bdf_config_addr(iep_bdf);
-          val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x : ", iep_bdf);
-          val_print(ACS_PRINT_INFO, "Config space addr 0x%x", cfg_space_addr);
+          val_print(DEBUG, "\n       BDF - 0x%x : ", iep_bdf);
+          val_print(TRACE, "Config space addr 0x%x", cfg_space_addr);
 
           /* Save the iEP_EP config space to restore after Secondary Bus Reset */
           for (idx = 0; idx < PCIE_CFG_SIZE / 4; idx ++) {
@@ -171,9 +171,9 @@ payload(void)
           delay_status = val_time_delay_ms(100 * ONE_MILLISECOND);
           if (delay_status)
           {
-              val_print(ACS_PRINT_ERR, "\n       Failed to time delay for BDF 0x%x ", bdf);
+              val_print(ERROR, "\n       Failed to time delay for BDF 0x%x ", bdf);
               val_memory_free_aligned(cfg_space_buf);
-              val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+              val_set_status(pe_index, RESULT_FAIL(01));
               return;
           }
 
@@ -186,9 +186,9 @@ payload(void)
                   delay_status = val_time_delay_ms(100 * ONE_MILLISECOND);
                   if (delay_status)
                   {
-                      val_print(ACS_PRINT_ERR, "\n       Failed to time delay for BDF 0x%x ", bdf);
+                      val_print(ERROR, "\n       Failed to time delay for BDF 0x%x ", bdf);
                       val_memory_free_aligned(cfg_space_buf);
-                      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
+                      val_set_status(pe_index, RESULT_FAIL(02));
                       return;
                   }
 
@@ -198,7 +198,7 @@ payload(void)
 
           if (status == PCIE_DLL_LINK_STATUS_NOT_ACTIVE)
           {
-              val_print(ACS_PRINT_ERR,
+              val_print(ERROR,
                         "\n       The link is not active after reset for BDF 0x%x : ", bdf);
               test_fails++;
               goto free_cfg;
@@ -221,13 +221,13 @@ free_cfg:
 
   /* Skip the test if no iEP_RP found */
   if (iep_rp_found == 0) {
-      val_print(ACS_PRINT_DEBUG, "\n       No iEP_RP type device found. Skipping test", 0);
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 02));
+      val_print(DEBUG, "\n       No iEP_RP type device found. Skipping test");
+      val_set_status(pe_index, RESULT_SKIP(02));
   }
   else if (test_fails)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, test_fails));
+      val_set_status(pe_index, RESULT_FAIL(test_fails));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

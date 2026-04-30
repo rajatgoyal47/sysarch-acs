@@ -33,7 +33,7 @@ static void payload(void)
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 32, 35);
 
     if (data == 0) {
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+        val_set_status(index, RESULT_SKIP(02));
         return;
     }
 
@@ -41,9 +41,9 @@ static void payload(void)
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64ZFR0_EL1), 44, 47);
 
     if (data == 1)
-        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+        val_set_status(index, RESULT_PASS);
     else
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+        val_set_status(index, RESULT_FAIL(01));
 }
 
 uint32_t pe054_entry(uint32_t num_pe)

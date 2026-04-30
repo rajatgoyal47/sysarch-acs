@@ -43,10 +43,10 @@ payload()
   /* Get Number of nodes with RAS Functionality */
   status = val_ras_get_info(RAS_INFO_NUM_NODES, 0, &num_node);
   if (status || (num_node == 0)) {
-    val_print(ACS_PRINT_DEBUG, "\n       No RAS Nodes found in AEST table.", 0);
-    val_print(ACS_PRINT_DEBUG, "\n       The test must be considered fail if system \
-                                        components supports RAS nodes", 0);
-    val_set_status(index, RESULT_WARN(TEST_NUM, 01));
+    val_print(DEBUG, "\n       No RAS Nodes found in AEST table.");
+    val_print(DEBUG, "\n       The test must be considered fail if system \
+                                        components supports RAS nodes");
+    val_set_status(index, RESULT_WARNING(01));
     return;
   }
 
@@ -56,7 +56,7 @@ payload()
     status = val_ras_get_info(RAS_INFO_BASE_ADDR, node_index, &value);
     if (status) {
       /* Interface is System Register based, Skipping this node */
-      val_print(ACS_PRINT_DEBUG, "\n       Interface is SR, Skipping node %d", node_index);
+      val_print(DEBUG, "\n       Interface is SR, Skipping node %d", node_index);
       continue;
     }
 
@@ -65,7 +65,7 @@ payload()
     /* Get Start error index number for this Node */
     status = val_ras_get_info(RAS_INFO_START_INDEX, node_index, &start_index);
     if (status) {
-      val_print(ACS_PRINT_DEBUG, "\n       Could not get Start Index for index %d", node_index);
+      val_print(DEBUG, "\n       Could not get Start Index for index %d", node_index);
       fail_cnt++;
       continue;
     }
@@ -73,7 +73,7 @@ payload()
     /* Check which error records are implemented in this node */
     status = val_ras_get_info(RAS_INFO_ERR_REC_IMP, node_index, &err_rec_implement);
     if (status) {
-      val_print(ACS_PRINT_DEBUG, "\n       Could not get err rec info for index %d", node_index);
+      val_print(DEBUG, "\n       Could not get err rec info for index %d", node_index);
       fail_cnt++;
       continue;
     }
@@ -81,7 +81,7 @@ payload()
     /* Get error status reporting value for this node */
     status = val_ras_get_info(RAS_INFO_STATUS_REPORT, node_index, &err_status);
     if (status) {
-      val_print(ACS_PRINT_DEBUG, "\n       Could not get status for index %d", node_index);
+      val_print(DEBUG, "\n       Could not get status for index %d", node_index);
       fail_cnt++;
       continue;
     }
@@ -91,7 +91,7 @@ payload()
 
     if (err_status & record_imp_bits) {
       /* Fail the test as one of the implemented ER has error reporting not supported */
-      val_print(ACS_PRINT_ERR, "\n       ERRGSR not supported for index %d", node_index);
+      val_print(ERROR, "\n       ERRGSR not supported for index %d", node_index);
       fail_cnt++;
       continue;
     }
@@ -99,14 +99,14 @@ payload()
   }
 
   if (fail_cnt) {
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+    val_set_status(index, RESULT_FAIL(01));
     return;
   } else if (test_skip) {
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+    val_set_status(index, RESULT_SKIP(02));
     return;
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

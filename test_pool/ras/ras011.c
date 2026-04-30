@@ -39,7 +39,7 @@ intr_handler(void)
 {
   /* Clear the interrupt pending state */
 
-  val_print(ACS_PRINT_INFO, "\n       Received interrupt %x       ", 0);
+  val_print(TRACE, "\n       Received interrupt %x       ");
   val_gic_end_of_interrupt(int_id);
   return;
 }
@@ -55,7 +55,7 @@ esr(uint64_t interrupt_type, void *context)
   /* Update the ELR to return to test specified address */
   val_pe_update_elr(context, (uint64_t)branch_to_test);
 
-  val_print(ACS_PRINT_ERR, "\n       Received exception of type: %d", interrupt_type);
+  val_print(ERROR, "\n       Received exception of type: %d", interrupt_type);
 }
 
 /*
@@ -88,8 +88,8 @@ payload_poison_supported()
   /* Get Number of nodes with RAS Functionality */
   status = val_ras_get_info(RAS_INFO_NUM_NODES, 0, &num_node);
   if (status || (num_node == 0)) {
-    val_print(ACS_PRINT_DEBUG, "\n       RAS Nodes not found. Skipping...", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+    val_print(DEBUG, "\n       RAS Nodes not found. Skipping...");
+    val_set_status(index, RESULT_FAIL(01));
     return;
   }
 
@@ -97,8 +97,8 @@ payload_poison_supported()
   /* Get number of MC nodes with RAS functionality */
   status = val_ras_get_info(RAS_INFO_NUM_MC, 0, &num_mc_node);
   if (status || (num_mc_node == 0)) {
-    val_print(ACS_PRINT_ERR, "\n       RAS MC nodes not found. Skipping...", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
+    val_print(ERROR, "\n       RAS MC nodes not found. Skipping...");
+    val_set_status(index, RESULT_SKIP(01));
     return;
   }
 
@@ -106,16 +106,16 @@ payload_poison_supported()
   /* Check current PE RAS Support with mpidr */
   status = val_ras_get_info(RAS_INFO_NODE_INDEX_FOR_AFF, mpidr, &pe_node_index);
   if (status) {
-    val_print(ACS_PRINT_DEBUG, "\n       RAS Node not found for PE", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
+    val_print(DEBUG, "\n       RAS Node not found for PE");
+    val_set_status(index, RESULT_FAIL(02));
     return;
   }
 
   /* Check if Platform Supports Poison Storage & Forwarding else skip */
   poison_check = val_ras_check_plat_poison_support();
   if (!poison_check) {
-    val_print(ACS_PRINT_ERR, "\n       Poison storage & forward not supported. Skipping...", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+    val_print(ERROR, "\n       Poison storage & forward not supported. Skipping...");
+    val_set_status(index, RESULT_SKIP(02));
     return;
   }
 
@@ -124,7 +124,7 @@ payload_poison_supported()
     /* Get Current Node Type */
     status = val_ras_get_info(RAS_INFO_NODE_TYPE, node_index, &value);
     if (status) {
-      val_print(ACS_PRINT_DEBUG, "\n       Node Type not found index %d", node_index);
+      val_print(DEBUG, "\n       Node Type not found index %d", node_index);
       fail_cnt++;
       break;
     }
@@ -137,7 +137,7 @@ payload_poison_supported()
     /* Get Error Record number for this Node */
     status = val_ras_get_info(RAS_INFO_START_INDEX, node_index, &rec_index);
     if (status) {
-      val_print(ACS_PRINT_DEBUG, "\n       Could not get Start Index for index %d", node_index);
+      val_print(DEBUG, "\n       Could not get Start Index for index %d", node_index);
       fail_cnt++;
       continue;
     }
@@ -151,7 +151,7 @@ payload_poison_supported()
     status = val_ras_get_info(RAS_INFO_ERI_ID, node_index, &int_id);
     if (status) {
       /* Interrupt details not found, Failing for this node */
-      val_print(ACS_PRINT_DEBUG, "\n       No Intr found, Failed for node %d", node_index);
+      val_print(DEBUG, "\n       No Intr found, Failed for node %d", node_index);
       fail_cnt++;
       continue;
     }
@@ -163,8 +163,8 @@ payload_poison_supported()
     status |= val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
     if (status)
     {
-      val_print(ACS_PRINT_ERR, "\n      Failed in installing the exception handler", 0);
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 03));
+      val_print(ERROR, "\n      Failed in installing the exception handler");
+      val_set_status(index, RESULT_FAIL(03));
       return;
     }
     branch_to_test = &&exception_return;
@@ -175,11 +175,11 @@ payload_poison_supported()
     /* Setup an error in an implementation defined way */
     status = val_ras_setup_error(err_in_params, &err_out_params);
     if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
-      val_print(ACS_PRINT_DEBUG, "\n       ras_setup_error unimplemented, node %d", node_index);
+      val_print(DEBUG, "\n       ras_setup_error unimplemented, node %d", node_index);
       warn_cnt++;
       break;
     } else if (status) {
-      val_print(ACS_PRINT_ERR, "\n       val_ras_setup_error failed, node %d", node_index);
+      val_print(ERROR, "\n       val_ras_setup_error failed, node %d", node_index);
       fail_cnt++;
       break;
     }
@@ -190,7 +190,7 @@ payload_poison_supported()
       warn_cnt++;
       break;
     } else if (status) {
-      val_print(ACS_PRINT_ERR, "\n       val_ras_inject_error failed, node %d", node_index);
+      val_print(ERROR, "\n       val_ras_inject_error failed, node %d", node_index);
       fail_cnt++;
       break;
     }
@@ -199,7 +199,7 @@ exception_return:
     /* Read Status Register for Memory Controller RAS Node */
     status = val_ras_check_err_record(node_index, err_in_params.ras_error_type);
     if (status) {
-      val_print(ACS_PRINT_ERR, "\n       MC Err Status Check Failed, for node %d", node_index);
+      val_print(ERROR, "\n       MC Err Status Check Failed, for node %d", node_index);
       fail_cnt++;
       continue;
     }
@@ -207,7 +207,7 @@ exception_return:
     /* Read Status Register for PE RAS Node */
     status = val_ras_check_err_record(pe_node_index, err_in_params.ras_error_type);
     if (status) {
-      val_print(ACS_PRINT_ERR, "\n       PE Err Status Check Failed, for node %d", node_index);
+      val_print(ERROR, "\n       PE Err Status Check Failed, for node %d", node_index);
       fail_cnt++;
       continue;
     }
@@ -216,10 +216,10 @@ exception_return:
     /* Read Status Register for RAS Nodes */
     mc_status = val_ras_reg_read(node_index, RAS_ERR_STATUS, rec_index);
     if (mc_status == INVALID_RAS_REG_VAL) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
                   "\n       Couldn't read ERR<%d>STATUS register for ",
                   rec_index);
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
                   "RAS node index: 0x%lx",
                   node_index);
         fail_cnt++;
@@ -227,10 +227,10 @@ exception_return:
     }
     pe_status = val_ras_reg_read(pe_node_index, RAS_ERR_STATUS, rec_index);
     if (pe_status == INVALID_RAS_REG_VAL) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
                   "\n       Couldn't read ERR<%d>STATUS register for ",
                   rec_index);
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
                   "RAS node index: 0x%lx",
                   pe_node_index);
         fail_cnt++;
@@ -239,25 +239,25 @@ exception_return:
 
     /* Check Poison Information Storage/Forwarding in MC/PE Ras Node */
     if (!(mc_status & ERR_STATUS_PN_MASK)) {
-      val_print(ACS_PRINT_DEBUG, "\n       Poison Storage Fail, for node %d", node_index);
+      val_print(DEBUG, "\n       Poison Storage Fail, for node %d", node_index);
       fail_cnt++;
       continue;
     }
     if (!(pe_status & ERR_STATUS_PN_MASK)) {
-      val_print(ACS_PRINT_DEBUG, "\n       Poison Frwding Fail, for node %d", pe_node_index);
+      val_print(DEBUG, "\n       Poison Frwding Fail, for node %d", pe_node_index);
       fail_cnt++;
       continue;
     }
   }
 
   if (fail_cnt)
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 04));
+    val_set_status(index, RESULT_FAIL(04));
   else if (warn_cnt)
-    val_set_status(index, RESULT_WARN(TEST_NUM, 01));
+    val_set_status(index, RESULT_WARNING(01));
   else if (test_skip)
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 03));
+    val_set_status(index, RESULT_SKIP(03));
   else
-    val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+    val_set_status(index, RESULT_PASS);
 
   return;
 }
@@ -289,8 +289,8 @@ payload_poison_unsupported()
   /* Get Number of nodes with RAS Functionality */
   status = val_ras_get_info(RAS_INFO_NUM_NODES, 0, &num_node);
   if (status || (num_node == 0)) {
-    val_print(ACS_PRINT_DEBUG, "\n       RAS Nodes not found. Skipping...", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM1, 01));
+    val_print(DEBUG, "\n       RAS Nodes not found. Skipping...");
+    val_set_status(index, RESULT_FAIL(01));
     return;
   }
 
@@ -298,8 +298,8 @@ payload_poison_unsupported()
   /* Get number of MC nodes with RAS functionality */
   status = val_ras_get_info(RAS_INFO_NUM_MC, 0, &num_mc_node);
   if (status || (num_mc_node == 0)) {
-    val_print(ACS_PRINT_ERR, "\n       RAS MC nodes not found. Skipping...", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM1, 01));
+    val_print(ERROR, "\n       RAS MC nodes not found. Skipping...");
+    val_set_status(index, RESULT_SKIP(01));
     return;
   }
 
@@ -307,16 +307,16 @@ payload_poison_unsupported()
   /* Check current PE RAS Support with mpidr */
   status = val_ras_get_info(RAS_INFO_NODE_INDEX_FOR_AFF, mpidr, &pe_node_index);
   if (status) {
-    val_print(ACS_PRINT_DEBUG, "\n       RAS Node not found for PE", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM1, 02));
+    val_print(DEBUG, "\n       RAS Node not found for PE");
+    val_set_status(index, RESULT_FAIL(02));
     return;
   }
 
   /* Check if Platform Supports Poison Storage & Forwarding */
   poison_check = val_ras_check_plat_poison_support();
   if (poison_check) {
-    val_print(ACS_PRINT_ERR, "\n       Poison storage & forward supported. Skipping...", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+    val_print(ERROR, "\n       Poison storage & forward supported. Skipping...");
+    val_set_status(index, RESULT_SKIP(02));
     return;
   }
 
@@ -325,7 +325,7 @@ payload_poison_unsupported()
     /* Get Current Node Type */
     status = val_ras_get_info(RAS_INFO_NODE_TYPE, node_index, &value);
     if (status) {
-      val_print(ACS_PRINT_DEBUG, "\n       Node Type not found index %d", node_index);
+      val_print(DEBUG, "\n       Node Type not found index %d", node_index);
       fail_cnt++;
       break;
     }
@@ -338,7 +338,7 @@ payload_poison_unsupported()
     /* Get Error Record number for this Node */
     status = val_ras_get_info(RAS_INFO_START_INDEX, node_index, &rec_index);
     if (status) {
-      val_print(ACS_PRINT_DEBUG, "\n       Could not get Start Index for index %d", node_index);
+      val_print(DEBUG, "\n       Could not get Start Index for index %d", node_index);
       fail_cnt++;
       continue;
     }
@@ -352,7 +352,7 @@ payload_poison_unsupported()
     status = val_ras_get_info(RAS_INFO_ERI_ID, node_index, &int_id);
     if (status) {
       /* Interrupt details not found, Failing for this node */
-      val_print(ACS_PRINT_DEBUG, "\n       No Intr found, Failed for node %d", node_index);
+      val_print(DEBUG, "\n       No Intr found, Failed for node %d", node_index);
       fail_cnt++;
       continue;
     }
@@ -364,8 +364,8 @@ payload_poison_unsupported()
     status |= val_pe_install_esr(EXCEPT_AARCH64_SERROR, esr);
     if (status)
     {
-      val_print(ACS_PRINT_ERR, "\n      Failed in installing the exception handler", 0);
-      val_set_status(index, RESULT_FAIL(TEST_NUM1, 03));
+      val_print(ERROR, "\n      Failed in installing the exception handler");
+      val_set_status(index, RESULT_FAIL(03));
       return;
     }
     branch_to_test = &&exception_return;
@@ -376,11 +376,11 @@ payload_poison_unsupported()
     /* Setup an error in an implementation defined way */
     status = val_ras_setup_error(err_in_params, &err_out_params);
     if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
-      val_print(ACS_PRINT_DEBUG, "\n       ras_setup_error unimplemented, node %d", node_index);
+      val_print(DEBUG, "\n       ras_setup_error unimplemented, node %d", node_index);
       warn_cnt++;
       break;
     } else if (status) {
-      val_print(ACS_PRINT_ERR, "\n       val_ras_setup_error failed, node %d", node_index);
+      val_print(ERROR, "\n       val_ras_setup_error failed, node %d", node_index);
       fail_cnt++;
       break;
     }
@@ -391,7 +391,7 @@ payload_poison_unsupported()
       warn_cnt++;
       break;
     } else if (status) {
-      val_print(ACS_PRINT_ERR, "\n       val_ras_inject_error failed, node %d", node_index);
+      val_print(ERROR, "\n       val_ras_inject_error failed, node %d", node_index);
       fail_cnt++;
       break;
     }
@@ -400,7 +400,7 @@ exception_return:
     /* Read Status Register for Memory Controller RAS Node */
     status = val_ras_check_err_record(node_index, err_in_params.ras_error_type);
     if (status) {
-      val_print(ACS_PRINT_ERR, "\n       MC Err Status Check Failed, for node %d", node_index);
+      val_print(ERROR, "\n       MC Err Status Check Failed, for node %d", node_index);
       fail_cnt++;
       continue;
     }
@@ -408,31 +408,31 @@ exception_return:
     /* Read Status Register for PE RAS Node */
     status = val_ras_check_err_record(pe_node_index, err_in_params.ras_error_type);
     if (status) {
-      val_print(ACS_PRINT_ERR, "\n       PE Err Status Check Failed, for node %d", node_index);
+      val_print(ERROR, "\n       PE Err Status Check Failed, for node %d", node_index);
       fail_cnt++;
       continue;
     }
 
     /* Check for abort if poison forwarding is not supported */
     if (esr_pending) {
-      val_print(ACS_PRINT_DEBUG, "\n       EA Check Fail, for node %d", pe_node_index);
+      val_print(DEBUG, "\n       EA Check Fail, for node %d", pe_node_index);
       fail_cnt++;
       continue;
     }
   }
 
   if (fail_cnt) {
-    val_set_status(index, RESULT_FAIL(TEST_NUM1, 04));
+    val_set_status(index, RESULT_FAIL(04));
     return;
   } else if (warn_cnt) {
-    val_set_status(index, RESULT_WARN(TEST_NUM1, 01));
+    val_set_status(index, RESULT_WARNING(01));
     return;
   } else if (test_skip) {
-    val_set_status(index, RESULT_SKIP(TEST_NUM1, 03));
+    val_set_status(index, RESULT_SKIP(03));
     return;
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM1, 01));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

@@ -44,7 +44,7 @@ payload(void)
 
   /* Check If PCIe Hierarchy supports P2P */
   if (val_pcie_p2p_support() == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
-    val_set_status(pe_index, RESULT_WARN(TEST_NUM, 1));
+    val_set_status(pe_index, RESULT_WARNING(1));
     return;
   }
 
@@ -62,11 +62,11 @@ payload(void)
       {
           /* Test runs for atleast one Root Port */
           test_skip = 0;
-          val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
+          val_print(DEBUG, "\n       BDF - 0x%x", bdf);
 
           /* Read the ACS Capability */
           if (val_pcie_find_capability(bdf, PCIE_ECAP, ECID_ACS, &cap_base) != PCIE_SUCCESS) {
-              val_print(ACS_PRINT_ERR,
+              val_print(ERROR,
                     "\n       ACS Capability not supported, Bdf : 0x%x", bdf);
               test_fails++;
               continue;
@@ -77,41 +77,41 @@ payload(void)
           /* Extract ACS source validation bit */
           data = VAL_EXTRACT_BITS(acs_data, 0, 0);
           if (data == 0) {
-              val_print(ACS_PRINT_DEBUG,
+              val_print(DEBUG,
                     "\n       Source validation not supported, Bdf : 0x%x", bdf);
               curr_bdf_failed++;
           }
           /* Extract ACS translation blocking bit */
           data = VAL_EXTRACT_BITS(acs_data, 1, 1);
           if (data == 0) {
-              val_print(ACS_PRINT_DEBUG,
+              val_print(DEBUG,
                     "\n       Translation blocking not supported, Bdf : 0x%x", bdf);
               curr_bdf_failed++;
           }
           /* Extract ACS P2P request redirect bit */
           data = VAL_EXTRACT_BITS(acs_data, 2, 2);
           if (data == 0) {
-              val_print(ACS_PRINT_DEBUG,
+              val_print(DEBUG,
                     "\n       P2P request redirect not supported, Bdf : 0x%x", bdf);
               curr_bdf_failed++;
           }
           /* Extract ACS P2P completion redirect bit */
           data = VAL_EXTRACT_BITS(acs_data, 3, 3);
           if (data == 0) {
-              val_print(ACS_PRINT_DEBUG,
+              val_print(DEBUG,
                     "\n       P2P completion redirect not supported, Bdf : 0x%x", bdf);
               curr_bdf_failed++;
           }
           /* Extract ACS upstream forwarding bit */
           data = VAL_EXTRACT_BITS(acs_data, 4, 4);
           if (data == 0) {
-              val_print(ACS_PRINT_DEBUG,
+              val_print(DEBUG,
                     "\n       Upstream forwarding not supported, Bdf : 0x%x", bdf);
               curr_bdf_failed++;
           }
 
           if (curr_bdf_failed > 0) {
-              val_print(ACS_PRINT_ERR,
+              val_print(ERROR,
                     "\n       ACS Capability Check Failed, Bdf : 0x%x", bdf);
               curr_bdf_failed = 0;
               test_fails++;
@@ -120,13 +120,13 @@ payload(void)
   }
 
   if (test_skip == 1) {
-      val_print(ACS_PRINT_DEBUG, "\n       No RP type device found. Skipping device", 0);
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 2));
+      val_print(DEBUG, "\n       No RP type device found. Skipping device");
+      val_set_status(pe_index, RESULT_SKIP(2));
   }
   else if (test_fails)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, test_fails));
+      val_set_status(pe_index, RESULT_FAIL(test_fails));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

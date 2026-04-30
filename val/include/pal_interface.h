@@ -17,13 +17,14 @@
 
 #ifndef __PAL_INTERFACE_H__
 #define __PAL_INTERFACE_H__
-
 #ifdef TARGET_BAREMETAL
   #include <stdlib.h>
   #include <stdint.h>
+  #include <stdarg.h>
   #include <stddef.h>
-  #include <stdbool.h>
+  #include "acs_stdbool.h"
   #include "platform_override_fvp.h"
+  #include "acs_interface.h"
 
   typedef uint64_t addr_t;
   typedef char     char8_t;
@@ -64,12 +65,16 @@
   #define TIMEOUT_LARGE               PLATFORM_BM_OVERRIDE_TIMEOUT_LARGE
   #define TIMEOUT_MEDIUM              PLATFORM_BM_OVERRIDE_TIMEOUT_MEDIUM
   #define TIMEOUT_SMALL               PLATFORM_BM_OVERRIDE_TIMEOUT_SMALL
-  #define WAKEUP_WD_SYS_TIMEOUT_MAX   PLATFORM_OVERRIDE_SYS_TIMEOUT_MAX
+  #define SYS_TIMEOUT_MAX             PLATFORM_OVERRIDE_SYS_TIMEOUT_MAX
 #endif // TARGET_BAREMETAL
 
 #ifdef TARGET_LINUX
+ #include <linux/stdarg.h>
+ #include <linux/stddef.h>
+ #include <linux/types.h>
+ #include <linux/slab.h>
+ #include "acs_interface.h"
 
-  #include <linux/slab.h>
   typedef char          char8_t;
   typedef long long int addr_t;
 
@@ -86,28 +91,21 @@
   #define MMU_PGT_IAS    48
   #define MMU_PGT_OAS    48
 
-  #define WAKEUP_WD_SYS_TIMEOUT_MAX   0XFFFFFFFF
+  #define SYS_TIMEOUT_MAX             0XFFFFFFFF
 #endif //TARGET_LINUX
 
 #ifdef TARGET_UEFI
+  #include <stdarg.h>
+  #include <stddef.h>
+  #include "acs_stdbool.h"
+  #include "acs_stdint.h"
   #include "platform_override.h"
-  typedef INT8    int8_t;
-  typedef INT32   int32_t;
-  typedef INT64   int64_t;
-  typedef CHAR8   char8_t;
-  typedef CHAR16  char16_t;
-  typedef UINT8   uint8_t;
-  typedef UINT16  uint16_t;
-  typedef UINT32  uint32_t;
-  typedef UINT64  uint64_t;
+  #include "acs_interface.h"
+
   typedef UINT64  addr_t;
   typedef UINT64  dma_addr_t;
-
-  #if defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L
-   /* bool is a keyword  */
-  #else
-   typedef BOOLEAN bool;
-  #endif
+  typedef CHAR8   char8_t;
+  typedef CHAR16  char16_t;
 
   #define MAX_SID  32
   #define MMU_PGT_IAS    48
@@ -122,7 +120,7 @@
   #define PCIE_MAX_DEV                PLATFORM_OVERRIDE_PCIE_MAX_DEV
   #define PCIE_MAX_FUNC               PLATFORM_OVERRIDE_PCIE_MAX_FUNC
   #define MAX_IRQ_CNT                 PLATFORM_OVERRIDE_MAX_IRQ_CNT
-  #define WAKEUP_WD_SYS_TIMEOUT_MAX   PLATFORM_OVERRIDE_SYS_TIMEOUT_MAX
+  #define SYS_TIMEOUT_MAX             PLATFORM_OVERRIDE_SYS_TIMEOUT_MAX
 #endif  // TARGET_UEFI
 
 /* The following are common across all platform unless guarded explicitly */
@@ -147,8 +145,6 @@
 int32_t pal_psci_get_conduit(void);
 void pal_dump_dtb(void);
 uint32_t pal_target_is_dt(void);
-
-
 /**
   @brief  number of PEs discovered
 **/
@@ -791,9 +787,10 @@ uint64_t pal_memory_get_unpopulated_addr(uint64_t *addr, uint32_t instance);
 uint32_t pal_mem_set_wb_executable(void *addr, uint32_t size);
 
 /* Common Definitions */
-void     pal_print(char8_t *string, uint64_t data);
+void     pal_print(uint64_t data);
 void     pal_uart_print(int log, const char *fmt, ...);
 void     pal_print_raw(uint64_t addr, char8_t *string, uint64_t data);
+void     pal_uart_putc(char c);
 uint32_t pal_strncmp(char8_t *str1, char8_t *str2, uint32_t len);
 void     pal_mmu_add_mmap(void);
 void    *pal_mmu_get_mmap_list(void);
@@ -1456,4 +1453,9 @@ int32_t pal_invoke_psci_fn(uint64_t function_id, uint64_t arg0,
 void pal_pfdi_verify_regs(ARM_SMC_ARGS *ArmSmcArgs, int32_t Conduit,
                      uint64_t PreSmcRegs[REG_COUNT_X5_X17],
                      uint64_t PostSmcRegs[REG_COUNT_X5_X17]);
+#endif
+
+#define LOG_BUFFER_SIZE 8192
+#ifndef static_assert
+#define static_assert _Static_assert
 #endif

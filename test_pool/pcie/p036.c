@@ -59,7 +59,7 @@ payload(void)
       /* Check entry is Downstream port or RP */
       if ((dp_type == DP) || (dp_type == RP))
       {
-          val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
+          val_print(DEBUG, "\n       BDF - 0x%x", bdf);
 
           /* Read the secondary and subordinate bus number */
           val_pcie_read_cfg(bdf, TYPE1_PBN, &reg_value);
@@ -89,7 +89,7 @@ payload(void)
           /* If the RP/DP does not support ARI forwarding, print a warning.
              Continue the test since this validates the disabled ARI forwarding case. */
           if (status == 0)
-              val_print(ACS_PRINT_WARN, "\n       ARI Forwarding not supported for bdf 0x%x", bdf);
+              val_print(WARN, "\n       ARI Forwarding not supported for bdf 0x%x", bdf);
 
           /* If test runs on atleast one device */
           test_skip = 0;
@@ -106,8 +106,8 @@ payload(void)
 
           /* Fail the test if the bitfied does not respond to the write */
           if (reg_value != 0) {
-              val_print(ACS_PRINT_ERR, "\n       ARI Forwarding Enable bit not cleared for", 0);
-              val_print(ACS_PRINT_ERR, " bdf 0x%x", bdf);
+              val_print(ERROR, "\n       ARI Forwarding Enable bit not cleared for");
+              val_print(ERROR, " bdf 0x%x", bdf);
               test_fails++;
               continue;
           }
@@ -118,8 +118,8 @@ payload(void)
           if (status || (reg_value == PCIE_UNKNOWN_RESPONSE))
           {
               test_fails++;
-              val_print(ACS_PRINT_ERR, "\n       Dev 0x%x found under", dev_bdf);
-              val_print(ACS_PRINT_ERR, " RP bdf 0x%x", bdf);
+              val_print(ERROR, "\n       Dev 0x%x found under", dev_bdf);
+              val_print(ERROR, " RP bdf 0x%x", bdf);
           }
 
           /* Configuration Requests specifying Device Numbers (1-31) must be terminated by the
@@ -134,19 +134,19 @@ payload(void)
               if (reg_value != PCIE_UNKNOWN_RESPONSE)
               {
                   test_fails++;
-                  val_print(ACS_PRINT_ERR, "\n       Dev 0x%x found under", dev_bdf);
-                  val_print(ACS_PRINT_ERR, " RP bdf 0x%x", bdf);
+                  val_print(ERROR, "\n       Dev 0x%x found under", dev_bdf);
+                  val_print(ERROR, " RP bdf 0x%x", bdf);
               }
           }
       }
   }
 
   if (test_skip == 1)
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+      val_set_status(pe_index, RESULT_SKIP(1));
   else if (test_fails)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, test_fails));
+      val_set_status(pe_index, RESULT_FAIL(test_fails));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

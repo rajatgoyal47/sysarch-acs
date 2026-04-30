@@ -81,7 +81,7 @@ payload(void)
   num_instances = val_exerciser_get_info(EXERCISER_NUM_CARDS);
 
   if (num_instances == 0) {
-    val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+    val_set_status(pe_index, RESULT_SKIP(01));
     return;
   }
 
@@ -101,7 +101,7 @@ payload(void)
       continue;
 
     if (check_pm_state(e_bdf, &pm_state_before) != ACS_STATUS_PASS) {
-      val_print(ACS_PRINT_ERR, "\n       PM capability missing for exerciser BDF 0x%x", e_bdf);
+      val_print(ERROR, "\n       PM capability missing for exerciser BDF 0x%x", e_bdf);
       fail_cnt++;
       continue;
     }
@@ -119,25 +119,25 @@ payload(void)
     val_time_delay_ms(1 * ONE_MILLISECOND);
 
     if (check_pm_state(e_bdf, &pm_state_after) != ACS_STATUS_PASS) {
-      val_print(ACS_PRINT_ERR, "\n       Failed to read PMCSR for exerciser BDF 0x%x", e_bdf);
+      val_print(ERROR, "\n       Failed to read PMCSR for exerciser BDF 0x%x", e_bdf);
       fail_cnt++;
       continue;
     }
 
     if ((pm_state_after != PM_STATE_D3HOT) || (pm_state_after == pm_state_before)) {
-      val_print(ACS_PRINT_ERR, "\n       PM state transition failed for BDF 0x%x", e_bdf);
-      val_print(ACS_PRINT_ERR, " (before 0x%x)", pm_state_before);
-      val_print(ACS_PRINT_ERR, " (after 0x%x)", pm_state_after);
+      val_print(ERROR, "\n       PM state transition failed for BDF 0x%x", e_bdf);
+      val_print(ERROR, " (before 0x%x)", pm_state_before);
+      val_print(ERROR, " (after 0x%x)", pm_state_after);
       fail_cnt++;
     }
   }
 
   if (fail_cnt)
-    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, fail_cnt));
+    val_set_status(pe_index, RESULT_FAIL(fail_cnt));
   else if (test_skip)
-    val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 02));
+    val_set_status(pe_index, RESULT_SKIP(02));
   else
-    val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+    val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t
@@ -151,7 +151,7 @@ e044_entry(uint32_t num_pe)
   status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
   if (status != ACS_STATUS_SKIP) {
     if (val_exerciser_test_init() != ACS_STATUS_PASS)
-      return TEST_SKIP_VAL;
+      return TEST_SKIP;
     val_run_test_payload(TEST_NUM, num_pe, payload, 0);
   }
 

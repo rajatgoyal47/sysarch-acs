@@ -40,8 +40,8 @@ static void payload(void)
     if (val_pe_feat_check(PE_FEAT_RME) || val_pe_feat_check(PE_FEAT_MPAM))
     {
       /* Skip the test */
-      val_print(ACS_PRINT_INFO, "\n       PE Does not Support MPAM for RME", 0);
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+      val_print(TRACE, "\n       PE Does not Support MPAM for RME");
+      val_set_status(pe_index, RESULT_SKIP(01));
       return;
     }
 
@@ -59,12 +59,12 @@ static void payload(void)
 
     if (num_sp4 == 0) {
       /* Fail The Test */
-      val_print(ACS_PRINT_ERR, "\n       Four Space Region Number is 0", 0);
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+      val_print(ERROR, "\n       Four Space Region Number is 0");
+      val_set_status(pe_index, RESULT_FAIL(01));
       return;
     }
 
-    val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+    val_set_status(pe_index, RESULT_PASS);
     return;
 }
 

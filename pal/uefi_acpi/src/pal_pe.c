@@ -26,6 +26,7 @@
 #include <Protocol/Smbios.h>
 
 #include "pal_uefi.h"
+#include "pal_sysreg.h"
 
 static   EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE_HEADER *gMadtHdr;
 UINT8   *gSecondaryPeStack;
@@ -39,19 +40,6 @@ extern INT32 gPsciConduit;
   enable MMU/caches with the same page table configuration.
 **/
 static PE_MMU_CONFIG gMmuConfig __attribute__((aligned(64)));
-
-/* External assembly functions for reading MMU registers */
-UINT64 AA64ReadCurrentEL(VOID);
-UINT64 AA64ReadTtbr0El1(VOID);
-UINT64 AA64ReadTtbr0El2(VOID);
-UINT64 AA64ReadTtbr1El1(VOID);
-UINT64 AA64ReadTtbr1El2(VOID);
-UINT64 AA64ReadTcr1(VOID);
-UINT64 AA64ReadTcr2(VOID);
-UINT64 AA64ReadMair1(VOID);
-UINT64 AA64ReadMair2(VOID);
-UINT64 AA64ReadSctlr1(VOID);
-UINT64 AA64ReadSctlr2(VOID);
 
 #define MAX_NUM_OF_SMBIOS_SLOTS_SUPPORTED  1024
 #define SIZE_STACK_SECONDARY_PE  0x100      //256 bytes per core
@@ -94,7 +82,8 @@ pal_smbios_create_info_table(PE_SMBIOS_PROCESSOR_INFO_TABLE *SmbiosTable)
   PE_SMBIOS_TYPE4_INFO *Type4Entry = NULL;
 
   if (SmbiosTable == NULL) {
-    acs_print(ACS_PRINT_ERR, L" Input SMBIOS Table Pointer is NULL. Cannot create SMBIOS INFO\n");
+    pal_print_msg(ACS_PRINT_ERR,
+                  " Input SMBIOS Table Pointer is NULL. Cannot create SMBIOS INFO\n");
     return;
   }
 
@@ -116,7 +105,9 @@ pal_smbios_create_info_table(PE_SMBIOS_PROCESSOR_INFO_TABLE *SmbiosTable)
 
     /* Check of record if of type 4 */
     if (Record->Type == SMBIOS_TYPE_PROCESSOR_INFORMATION) {
-      acs_print(ACS_PRINT_DEBUG, L" Smbios type %d found\n", Record->Type);
+      pal_print_msg(ACS_PRINT_DEBUG,
+                    " Smbios type %d found\n",
+                    Record->Type);
 
       Type4Record = (SMBIOS_TABLE_TYPE4 *)Record;
 
@@ -126,7 +117,9 @@ pal_smbios_create_info_table(PE_SMBIOS_PROCESSOR_INFO_TABLE *SmbiosTable)
       else
         Type4Entry->processor_family = Type4Record->ProcessorFamily;
 
-      acs_print(ACS_PRINT_DEBUG, L"  Processor Family 0x%x\n", Type4Entry->processor_family);
+      pal_print_msg(ACS_PRINT_DEBUG,
+                    "  Processor Family 0x%x\n",
+                    Type4Entry->processor_family);
 
       /* Save Processor core count */
       if (Type4Record->CoreCount == SMBIOS_OBTAIN_CORE_COUNT2)
@@ -134,21 +127,28 @@ pal_smbios_create_info_table(PE_SMBIOS_PROCESSOR_INFO_TABLE *SmbiosTable)
       else
         Type4Entry->core_count = Type4Record->CoreCount;
 
-      acs_print(ACS_PRINT_DEBUG, L"  Processor Count 0x%x\n", Type4Entry->core_count);
+      pal_print_msg(ACS_PRINT_DEBUG,
+                    "  Processor Count 0x%x\n",
+                    Type4Entry->core_count);
 
       Type4Entry++;
       SmbiosTable->slot_count++;
 
       if (SmbiosTable->slot_count >= MAX_NUM_OF_SMBIOS_SLOTS_SUPPORTED) {
-        acs_print(ACS_PRINT_WARN, L" Total Slots/Sockets 0x%x\n", SmbiosTable->slot_count);
-        acs_print(ACS_PRINT_WARN, L" Number of SMBIOS Slots greater than %d\n",
-                        MAX_NUM_OF_SMBIOS_SLOTS_SUPPORTED);
+        pal_print_msg(ACS_PRINT_WARN,
+                      " Total Slots/Sockets 0x%x\n",
+                      SmbiosTable->slot_count);
+        pal_print_msg(ACS_PRINT_WARN,
+                      " Number of SMBIOS Slots greater than %d\n",
+                      MAX_NUM_OF_SMBIOS_SLOTS_SUPPORTED);
         SmbiosTable->slot_count = MAX_NUM_OF_SMBIOS_SLOTS_SUPPORTED;
         return;
       }
     }
   }
-  acs_print(ACS_PRINT_DEBUG, L" Total Slots/Sockets 0x%x\n", SmbiosTable->slot_count);
+  pal_print_msg(ACS_PRINT_DEBUG,
+                " Total Slots/Sockets 0x%x\n",
+                SmbiosTable->slot_count);
 }
 
 /**
@@ -172,7 +172,8 @@ pal_psci_get_conduit (
 
   Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *) pal_get_xsdt_ptr();
   if (Xsdt == NULL) {
-      acs_print(ACS_PRINT_ERR, L" XSDT not found\n");
+      pal_print_msg(ACS_PRINT_ERR,
+                    " XSDT not found\n");
       return CONDUIT_NO_TABLE;
   }
 
@@ -241,39 +242,51 @@ PalCaptureMmuConfig(VOID)
   UINT32 SkipTtbr1;
 
   /* Read current exception level */
-  CurrentEl = (AA64ReadCurrentEL() >> 2) & 0x3;
+  CurrentEl = (read_CurrentEL() >> 2) & 0x3;
   gMmuConfig.current_el = (UINT32)CurrentEl;
 
   /* Read MMU configuration registers based on current EL */
   if (CurrentEl == 2) {
-    gMmuConfig.ttbr0 = AA64ReadTtbr0El2();
-    gMmuConfig.tcr   = AA64ReadTcr2();
-    gMmuConfig.mair  = AA64ReadMair2();
-    gMmuConfig.sctlr = AA64ReadSctlr2();
+    gMmuConfig.ttbr0 = read_ttbr0_el2();
+    gMmuConfig.tcr   = read_tcr_el2();
+    gMmuConfig.mair  = read_mair_el2();
+    gMmuConfig.sctlr = read_sctlr_el2();
     /* Read TTBR1_EL2 only if TCR_EL2 allows translation via TTBR1 (EPD1 bit[23]) */
     SkipTtbr1 = (gMmuConfig.tcr >> TCR_EPD1_BIT) & 0x1;
     if (!SkipTtbr1)
-        gMmuConfig.ttbr1 = AA64ReadTtbr1El2();
+        gMmuConfig.ttbr1 = read_ttbr1_el2();
   } else {
     /* Assume EL1 */
-    gMmuConfig.ttbr0 = AA64ReadTtbr0El1();
-    gMmuConfig.tcr   = AA64ReadTcr1();
-    gMmuConfig.mair  = AA64ReadMair1();
-    gMmuConfig.sctlr = AA64ReadSctlr1();
+    gMmuConfig.ttbr0 = read_ttbr0_el1();
+    gMmuConfig.tcr   = read_tcr_el1();
+    gMmuConfig.mair  = read_mair_el1();
+    gMmuConfig.sctlr = read_sctlr_el1();
     /* Read TTBR1_EL1 only if TCR_EL1 allows translation via TTBR1 (EPD1 bit[23]) */
     SkipTtbr1 = (gMmuConfig.tcr >> TCR_EPD1_BIT) & 0x1;
     if (!SkipTtbr1)
-        gMmuConfig.ttbr1 = AA64ReadTtbr1El1();
+        gMmuConfig.ttbr1 = read_ttbr1_el1();
   }
 
-  acs_print(ACS_PRINT_DEBUG, L"  MMU Config captured at EL%d\n", gMmuConfig.current_el);
-  acs_print(ACS_PRINT_DEBUG, L"    TTBR0: 0x%lx\n", gMmuConfig.ttbr0);
-  acs_print(ACS_PRINT_DEBUG, L"    TCR:   0x%lx\n", gMmuConfig.tcr);
-  acs_print(ACS_PRINT_DEBUG, L"    MAIR:  0x%lx\n", gMmuConfig.mair);
-  acs_print(ACS_PRINT_DEBUG, L"    SCTLR: 0x%lx\n", gMmuConfig.sctlr);
+  pal_print_msg(ACS_PRINT_DEBUG,
+                "  MMU Config captured at EL%d\n",
+                gMmuConfig.current_el);
+  pal_print_msg(ACS_PRINT_DEBUG,
+                "    TTBR0: 0x%lx\n",
+                gMmuConfig.ttbr0);
+  pal_print_msg(ACS_PRINT_DEBUG,
+                "    TCR:   0x%lx\n",
+                gMmuConfig.tcr);
+  pal_print_msg(ACS_PRINT_DEBUG,
+                "    MAIR:  0x%lx\n",
+                gMmuConfig.mair);
+  pal_print_msg(ACS_PRINT_DEBUG,
+                "    SCTLR: 0x%lx\n",
+                gMmuConfig.sctlr);
 
   if (!SkipTtbr1)
-    acs_print(ACS_PRINT_DEBUG, L"    TTBR1: 0x%lx\n", gMmuConfig.ttbr1);
+    pal_print_msg(ACS_PRINT_DEBUG,
+                  "    TTBR1: 0x%lx\n",
+                  gMmuConfig.ttbr1);
 
   /* Clean cache to ensure secondary PEs see the config */
   pal_pe_data_cache_ops_by_va((UINT64)&gMmuConfig, CLEAN_AND_INVALIDATE);
@@ -326,7 +339,9 @@ PalAllocateSecondaryStack(UINT64 mpidr)
                     StackSize,
                     (VOID **) &Buffer);
       if (EFI_ERROR(Status)) {
-          acs_print(ACS_PRINT_ERR, L"\n FATAL - Allocation for Seconday stack failed %x\n", Status);
+          pal_print_msg(ACS_PRINT_ERR,
+                        "\n FATAL - Allocation for Seconday stack failed %x\n",
+                        Status);
       }
       pal_pe_data_cache_ops_by_va((UINT64)&Buffer, CLEAN_AND_INVALIDATE);
 
@@ -364,7 +379,8 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
   UINT32                        i;
 
   if (PeTable == NULL) {
-    acs_print(ACS_PRINT_ERR, L" Input PE Table Pointer is NULL. Cannot create PE INFO\n");
+    pal_print_msg(ACS_PRINT_ERR,
+                  " Input PE Table Pointer is NULL. Cannot create PE INFO\n");
     return;
   }
 
@@ -375,9 +391,13 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
 
   if (gMadtHdr != NULL) {
     TableLength =  gMadtHdr->Header.Length;
-    acs_print(ACS_PRINT_INFO, L"  MADT is at %x and length is %x\n", gMadtHdr, TableLength);
+    pal_print_msg(ACS_PRINT_INFO,
+                  "  MADT is at %x and length is %x\n",
+                  gMadtHdr,
+                  TableLength);
   } else {
-    acs_print(ACS_PRINT_ERR, L" MADT not found\n");
+    pal_print_msg(ACS_PRINT_ERR,
+                  " MADT not found\n");
     return;
   }
 
@@ -390,8 +410,13 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
     if (Entry->Type == EFI_ACPI_6_1_GIC) {
       //Fill in the cpu num and the mpidr in pe info table
       Flags           = Entry->Flags;
-      acs_print(ACS_PRINT_INFO, L"  Flags %x\n", Flags);
-      acs_print(ACS_PRINT_DEBUG, L"  PE Enabled %d, Online Capable %d\n", ENABLED_BIT(Flags), ONLINE_CAP_BIT(Flags));
+      pal_print_msg(ACS_PRINT_INFO,
+                    "  Flags %x\n",
+                    Flags);
+      pal_print_msg(ACS_PRINT_DEBUG,
+                    "  PE Enabled %d, Online Capable %d\n",
+                    ENABLED_BIT(Flags),
+                    ONLINE_CAP_BIT(Flags));
 
       /* As per MADT (GICC CPU Interface Flags) Processor is usable when
            Enabled bit is set
@@ -416,11 +441,16 @@ pal_pe_create_info_table(PE_INFO_TABLE *PeTable)
               Ptr->trbe_interrupt = ((EFI_ACPI_6_5_GIC_STRUCTURE *)
                                      ((UINT8 *)Entry))->TrbeInterrupt;
 
-          acs_print(ACS_PRINT_DEBUG, L"  MADT Revision %llx \n", gMadtHdr->Header.Revision);
+          pal_print_msg(ACS_PRINT_DEBUG,
+                        "  MADT Revision %llx \n",
+                        gMadtHdr->Header.Revision);
 
           for (i = 0; i < MAX_L1_CACHE_RES; i++)
               Ptr->level_1_res[i] = DEFAULT_CACHE_IDX; //initialize cache index fields with all 1's
-          acs_print(ACS_PRINT_DEBUG, L" MPIDR %llx PE num %x\n", Ptr->mpidr, Ptr->pe_num);
+          pal_print_msg(ACS_PRINT_DEBUG,
+                        " MPIDR %llx PE num %x\n",
+                        Ptr->mpidr,
+                        Ptr->pe_num);
           pal_pe_data_cache_ops_by_va((UINT64)Ptr, CLEAN_AND_INVALIDATE);
           Ptr++;
           PeTable->header.num_of_pe++;

@@ -108,7 +108,7 @@ run_cxl_path_ats_dma(uint32_t e_bdf)
 
   dram_buf_virt = val_memory_alloc_pages(TEST_DATA_NUM_PAGES);
   if (!dram_buf_virt) {
-      val_print(ACS_PRINT_ERR, "\n       Cacheable mem alloc failure", 0);
+      val_print(ERROR, "\n       Cacheable mem alloc failure");
       goto test_fail;
   }
 
@@ -117,7 +117,7 @@ run_cxl_path_ats_dma(uint32_t e_bdf)
   dram_buf_out_virt = dram_buf_virt + dma_len;
 
   if (val_pe_reg_read_tcr(0, &pgt_desc.tcr) || val_pe_reg_read_ttbr(0, &ttbr)) {
-    val_print(ACS_PRINT_ERR, "\n       TCR read failure", 0);
+    val_print(ERROR, "\n       TCR read failure");
     goto test_fail;
   }
 
@@ -158,13 +158,13 @@ run_cxl_path_ats_dma(uint32_t e_bdf)
      will update pgt_desc.pgt_base to point to created translation table */
   pgt_desc.pgt_base = 0;
   if (val_pgt_create(&mem_desc, &pgt_desc)) {
-    val_print(ACS_PRINT_ERR, "\n       Unable to create page table with given attributes", 0);
+    val_print(ERROR, "\n       Unable to create page table with given attributes");
     goto test_fail;
   }
 
   if (val_smmu_map(master, pgt_desc))
   {
-    val_print(ACS_PRINT_ERR, "\n       SMMU mapping failed (%x)     ", e_bdf);
+    val_print(ERROR, "\n       SMMU mapping failed (%x)     ", e_bdf);
     goto test_fail;
   }
   smmu_mapped = 1;
@@ -178,20 +178,20 @@ run_cxl_path_ats_dma(uint32_t e_bdf)
 
   /* Send an ATS Translation Request for the VA */
   if (val_exerciser_ops(ATS_TXN_REQ, dram_buf_iova, instance)) {
-    val_print(ACS_PRINT_ERR, "\n       ATS Translation Req Failed exerciser %4x", instance);
+    val_print(ERROR, "\n       ATS Translation Req Failed exerciser %4x", instance);
     goto test_fail;
   }
 
   /* Get ATS Translation Response */
   m_vir_addr = dram_buf_iova;
   if (val_exerciser_get_param(ATS_RES_ATTRIBUTES, &translated_addr, &m_vir_addr, instance)) {
-    val_print(ACS_PRINT_ERR, "\n       ATS Response failure %4x", instance);
+    val_print(ERROR, "\n       ATS Response failure %4x", instance);
     goto test_fail;
   }
 
   /* Compare Translated Addr with Physical Address from the Mappings */
   if (translated_addr != dram_buf_phys) {
-    val_print(ACS_PRINT_ERR, "\n       ATS Translation failure %4x", instance);
+    val_print(ERROR, "\n       ATS Translation failure %4x", instance);
     goto test_fail;
   }
 
@@ -202,7 +202,7 @@ run_cxl_path_ats_dma(uint32_t e_bdf)
   val_exerciser_set_param(CFG_TXN_ATTRIBUTES, TXN_ADDR_TYPE, AT_TRANSLATED, instance);
 
   if (val_exerciser_set_param(DMA_ATTRIBUTES, dram_buf_phys, dma_len, instance)) {
-    val_print(ACS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
+    val_print(ERROR, "\n       DMA attributes setting failure %4x", instance);
     goto test_fail;
   }
 
@@ -210,7 +210,7 @@ run_cxl_path_ats_dma(uint32_t e_bdf)
   val_exerciser_ops(START_DMA, EDMA_TO_DEVICE, instance);
 
   if (val_exerciser_set_param(DMA_ATTRIBUTES, dram_buf_out_iova, dma_len, instance)) {
-    val_print(ACS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
+    val_print(ERROR, "\n       DMA attributes setting failure %4x", instance);
     goto test_fail;
   }
 
@@ -218,7 +218,7 @@ run_cxl_path_ats_dma(uint32_t e_bdf)
   val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, instance);
 
   if (val_memory_compare(dram_buf_virt, dram_buf_out_virt, dma_len)) {
-    val_print(ACS_PRINT_ERR, "\n       Data Comparasion failure for Exerciser %4x", instance);
+    val_print(ERROR, "\n       Data Comparasion failure for Exerciser %4x", instance);
     goto test_fail;
   }
 
@@ -278,13 +278,13 @@ payload(void)
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   if (val_exerciser_test_init() != ACS_STATUS_PASS) {
-    val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+    val_set_status(pe_index, RESULT_SKIP(01));
     return;
   }
 
   comp_count = val_cxl_get_component_info(CXL_COMPONENT_INFO_COUNT, 0);
   if (comp_count == 0) {
-    val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 02));
+    val_set_status(pe_index, RESULT_SKIP(02));
     return;
   }
 
@@ -297,24 +297,24 @@ payload(void)
     e_bdf = val_cxl_get_component_info(CXL_COMPONENT_INFO_BDF_INDEX, comp_idx);
     status = val_cxl_device_is_cxl(e_bdf);
     if (status != ACS_STATUS_PASS) {
-      val_print(ACS_PRINT_DEBUG, "\n       No CXL Exerciser device BDF", 0);
+      val_print(DEBUG, "\n       No CXL Exerciser device BDF");
       continue;
     }
 
     test_skip = 1;
 
     if (run_cxl_path_ats_dma(e_bdf) != ACS_STATUS_PASS) {
-      val_print(ACS_PRINT_ERR, "\n       CXL ATS+DMA functional test failed, BDF: 0x%x", e_bdf);
+      val_print(ERROR, "\n       CXL ATS+DMA functional test failed, BDF: 0x%x", e_bdf);
       fail_cnt++;
     }
   }
 
   if (test_skip == 0)
-    val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 03));
+    val_set_status(pe_index, RESULT_SKIP(03));
   else if (fail_cnt)
-    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+    val_set_status(pe_index, RESULT_FAIL(01));
   else
-    val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+    val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t
@@ -328,7 +328,7 @@ e040_entry(uint32_t num_pe)
   status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
   if (status != ACS_STATUS_SKIP) {
       if (val_exerciser_test_init() != ACS_STATUS_PASS)
-          return TEST_SKIP_VAL;
+          return TEST_SKIP;
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
   }
 

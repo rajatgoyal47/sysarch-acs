@@ -35,8 +35,8 @@ payload()
 
   num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
   if (num_smmu == 0) {
-      val_print(ACS_PRINT_ERR, "\n       No SMMU Controllers are discovered                  ", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+      val_print(ERROR, "\n       No SMMU Controllers are discovered                  ");
+      val_set_status(index, RESULT_SKIP(1));
       return;
   }
 
@@ -49,12 +49,12 @@ payload()
       }
   }
   if ((smmuv2_flag) && (smmuv3_flag)) {
-      val_print(ACS_PRINT_ERR, "\n       ALL SMMUs are not of the same Architecture version\n", 0);
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+      val_print(ERROR, "\n       ALL SMMUs are not of the same Architecture version\n");
+      val_set_status(index, RESULT_FAIL(1));
       return;
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

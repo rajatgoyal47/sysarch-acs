@@ -43,13 +43,13 @@ program_all_monitors_with_pmg(uint16_t partid, uint8_t pmg)
     uint32_t csumon_count = 0;
     uint32_t rsrc_node_cnt, rsrc_index;
 
-    val_print(ACS_PRINT_TEST, "\n       Programming all MSCs to filter PMG value %d", pmg);
+    val_print(INFO, "\n       Programming all MSCs to filter PMG value %d", pmg);
 
     for (msc_index = 0; msc_index < msc_node_cnt; msc_index++) {
         rsrc_node_cnt = val_mpam_get_info(MPAM_MSC_RSRC_COUNT, msc_index, 0);
 
-        val_print(ACS_PRINT_DEBUG, "\n       msc index  = %d", msc_index);
-        val_print(ACS_PRINT_DEBUG, "\n       Resource count = %d", rsrc_node_cnt);
+        val_print(DEBUG, "\n       msc index  = %d", msc_index);
+        val_print(DEBUG, "\n       Resource count = %d", rsrc_node_cnt);
 
         for (rsrc_index = 0; rsrc_index < rsrc_node_cnt; rsrc_index++) {
 
@@ -78,7 +78,7 @@ program_all_monitors_with_pmg(uint16_t partid, uint8_t pmg)
                     /* Skip if the MSC's resource does not implement CSUMON or
                        has max_pmg < programmable PMG */
                     if (csumon_count == 0 || max_pmg < pmg) {
-                        val_print(ACS_PRINT_TEST, "\n       Skipping MSC resource %d", rsrc_index);
+                        val_print(INFO, "\n       Skipping MSC resource %d", rsrc_index);
                         continue;
                     }
 
@@ -99,13 +99,13 @@ set_status_for_all_csumon(uint32_t status)
     uint32_t csumon_count = 0;
     uint32_t nrdy_timeout = 0;
 
-    val_print(ACS_PRINT_DEBUG, "\n       Setting CSUMON status of all MSC to %d", status);
+    val_print(DEBUG, "\n       Setting CSUMON status of all MSC to %d", status);
 
     for (msc_index = 0; msc_index < msc_node_cnt; msc_index++) {
         rsrc_node_cnt = val_mpam_get_info(MPAM_MSC_RSRC_COUNT, msc_index, 0);
 
-        val_print(ACS_PRINT_DEBUG, "\n       msc index  = %d", msc_index);
-        val_print(ACS_PRINT_DEBUG, "\n       Resource count = %d ", rsrc_node_cnt);
+        val_print(DEBUG, "\n       msc index  = %d", msc_index);
+        val_print(DEBUG, "\n       Resource count = %d ", rsrc_node_cnt);
 
         for (rsrc_index = 0; rsrc_index < rsrc_node_cnt; rsrc_index++) {
 
@@ -129,7 +129,7 @@ set_status_for_all_csumon(uint32_t status)
                         continue;
 
                     if (csumon_count == 0) {
-                        val_print(ACS_PRINT_DEBUG, "\n       Skipping MSC resource %d", rsrc_index);
+                        val_print(DEBUG, "\n       Skipping MSC resource %d", rsrc_index);
                         continue;
                     }
 
@@ -158,7 +158,7 @@ read_all_msc_csu_counters(uint32_t expected_count)
     uint32_t csumon_count;
     uint32_t storage_count;
 
-    val_print(ACS_PRINT_DEBUG, "\n       Reading the CSUMON counter of all MSC", 0);
+    val_print(DEBUG, "\n       Reading the CSUMON counter of all MSC");
 
     for (msc_index = 0; msc_index < msc_node_cnt; msc_index++) {
         rsrc_node_cnt = val_mpam_get_info(MPAM_MSC_RSRC_COUNT, msc_index, 0);
@@ -185,13 +185,13 @@ read_all_msc_csu_counters(uint32_t expected_count)
                         continue;
 
                     if (csumon_count == 0) {
-                        val_print(ACS_PRINT_DEBUG, "\n       Skipping MSC resource %d", rsrc_index);
+                        val_print(DEBUG, "\n       Skipping MSC resource %d", rsrc_index);
                         continue;
                     }
 
                     storage_count = val_mpam_read_csumon(msc_index);
-                    val_print(ACS_PRINT_TEST, "\n       msc index  = %d", msc_index);
-                    val_print(ACS_PRINT_TEST, "  storage count  = %d", storage_count);
+                    val_print(INFO, "\n       msc index  = %d", msc_index);
+                    val_print(INFO, "  storage count  = %d", storage_count);
 
                     /* Expected count || Storage count -> Status */
                     /*       0        ||       0       ->    1   */
@@ -200,7 +200,7 @@ read_all_msc_csu_counters(uint32_t expected_count)
                     /*       1        ||       1       ->    1   */
                     if (!((expected_count && storage_count) || (!expected_count && !storage_count)))
                     {
-                        val_print(ACS_PRINT_ERR, "\n    MSC Storage value mismatch. Failure!", 0);
+                        val_print(ERROR, "\n    MSC Storage value mismatch. Failure!");
                         fail_cnt++;
                     }
                 }
@@ -226,25 +226,25 @@ payload(void)
    /* Get the Index for LLC */
     llc_index = val_cache_get_llc_index();
     if (llc_index == CACHE_TABLE_EMPTY) {
-        val_print(ACS_PRINT_ERR, "\n       Cache info table empty", 0);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+        val_print(ERROR, "\n       Cache info table empty");
+        val_set_status(index, RESULT_FAIL(01));
         return;
     }
 
     /* Get the cache identifier for LLC */
     llc_identifier = val_cache_get_info(CACHE_ID, llc_index);
     if (llc_identifier == INVALID_CACHE_INFO) {
-        val_print(ACS_PRINT_ERR, "\n       LLC invalid in PPTT", 0);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
+        val_print(ERROR, "\n       LLC invalid in PPTT");
+        val_set_status(index, RESULT_FAIL(02));
         return;
     }
 
     /* Get total number of MSCs reported by MPAM ACPI table */
     msc_node_cnt = val_mpam_get_msc_count();
-    val_print(ACS_PRINT_DEBUG, "\n       MSC count = %d", msc_node_cnt);
+    val_print(DEBUG, "\n       MSC count = %d", msc_node_cnt);
 
     if (msc_node_cnt == 0) {
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 03));
+        val_set_status(index, RESULT_FAIL(03));
         return;
     }
 
@@ -253,8 +253,8 @@ payload(void)
     dest_buf = (void *)val_aligned_alloc(MEM_ALIGN_4K, BUFFER_SIZE);
 
     if ((src_buf == NULL) || (dest_buf == NULL)) {
-        val_print(ACS_PRINT_ERR, "\n       Mem allocation failed", 0);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 04));
+        val_print(ERROR, "\n       Mem allocation failed");
+        val_set_status(index, RESULT_FAIL(04));
         if (dest_buf != NULL)
             val_memory_free_aligned(dest_buf);
         if (src_buf != NULL)
@@ -278,7 +278,7 @@ payload(void)
     mpam2_el2 = CLEAR_BITS_M_TO_N(mpam2_el2, MPAMn_ELx_PMG_D_SHIFT+7,
                                                                     MPAMn_ELx_PMG_D_SHIFT);
 
-    val_print(ACS_PRINT_TEST, "\n       Programming mpam2_el2 with PMG=0 %d", pmg0);
+    val_print(INFO, "\n       Programming mpam2_el2 with PMG=0 %d", pmg0);
 
     mpam2_el2 |= (((uint64_t)pmg0 << MPAMn_ELx_PMG_D_SHIFT) |
                     ((uint64_t)partid << MPAMn_ELx_PARTID_D_SHIFT));
@@ -314,7 +314,7 @@ payload(void)
     mpam2_el2 |= (((uint64_t)pmg1 << MPAMn_ELx_PMG_D_SHIFT) |
                     ((uint64_t)partid << MPAMn_ELx_PARTID_D_SHIFT));
 
-    val_print(ACS_PRINT_TEST, "\n       Programming mpam2_el2 with PMG=1 %d", pmg1);
+    val_print(INFO, "\n       Programming mpam2_el2 with PMG=1 %d", pmg1);
 
     val_mpam_reg_write(MPAM2_EL2, mpam2_el2);
 
@@ -332,7 +332,7 @@ payload(void)
 
     /* Test fails if storage_value1 is non zero or storage_value2 is zero */
     if (fail_cnt) {
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 05));
+        val_set_status(index, RESULT_FAIL(05));
 
         /*Restore MPAM2_EL2 settings */
         val_mpam_reg_write(MPAM2_EL2, mpam2_el2_temp);
@@ -351,7 +351,7 @@ payload(void)
     val_memory_free_aligned(src_buf);
     val_memory_free_aligned(dest_buf);
 
-    val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+    val_set_status(index, RESULT_PASS);
     return;
 }
 

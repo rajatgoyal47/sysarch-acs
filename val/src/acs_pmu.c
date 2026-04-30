@@ -42,15 +42,15 @@ val_pmu_reg_read (
 
     switch (RegId) {
     case PMCR_EL0:
-        return AA64ReadPmcr();
+        return read_pmcr_el0();
     case PMCCNTR_EL0:
-        return AA64ReadPmccntr();
+        return read_pmccntr_el0();
     case PMCCFILTR_EL0:
-        return AA64ReadPmccfiltr();
+        return read_pmccfiltr_el0();
     case PMCNTENSET_EL0:
-        return AA64ReadPmcntenset();
+        return read_pmcntenset_el0();
     default:
-        val_print(ACS_PRINT_ERR, "\n FATAL - Unsupported PMU register read \n", 0);
+        val_print(ERROR, "\n FATAL - Unsupported PMU register read \n");
     }
 
     return 0x0;
@@ -72,19 +72,19 @@ val_pmu_reg_write (
 
     switch (RegId) {
     case PMCR_EL0:
-        AA64WritePmcr(WriteData);
+        write_pmcr_el0(WriteData);
         break;
     case PMCCNTR_EL0:
-        AA64WritePmccntr(WriteData);
+        write_pmccntr_el0(WriteData);
         break;
     case PMCCFILTR_EL0:
-        AA64WritePmccfiltr(WriteData);
+        write_pmccfiltr_el0(WriteData);
         break;
     case PMCNTENSET_EL0:
-        AA64WritePmcntenset(WriteData);
+        write_pmcntenset_el0(WriteData);
         break;
     default:
-        val_print(ACS_PRINT_ERR, "\n FATAL - Unsupported PMU register read \n", 0);
+        val_print(ERROR, "\n FATAL - Unsupported PMU register read \n");
     }
 }
 
@@ -168,7 +168,7 @@ val_pmu_create_info_table(uint64_t *pmu_info_table)
   uint32_t reg_value;
 
   if (pmu_info_table == NULL) {
-    val_print(ACS_PRINT_ERR, "\nInput for Create PMU Info table cannot be NULL", 0);
+    val_print(ERROR, "\nInput for Create PMU Info table cannot be NULL");
     return;
   }
 
@@ -176,21 +176,21 @@ val_pmu_create_info_table(uint64_t *pmu_info_table)
 
   pal_pmu_create_info_table(g_pmu_info_table);
 
-  val_print(ACS_PRINT_TEST, " PMU_INFO: Number of PMU units        : %4d\n",
+  val_print(INFO, " PMU_INFO: Number of PMU units        : %4d\n",
             g_pmu_info_table->pmu_count);
 
   for (node_index = 0; node_index < g_pmu_info_table->pmu_count; node_index++) {
-      val_print(ACS_PRINT_INFO, " PMU node index: %4d\n", node_index);
+      val_print(TRACE, " PMU node index: %4d\n", node_index);
       base = val_pmu_get_info(PMU_NODE_BASE0, node_index);
       val_mmu_update_entry(base, 0x1000, DEVICE_nGnRnE);
-      val_print(ACS_PRINT_INFO, " PMU node mapped \n", 0);
+      val_print(TRACE, " PMU node mapped \n");
       reg_value = BITFIELD_READ(PMDEVARCH_ARCHITECT, val_mmio_read(base + REG_PMDEVARCH));
       /* 0x23B is value for Arm Limited */
       if (reg_value == 0x23B)
           val_pmu_set_node_coresight_complaint(0x1, node_index);
       else {
           val_pmu_set_node_coresight_complaint(0x0, node_index);
-          val_print(ACS_PRINT_ERR, "\n   PMU node index %d is not CS complaint", node_index);
+          val_print(ERROR, "\n   PMU node index %d is not CS complaint", node_index);
       }
   }
 
@@ -206,12 +206,12 @@ val_pmu_set_node_coresight_complaint(uint32_t flag, uint32_t node_index)
   PMU_INFO_BLOCK *entry;
 
   if (g_pmu_info_table == NULL) {
-      val_print(ACS_PRINT_WARN, "\n   APMT info table not found", 0);
+      val_print(WARN, "\n   APMT info table not found");
       return;
   }
 
   if (node_index > g_pmu_info_table->pmu_count) {
-      val_print(ACS_PRINT_WARN, "\n   Invalid Node index ", 0);
+      val_print(WARN, "\n   Invalid Node index ");
       return;
   }
 
@@ -230,9 +230,8 @@ val_pmu_free_info_table(void)
         g_pmu_info_table = NULL;
     }
     else {
-      val_print(ACS_PRINT_ERR,
-                  "\n WARNING: g_pmu_info_table pointer is already NULL",
-        0);
+      val_print(ERROR,
+                  "\n WARNING: g_pmu_info_table pointer is already NULL");
     }
 }
 
@@ -251,12 +250,12 @@ val_pmu_get_info(PMU_INFO_e type, uint32_t node_index)
   PMU_INFO_BLOCK *entry;
 
   if (g_pmu_info_table == NULL) {
-      val_print(ACS_PRINT_WARN, "\n   APMT info table not found", 0);
+      val_print(WARN, "\n   APMT info table not found");
       return 0;
   }
 
   if (node_index > g_pmu_info_table->pmu_count) {
-      val_print(ACS_PRINT_WARN, "\n   Invalid Node index ", 0);
+      val_print(WARN, "\n   Invalid Node index ");
       return 0;
   }
 
@@ -280,7 +279,7 @@ val_pmu_get_info(PMU_INFO_e type, uint32_t node_index)
   case PMU_NODE_CS_COM:
       return entry->coresight_compliant;
   default:
-        val_print(ACS_PRINT_ERR, "\n   This PMU info option is not supported : %d ", type);
+        val_print(ERROR, "\n   This PMU info option is not supported : %d ", type);
         return 0;
   }
 }
@@ -554,7 +553,7 @@ val_pmu_get_node_index(uint64_t node_instance_primary, PMU_NODE_INFO_TYPE node_t
             return node_index;
         }
     }
-    val_print(ACS_PRINT_DEBUG, "\n   PMU node for given node primary instance not found ", 0);
+    val_print(DEBUG, "\n   PMU node for given node primary instance not found ");
     return PMU_INVALID_INDEX;
 }
 
@@ -647,7 +646,7 @@ val_pmu_get_index_acpiid(uint64_t interface_acpiid)
             return node_index;
         }
     }
-    val_print(ACS_PRINT_DEBUG, "\n   PMU node for given acpi id not found ", 0);
+    val_print(DEBUG, "\n   PMU node for given acpi id not found ");
     return PMU_INVALID_INDEX;
 
 }
@@ -670,7 +669,7 @@ val_pmu_get_multi_traffic_support_interface(uint64_t *interface_acpiid,
   @return  TEST_PASS - success status
            non-zero - error status
 **/
-test_status_t is_coresight_pmu_present(void)
+uint32_t is_coresight_pmu_present(void)
 {
     uint32_t node_count;
     uint32_t cs_com = 0;
@@ -678,15 +677,15 @@ test_status_t is_coresight_pmu_present(void)
 
     /* Check if PMU nodes present in the system */
     node_count = val_pmu_get_info(PMU_NODE_COUNT, 0);
-    val_print(ACS_PRINT_DEBUG, "\n       PMU NODES = %d", node_count);
+    val_print(DEBUG, "\n       PMU NODES = %d", node_count);
 
     if (node_count == 0) {
-        val_print(ACS_PRINT_TEST, "\n       No PMU nodes found in APMT table", 0);
-        val_print(ACS_PRINT_TEST, "\n       The test must be considered fail"
-                                " if system has CoreSight PMU", 0);
-        val_print(ACS_PRINT_TEST, "\n       For non CoreSight PMU, manually verify A.4 PMU rules "
-                                "in the SBSA specification", 0);
-        return TEST_WARN;
+        val_print(INFO, "\n       No PMU nodes found in APMT table");
+        val_print(INFO, "\n       The test must be considered fail"
+                                " if system has CoreSight PMU");
+        val_print(INFO, "\n       For non CoreSight PMU, manually verify A.4 PMU rules "
+                                "in the SBSA specification");
+        return TEST_WARNING;
     }
 
     /* The test uses PMU CoreSight arch register map, skip if pmu node is not cs */
@@ -694,10 +693,10 @@ test_status_t is_coresight_pmu_present(void)
         cs_com |= val_pmu_get_info(PMU_NODE_CS_COM, node_index);
     }
     if (cs_com != 0x1) {
-        val_print(ACS_PRINT_TEST, "\n       No CoreSight PMU nodes found", 0);
-        val_print(ACS_PRINT_TEST, "\n       For non CoreSight PMU, manually verify A.4 PMU rules "
-                                "in the SBSA specification", 0);
-        return TEST_WARN;
+        val_print(INFO, "\n       No CoreSight PMU nodes found");
+        val_print(INFO, "\n       For non CoreSight PMU, manually verify A.4 PMU rules "
+                                "in the SBSA specification");
+        return TEST_WARNING;
     }
 
     return TEST_PASS;

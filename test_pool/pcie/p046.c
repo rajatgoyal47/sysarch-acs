@@ -87,7 +87,7 @@ payload (void)
   uint32_t ret;
 
   if(!count) {
-     val_set_status (index, RESULT_SKIP (TEST_NUM, 2));
+     val_set_status (index, RESULT_SKIP(2));
      return;
   }
 
@@ -103,7 +103,7 @@ payload (void)
       /* Get BDF of a device */
       dev_bdf = val_peripheral_get_info (ANY_BDF, count - 1);
       if (dev_bdf) {
-        val_print (ACS_PRINT_INFO, "       Checking PCI device with BDF %4X\n", dev_bdf);
+        val_print (TRACE, "       Checking PCI device with BDF %4X\n", dev_bdf);
         /* Read MSI(X) vectors */
         ret = val_get_msi_vectors (dev_bdf, &dev_mvec);
 
@@ -117,12 +117,12 @@ payload (void)
           mvec = dev_mvec;
           while(mvec) {
               if(mvec->vector.vector_irq_base < LPI_BASE) {
-                 val_print(ACS_PRINT_ERR,
+                 val_print(ERROR,
                     "       MSI vector irq %llx is not an LPI\n", mvec->vector.vector_irq_base);
-                 val_set_status (index, RESULT_FAIL (TEST_NUM, mvec->vector.vector_irq_base));
+                 val_set_status (index, RESULT_FAIL(mvec->vector.vector_irq_base));
                  status = 1;
               }else {
-                val_print(ACS_PRINT_DEBUG,
+                val_print(DEBUG,
                     "       MSI vector irq %llx is an LPI\n", mvec->vector.vector_irq_base);
               }
               mvec = mvec->next;
@@ -137,15 +137,15 @@ payload (void)
   }
 
   if (test_skip) {
-    val_print(ACS_PRINT_DEBUG, "\n       No MSI vectors found ", 0);
-    val_set_status (index, RESULT_SKIP(TEST_NUM, 0));
+    val_print(DEBUG, "\n       No MSI vectors found ");
+    val_set_status (index, RESULT_SKIP(0));
   } else if (!status) {
-    val_set_status (index, RESULT_PASS(TEST_NUM, 0));
+    val_set_status (index, RESULT_PASS);
   }
   return;
 
 test_warn_unimplemented:
-  val_set_status(index, RESULT_WARN(TEST_NUM, 1));
+  val_set_status(index, RESULT_WARNING(1));
 }
 
 uint32_t

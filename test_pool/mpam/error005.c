@@ -45,7 +45,7 @@ void payload(void)
     for (index = 0; index < total_nodes; index++) {
 
         if (!val_mpam_msc_supports_esr(index)) {
-            val_print(ACS_PRINT_DEBUG, "\n       MSC index %d does not support ESR", index);
+            val_print(DEBUG, "\n       MSC index %d does not support ESR", index);
             continue;
         }
 
@@ -53,13 +53,13 @@ void payload(void)
         if (val_mpam_msc_supports_mon(index)) {
                 if (val_mpam_supports_csumon(index)) {
                     mon_count += val_mpam_get_csumon_count(index);
-                    val_print(ACS_PRINT_DEBUG,
+                    val_print(DEBUG,
                                 "\n       MSC implements %d CSU Monitors", mon_count);
                 }
 
                 if (val_mpam_msc_supports_mbwumon(index)) {
                     mon_count += val_mpam_get_mbwumon_count(index);
-                    val_print(ACS_PRINT_DEBUG,
+                    val_print(DEBUG,
                     "\n       MSC implements %d MBWU Monitors", val_mpam_get_mbwumon_count(index));
                 }
         }
@@ -69,7 +69,7 @@ void payload(void)
          * support (or) if it doesn't implement any monitors
          */
         if ((mon_count == 0)) {
-            val_print(ACS_PRINT_DEBUG,
+            val_print(DEBUG,
                 "\n       MSC %d does not implement any MSMON. Skipping MSC..", index);
             continue;
         }
@@ -79,7 +79,7 @@ void payload(void)
         status    = val_mpam_msc_reset_errcode(index);
 
         if (!status) {
-            val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+            val_set_status(pe_index, RESULT_FAIL(01));
             return;
         }
 
@@ -94,12 +94,12 @@ void payload(void)
 
         /* Read Error Status Register and check if the error code is recorded */
         esr_errcode = val_mpam_msc_get_errcode(index);
-        val_print(ACS_PRINT_DEBUG, "\n       Error code read is %llx", esr_errcode);
+        val_print(DEBUG, "\n       Error code read is %llx", esr_errcode);
 
         if (esr_errcode != ESR_ERRCODE_MON_RANGE)
         {
-            val_print(ACS_PRINT_ERR, "\n       Expected errcode: %d", ESR_ERRCODE_MON_RANGE);
-            val_print(ACS_PRINT_ERR, "\n       Actual errcode: %d", esr_errcode);
+            val_print(ERROR, "\n       Expected errcode: %d", ESR_ERRCODE_MON_RANGE);
+            val_print(ERROR, "\n       Actual errcode: %d", esr_errcode);
             test_fail++;
         }
 
@@ -108,11 +108,11 @@ void payload(void)
     }
 
     if (test_skip)
-        val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+        val_set_status(pe_index, RESULT_SKIP(01));
     else if (test_fail)
-        val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
+        val_set_status(pe_index, RESULT_FAIL(02));
     else
-        val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+        val_set_status(pe_index, RESULT_PASS);
     return;
 }
 

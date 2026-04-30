@@ -28,6 +28,7 @@ static uint32_t intid;
 static uint64_t cnt_base_n;
 static int irq_received;
 static uint32_t intid_phy;
+
 static
 void
 isr_sys_timer()
@@ -35,7 +36,7 @@ isr_sys_timer()
   val_timer_disable_system_timer((addr_t)cnt_base_n);
   val_gic_end_of_interrupt(intid);
   irq_received = 1;
-  val_print(ACS_PRINT_INFO, "\n       System timer interrupt received", 0);
+  val_print(TRACE, "\n       System timer interrupt received");
 }
 
 static
@@ -43,7 +44,7 @@ void
 isr_phy_el1()
 {
   val_timer_set_phy_el1(0);
-  val_print(ACS_PRINT_INFO, "\n       Received el1_phy interrupt   ", 0);
+  val_print(TRACE, "\n       Received el1_phy interrupt   ");
   val_gic_end_of_interrupt(intid_phy);
 }
 
@@ -58,19 +59,21 @@ payload()
   uint64_t timer_num, timer_cnt;
   int32_t status;
 
-  uint64_t freq = val_get_counter_frequency();
   uint64_t ticks;
-
+  uint32_t pe_timeout_us;
   /* System timer */
-  ticks = freq * 1;
-  if (ticks > 0xFFFFFFFF)
-      ticks = 0xFFFFFFFF;
+  if (acs_policy_get_timer_timeout_us() == 0) {
+      val_print(ERROR, "\n       Timer timeout is zero; configure a valid timeout");
+      val_set_status(index, RESULT_FAIL(3));
+      return;
+  }
+  ticks = CEIL_TO_MAX_SYS_TIMEOUT(val_get_timeout_to_ticks(acs_policy_get_timer_timeout_us()));
   sys_timer_ticks = (uint32_t)ticks;
 
   /* PE timer */
-  ticks = freq * 2;
-  if (ticks > 0xFFFFFFFF)
-      ticks = 0xFFFFFFFF;
+  pe_timeout_us = acs_policy_get_timer_timeout_us() * 2;
+
+  ticks = CEIL_TO_MAX_SYS_TIMEOUT(val_get_timeout_to_ticks(pe_timeout_us));
   pe_timer_ticks = (uint32_t)ticks;
 
   timer_num = val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS, 0);
@@ -85,16 +88,16 @@ payload()
   }
 
   if (!ns_timer) {
-      val_print(ACS_PRINT_DEBUG, "\n       No non-secure systimer implemented", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+      val_print(DEBUG, "\n       No non-secure systimer implemented");
+      val_set_status(index, RESULT_SKIP(1));
       return;
   }
 
   /* Start Sys timer*/
   cnt_base_n = val_timer_get_info(TIMER_INFO_SYS_CNT_BASE_N, timer_num);
   if (cnt_base_n == 0) {
-      val_print(ACS_PRINT_WARN, "\n       CNT_BASE_N is zero                 ", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+      val_print(WARN, "\n       CNT_BASE_N is zero                 ");
+      val_set_status(index, RESULT_SKIP(2));
       return;
   }
 
@@ -114,20 +117,20 @@ payload()
   /* Put current PE in to low power mode*/
   status = val_suspend_pe(0, 0);
   if (status) {
-      val_print(ACS_PRINT_DEBUG, "\n       Not able to suspend the PE : %d", status);
+      val_print(DEBUG, "\n       Not able to suspend the PE : %d", status);
       val_timer_disable_system_timer((addr_t)cnt_base_n);
       val_gic_clear_interrupt(intid);
       val_timer_set_phy_el1(0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 3));
+      val_set_status(index, RESULT_SKIP(3));
       return;
   }
 
   if (irq_received == 0) {
-      val_print(ACS_PRINT_ERR, "\n       System timer interrupt not generated", 0);
+      val_print(ERROR, "\n       System timer interrupt not generated");
       val_timer_disable_system_timer((addr_t)cnt_base_n);
       val_gic_clear_interrupt(intid);
       val_timer_set_phy_el1(0);
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+      val_set_status(index, RESULT_FAIL(1));
       return;
   }
 
@@ -138,14 +141,14 @@ payload()
   /*Disable PE timer*/
   val_timer_set_phy_el1(0);
 
-  val_print(ACS_PRINT_INFO, "\n       Read back PE timer count :%d", timer_cnt);
+  val_print(TRACE, "\n       Read back PE timer count :%d", timer_cnt);
 
   /* Check whether count is moved or not*/
   if ((timer_cnt < ((pe_timer_ticks - sys_timer_ticks) + (sys_timer_ticks/100)))
                                                       && (timer_cnt != 0))
-    val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+    val_set_status(index, RESULT_PASS);
   else
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+    val_set_status(index, RESULT_FAIL(2));
 }
 
 uint32_t

@@ -24,8 +24,6 @@
 #define TEST_RULE  "PCI_SM_02"
 #define TEST_DESC  "Check Function level reset            "
 
-extern bool g_pcie_skip_dp_nic_ms;
-
 static
 uint32_t is_flr_failed(uint32_t bdf)
 {
@@ -38,7 +36,7 @@ uint32_t is_flr_failed(uint32_t bdf)
   val_pcie_read_cfg(bdf, TYPE01_CR, &reg_value);
   if (((reg_value >> CR_BME_SHIFT) & CR_BME_MASK) != 0)
   {
-      val_print(ACS_PRINT_ERR, "\n BME is not cleared", 0);
+      val_print(ERROR, "\n BME is not cleared");
       check_failed++;
   }
 
@@ -46,7 +44,7 @@ uint32_t is_flr_failed(uint32_t bdf)
   val_pcie_read_cfg(bdf, TYPE01_CR, &reg_value);
   if (((reg_value >> CR_MSE_SHIFT) & CR_MSE_MASK) != 0)
   {
-      val_print(ACS_PRINT_ERR, "\n MSE is not cleared", 0);
+      val_print(ERROR, "\n MSE is not cleared");
       check_failed++;
   }
 
@@ -94,12 +92,12 @@ payload(void)
        * init can get corrupted when FLR is done */
       val_pcie_read_cfg(bdf, TYPE01_RIDR, &reg_value);
       base_cc = reg_value >> TYPE01_BCC_SHIFT;
-      if (g_pcie_skip_dp_nic_ms &&
+      if (acs_policy_get_pcie_skip_dp_nic_ms() &&
           ((base_cc == UNCLAS_CC) || (base_cc == MAS_CC)
           || (base_cc == CNTRL_CC) || (base_cc == DP_CNTRL_CC)))
       {
-          val_print(ACS_PRINT_DEBUG, "\n       Skipping for BDF - 0x%x ", bdf);
-          val_print(ACS_PRINT_DEBUG, " Classcode is : 0x%x ", base_cc);
+          val_print(DEBUG, "\n       Skipping for BDF - 0x%x ", bdf);
+          val_print(DEBUG, " Classcode is : 0x%x ", base_cc);
           continue;
       }
 
@@ -107,11 +105,11 @@ payload(void)
       if (dp_type == EP)
       {
 
-          val_print(ACS_PRINT_DEBUG, "\n       BDF 0x%x ", bdf);
+          val_print(DEBUG, "\n       BDF 0x%x ", bdf);
 
           /* Read FLR capability bit value */
           if (val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS, &cap_base) != PCIE_SUCCESS) {
-              val_print(ACS_PRINT_DEBUG, "\n       PCIe Express Capability not present ", 0);
+              val_print(DEBUG, "\n       PCIe Express Capability not present ");
               continue;
           }
           val_pcie_read_cfg(bdf, cap_base + DCAPR_OFFSET, &reg_value);
@@ -128,14 +126,14 @@ payload(void)
           /* If memory allocation fail, fail the test */
           if (func_config_space == NULL)
           {
-              val_print(ACS_PRINT_ERR, "\n       Memory allocation fail", 0);
-              val_set_status(pe_index, RESULT_FAIL(TEST_NUM, test_fails));
+              val_print(ERROR, "\n       Memory allocation fail");
+              val_set_status(pe_index, RESULT_FAIL(test_fails));
               return;
           }
 
           /* Get function configuration space address */
           config_space_addr = val_pcie_get_bdf_config_addr(bdf);
-          val_print(ACS_PRINT_INFO, "  config space addr 0x%x", config_space_addr);
+          val_print(TRACE, "  config space addr 0x%x", config_space_addr);
 
           /* Save the function config space to restore after FLR */
           for (idx = 0; idx < PCIE_CFG_SIZE / 4; idx++) {
@@ -151,9 +149,9 @@ payload(void)
           status = val_time_delay_ms(100 * ONE_MILLISECOND);
           if (status)
           {
-              val_print(ACS_PRINT_ERR, "\n       Failed to time delay for BDF 0x%x ", bdf);
+              val_print(ERROR, "\n       Failed to time delay for BDF 0x%x ", bdf);
               val_memory_free_aligned(func_config_space);
-              val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+              val_set_status(pe_index, RESULT_FAIL(01));
               return;
           }
 
@@ -189,7 +187,7 @@ payload(void)
           if ((device_id == DIDR_RRS_MASK) &&
              ((vendor_id == TYPE01_VIDR_MASK) || (vendor_id == VIDR_RRS_MASK)))
           {
-              val_print(ACS_PRINT_ERR, "\n       BDF 0x%x not present", bdf);
+              val_print(ERROR, "\n       BDF 0x%x not present", bdf);
               test_fails++;
               val_memory_free_aligned(func_config_space);
               continue;
@@ -208,14 +206,14 @@ payload(void)
   }
 
   if (test_skip == 1) {
-      val_print(ACS_PRINT_DEBUG,
-        "\n       No EP type device found with PCIe Express Cap support. Skipping test", 0);
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+      val_print(DEBUG,
+        "\n       No EP type device found with PCIe Express Cap support. Skipping test");
+      val_set_status(pe_index, RESULT_SKIP(1));
   }
   else if (test_fails)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, test_fails));
+      val_set_status(pe_index, RESULT_FAIL(test_fails));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

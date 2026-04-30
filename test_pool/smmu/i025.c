@@ -39,30 +39,30 @@ payload()
   /* Get cache maintenance instruction support */
   data_pe_cmow = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64MMFR1_EL1), 56, 59);
   if (data_pe_cmow != 0x1) {
-      val_print(ACS_PRINT_DEBUG, "\n       Instruction Cache Invalidation Not "
-                                "Supported For PE", 0);
+      val_print(DEBUG, "\n       Instruction Cache Invalidation Not "
+                                "Supported For PE");
   }
 
   /* Get prediction invalidation instructions support */
   data_pe_specres = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64ISAR1_EL1), 40, 43);
   if (data_pe_specres == 0x0) {
-      val_print(ACS_PRINT_DEBUG, "\n       Branch Prediction Invalidation Not "
-                                "Supported For PE", 0);
+      val_print(DEBUG, "\n       Branch Prediction Invalidation Not "
+                                "Supported For PE");
   }
 
   num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
   if (num_smmu == 0) {
-    val_print(ACS_PRINT_DEBUG, "\n       No SMMU Controllers are discovered"
-                                 "                  ", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+    val_print(DEBUG, "\n       No SMMU Controllers are discovered"
+                                 "                  ");
+    val_set_status(index, RESULT_SKIP(1));
     return;
   }
 
   while (num_smmu--) {
     if (val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) < 3) {
-      val_print(ACS_PRINT_DEBUG, "\n       Not valid for SMMUv2 or older"
-                                    "version               ", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+      val_print(DEBUG, "\n       Not valid for SMMUv2 or older"
+                                    "version               ");
+      val_set_status(index, RESULT_SKIP(2));
       return;
     }
 
@@ -71,15 +71,15 @@ payload()
     /* Broadcast TLB Invalidation supported if SMMU_IDR0.BTM, bit[5] = 0b1 */
     if (data_pe_specres || data_pe_cmow) {
       if (data_btm != 0x1) {
-        val_print(ACS_PRINT_ERR, "\n       Broadcast TLB Maintenance unsupported "
+        val_print(ERROR, "\n       Broadcast TLB Maintenance unsupported "
                                      "for SMMU %x", num_smmu);
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+        val_set_status(index, RESULT_FAIL(1));
         return;
       }
     }
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

@@ -44,17 +44,17 @@ payload(void)
   if (VAL_EXTRACT_BITS(data, 36, 43) == 0) {
     /* Implementation before Arm v8.5 */
     if (VAL_EXTRACT_BITS(data, 24, 31) == 0)
-      val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(index, RESULT_PASS);
     else
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+      val_set_status(index, RESULT_FAIL(01));
 
   } else {
     /* Implementation after Arm v8.5 */
     if (((VAL_EXTRACT_BITS(data, 24, 31) == 0) || (VAL_EXTRACT_BITS(data, 24, 31) == 0x10)) &&
         ((VAL_EXTRACT_BITS(data, 36, 43) == 0x22) || (VAL_EXTRACT_BITS(data, 36, 43) == 0x32)))
-      val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(index, RESULT_PASS);
     else
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+      val_set_status(index, RESULT_FAIL(01));
 
   }
 }

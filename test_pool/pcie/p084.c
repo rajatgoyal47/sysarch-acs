@@ -49,7 +49,7 @@ payload(void)
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
       dp_type = val_pcie_device_port_type(bdf);
       if (dp_type == RCEC) {
-          val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
+          val_print(DEBUG, "\n       BDF - 0x%x", bdf);
           /* If test runs for atleast an endpoint */
           test_skip = 0;
 
@@ -60,16 +60,16 @@ payload(void)
                 (RCEC_SUB_CLASS != ((reg_value >> CC_SUB_SHIFT) & CC_SUB_MASK)) ||
                 (RCEC_PGMING_IF != ((reg_value >> CC_PGM_IF_SHIFT) & CC_PGM_IF_MASK)))
           {
-              val_print(ACS_PRINT_ERR, "       Class code mismatch for bdf: 0x%x\n", bdf);
-              val_print(ACS_PRINT_ERR, "       dp_type: 0x%x\n", dp_type);
-              val_print(ACS_PRINT_ERR, "       CCR: 0x%x\n", reg_value);
+              val_print(ERROR, "       Class code mismatch for bdf: 0x%x\n", bdf);
+              val_print(ERROR, "       dp_type: 0x%x\n", dp_type);
+              val_print(ERROR, "       CCR: 0x%x\n", reg_value);
               fail_cnt++;
           }
 
           /* If Root Complex Event
             Collector Endpoint Association Extended Capability not supported for RCEC, test fails*/
           if (val_pcie_find_capability(bdf, PCIE_ECAP, ECID_RCECEA, &cap_base) != PCIE_SUCCESS) {
-              val_print(ACS_PRINT_ERR,
+              val_print(ERROR,
                 "\n       BDF - 0x%x does not support RCEC Endpoint Association Capability", bdf);
               fail_cnt++;
               continue;
@@ -79,13 +79,13 @@ payload(void)
   }
 
   if (test_skip == 1) {
-      val_print(ACS_PRINT_DEBUG, "\n       No RCEC type device found. Skipping test", 0);
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+      val_print(DEBUG, "\n       No RCEC type device found. Skipping test");
+      val_set_status(pe_index, RESULT_SKIP(1));
   }
   else if (fail_cnt)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, fail_cnt));
+      val_set_status(pe_index, RESULT_FAIL(fail_cnt));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

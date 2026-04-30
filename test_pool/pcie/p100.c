@@ -54,15 +54,15 @@ payload(void)
       /* Check entry is Rootport */
       if (dp_type == RP)
       {
-         val_print(ACS_PRINT_DEBUG, "\n       BDF 0x%x", bdf);
+         val_print(DEBUG, "\n       BDF 0x%x", bdf);
 
          val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS, &cap_base);
          val_pcie_read_cfg(bdf, cap_base + DCAP2R_OFFSET, &reg_value);
          frs_cap_sup = (reg_value >> DCAP2R_FRS_SHIFT) & DCAP2R_FRS_MASK;
 
          if (!frs_cap_sup) {
-             val_print(ACS_PRINT_DEBUG, "\n       FRS not supported for RP", 0);
-             val_print(ACS_PRINT_DEBUG, "\n       Skipping for BDF 0x%x", bdf);
+             val_print(DEBUG, "\n       FRS not supported for RP");
+             val_print(DEBUG, "\n       Skipping for BDF 0x%x", bdf);
              continue;
          }
 
@@ -73,18 +73,18 @@ payload(void)
          if ((val_pcie_find_capability(bdf, PCIE_CAP, CID_MSI, &cap_base) == PCIE_CAP_NOT_FOUND)
           && (val_pcie_find_capability(bdf, PCIE_CAP, CID_MSIX, &cap_base) == PCIE_CAP_NOT_FOUND))
          {
-            val_print(ACS_PRINT_ERR, "\n       MSI/MSI-X not supported for BDF 0x%x", bdf);
+            val_print(ERROR, "\n       MSI/MSI-X not supported for BDF 0x%x", bdf);
             test_fails++;
          }
       }
   }
 
   if (test_skip == 1)
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_SKIP(01));
   else if (test_fails)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_FAIL(01));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

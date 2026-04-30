@@ -41,17 +41,17 @@ static void payload(void)
         data = VAL_EXTRACT_BITS(val_pe_reg_read(PMBIDR_EL1), 5, 5);
 
         if (data == 1) {
-            val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+            val_set_status(index, RESULT_PASS);
             return;
         }
         else {
-            val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+            val_set_status(index, RESULT_FAIL(01));
             return;
         }
     }
     /* Implementation of PMU_SPE is optional, skipping the test */
     else
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+        val_set_status(index, RESULT_SKIP(02));
 
     return;
 }

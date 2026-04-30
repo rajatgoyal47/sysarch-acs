@@ -49,25 +49,25 @@ static void payload(void)
       /* Skip the device if PASID extended capability not supported */
       if (status == PCIE_CAP_NOT_FOUND)
       {
-          val_print(ACS_PRINT_DEBUG, "\n       PASID extended capability not supported.", 0);
-          val_print(ACS_PRINT_DEBUG, " Skipping for BDF: 0x%x", bdf);
+          val_print(DEBUG, "\n       PASID extended capability not supported.");
+          val_print(DEBUG, " Skipping for BDF: 0x%x", bdf);
           continue;
       }
       /* Raise an error if any failure in obtaining the PASID max width */
       else if (status)
       {
-          val_print(ACS_PRINT_ERR,
+          val_print(ERROR,
                     "\n       Error in obtaining the PASID max width for BDF: 0x%x", bdf);
           fail_cnt++;
       }
-      val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
-      val_print(ACS_PRINT_DEBUG, "- Max PASID bits - 0x%x", max_pasids);
+      val_print(DEBUG, "\n       BDF - 0x%x", bdf);
+      val_print(DEBUG, "- Max PASID bits - 0x%x", max_pasids);
       if (max_pasids > 0)
       {
           skip = 0;
           if (max_pasids < MIN_PASID_SUPPORT)
           {
-              val_print(ACS_PRINT_ERR, "\n       Max PASID support less than 16 bits  ", 0);
+              val_print(ERROR, "\n       Max PASID support less than 16 bits  ");
               fail_cnt++;
           }
       }
@@ -81,13 +81,13 @@ static void payload(void)
       if (val_iovirt_get_smmu_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 3)
       {
           max_pasids = val_smmu_max_pasids(num_smmu);
-          val_print(ACS_PRINT_DEBUG, "\n       SMMU check- Max PASID bits- 0x%x", max_pasids);
+          val_print(DEBUG, "\n       SMMU check- Max PASID bits- 0x%x", max_pasids);
           if (max_pasids > 0)
           {
               skip = 0;
               if (max_pasids < MIN_PASID_SUPPORT)
               {
-                  val_print(ACS_PRINT_ERR, "\n      Max PASID support less than 16 bits  ", 0);
+                  val_print(ERROR, "\n      Max PASID support less than 16 bits  ");
                   fail_cnt++;
               }
           }
@@ -96,11 +96,11 @@ static void payload(void)
 
   /* Report the status of test */
   if (skip)
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 0));
+      val_set_status(index, RESULT_SKIP(0));
   else if (fail_cnt)
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 0));
+      val_set_status(index, RESULT_FAIL(0));
   else
-      val_set_status(index, RESULT_PASS(TEST_NUM, 0));
+      val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

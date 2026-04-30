@@ -81,6 +81,7 @@
    gating C code when included by .S files */
 #ifndef __ASSEMBLER__
 #include "val/include/rule_based_execution.h"
+#include "acs_runtime_init.h"
 
 #define LEVEL_PRINT_FORMAT(level, filter_mode, fr_level) ((filter_mode == LVL_FILTER_FR) ? \
     ((filter_mode == LVL_FILTER_ONLY && level == fr_level) ? \
@@ -88,27 +89,8 @@
     ((filter_mode == LVL_FILTER_ONLY) ? \
     "\n Starting tests for only level %2d " : "\n Starting tests for level %2d "))
 
-/* Extern declarations for globals from platform_cfg_fvp.c */
-extern RULE_ID_e g_rule_list_arr[];
-extern uint32_t  g_rule_count;
-extern RULE_ID_e g_skip_rule_list_arr[];
-extern uint32_t  g_skip_rule_count;
-extern uint32_t g_execute_modules_arr[];
-extern uint32_t g_num_modules;
-extern uint32_t g_skip_modules_arr[];
-extern uint32_t g_num_skip_modules;
-extern uint32_t g_level_filter_mode;
-extern uint32_t g_sys_last_lvl_cache;
-
-/* Globals from apps/baremetal/acs_globals.c */
-extern RULE_ID_e *g_rule_tests;
-extern uint32_t  g_rule_tests_num;
-extern RULE_ID_e *g_rule_list;
-extern RULE_ID_e *g_skip_rule_list;
-extern uint32_t  *g_execute_modules;
-extern uint32_t  *g_skip_modules;
-extern uint32_t  g_print_level;
-extern uint32_t  g_print_mmio;
+/* Remaining baremetal execution globals from apps/baremetal/acs_globals.c */
+extern uint32_t  g_el1physkip;
 extern uint32_t  g_curr_module;
 extern uint32_t  g_enable_module;
 extern uint32_t  g_acs_tests_total;
@@ -117,13 +99,9 @@ extern uint32_t  g_acs_tests_fail;
 extern uint64_t  g_stack_pointer;
 extern uint64_t  g_exception_ret_addr;
 extern uint64_t  g_ret_addr;
-extern bool      g_pcie_skip_dp_nic_ms;
 extern uint32_t  g_build_sbsa;
 extern uint32_t  g_build_pcbsa;
 extern uint32_t  g_its_init;
-extern uint32_t  g_arch_selection;
-extern uint32_t  g_level_value;
-extern uint32_t  g_bsa_sw_view_mask;
 
 /* Function declarations */
 uint32_t createPeInfoTable(void);
@@ -189,4 +167,3 @@ void     createCxlInfoTable(void);
 #endif
 
 #endif /* __BSA_AVS_LEVEL_H__ */
-

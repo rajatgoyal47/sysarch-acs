@@ -45,12 +45,12 @@ val_mmu_check_for_entry(uint64_t addr)
   /* Get translation attributes from TCR and translation table base from TTBR
      TTBR0 is used since we are accessing lower address region */
   if (val_pe_reg_read_tcr(0 /*for TTBR0*/, &tcr)) {
-      val_print(ACS_PRINT_ERR, "\n   Failed to fetch TCR", 0);
+      val_print(ERROR, "\n   Failed to fetch TCR");
       return 1;
   }
 
   if (val_pe_reg_read_ttbr(0 /*TTBR0*/, &ttbr)) {
-      val_print(ACS_PRINT_ERR, "\n   Failed to fetch TTBR0", 0);
+      val_print(ERROR, "\n   Failed to fetch TTBR0");
       return 1;
   }
 
@@ -80,25 +80,25 @@ val_mmu_check_for_entry(uint64_t addr)
         /* index the translation table and read the entry */
         ttable_entry = tt_base_virt[index];
 
-        val_print(ACS_PRINT_INFO, "\n   Translation table level         = %d", this_level);
-        val_print(ACS_PRINT_INFO, "\n   Table base address              = 0x%llx",
+        val_print(TRACE, "\n   Translation table level         = %d", this_level);
+        val_print(TRACE, "\n   Table base address              = 0x%llx",
                   (uint64_t)tt_base_virt);
-        val_print(ACS_PRINT_INFO, "\n   Table entry index               = %d", index);
-        val_print(ACS_PRINT_INFO, "\n   Table entry                     = 0x%llx",
+        val_print(TRACE, "\n   Table entry index               = %d", index);
+        val_print(TRACE, "\n   Table entry                     = 0x%llx",
                   ttable_entry);
-        val_print(ACS_PRINT_INFO, "\n   VA bits remaining to be resolve = %d", bits_remaining);
+        val_print(TRACE, "\n   VA bits remaining to be resolve = %d", bits_remaining);
 
         /* check whether the table entry is invalid */
         if (IS_PGT_ENTRY_INVALID(ttable_entry)) {
-            val_print(ACS_PRINT_DEBUG, "\n   VA not mapped in translation table", 0);
+            val_print(DEBUG, "\n   VA not mapped in translation table");
             return 1;
         }
 
         /* As per Arm ARM, entry of type "table descriptor" is only
            valid at translation level 0 */
         if (this_level == 0 && !IS_PGT_ENTRY_TABLE(ttable_entry)) {
-            val_print(ACS_PRINT_DEBUG,
-                      "\n   VA not mapped correctly in translation table", 0);
+            val_print(DEBUG,
+                      "\n   VA not mapped correctly in translation table");
             return 1;
         }
 
@@ -106,12 +106,12 @@ val_mmu_check_for_entry(uint64_t addr)
             /* at level 3 table entry should be of type "page descriptor" with
                ttable_entry[1:0] bits = b11 */
             if (!IS_PGT_ENTRY_PAGE(ttable_entry)) {
-                val_print(ACS_PRINT_DEBUG,
-                          "\n   VA not mapped correctly in translation table", 0);
+                val_print(DEBUG,
+                          "\n   VA not mapped correctly in translation table");
                 return 1;
             }
             else {
-                val_print(ACS_PRINT_DEBUG, "\n   VA translation successful", 0);
+                val_print(DEBUG, "\n   VA translation successful");
                 return 0;
             }
         }
@@ -121,7 +121,7 @@ val_mmu_check_for_entry(uint64_t addr)
                   level 3 can only have entry of type page descriptor
                   (Refer Arm ARM for more info) */
         if (IS_PGT_ENTRY_BLOCK(ttable_entry) && this_level != 0) {
-            val_print(ACS_PRINT_DEBUG, "\n   VA translation successful", 0);
+            val_print(DEBUG, "\n   VA translation successful");
             return 0;
         }
 
@@ -165,11 +165,11 @@ val_mmu_add_entry(uint64_t base_addr, uint64_t size, uint64_t attr)
 
   /* Get translation attributes from TCR and translation table base from TTBR */
   if (val_pe_reg_read_tcr(0 /*for TTBR0*/, &pgt_desc.tcr)) {
-      val_print(ACS_PRINT_ERR, "\n   Failed to fetch TCR", 0);
+      val_print(ERROR, "\n   Failed to fetch TCR");
       return 1;
   }
   if (val_pe_reg_read_ttbr(0 /*TTBR0*/, &ttbr)) {
-      val_print(ACS_PRINT_ERR, "\n   Failed to fetch TTBR0", 0);
+      val_print(ERROR, "\n   Failed to fetch TTBR0");
       return 1;
   }
 
@@ -181,8 +181,8 @@ val_mmu_add_entry(uint64_t base_addr, uint64_t size, uint64_t attr)
   /* realise OAS and IAS from TCR register */
   pgt_desc.oas = oas_bit_arr[pgt_desc.tcr.ps];
   pgt_desc.ias = 64 - pgt_desc.tcr.tsz;
-  val_print(ACS_PRINT_DEBUG, "\n   Input addr size in bits (ias) = %d", pgt_desc.ias);
-  val_print(ACS_PRINT_DEBUG, "\n   Output addr size in bits (oas) = %d\n", pgt_desc.oas);
+  val_print(DEBUG, "\n   Input addr size in bits (ias) = %d", pgt_desc.ias);
+  val_print(DEBUG, "\n   Output addr size in bits (oas) = %d\n", pgt_desc.oas);
 
   /* populate mem descriptor structure with addr region to be mapped and attributes */
   mem_desc.virtual_address = base_addr;
@@ -197,7 +197,7 @@ val_mmu_add_entry(uint64_t base_addr, uint64_t size, uint64_t attr)
 
   /* update translation table entry(s) for addr region defined by memory descriptor structure  */
   if (val_pgt_create(&mem_desc, &pgt_desc)) {
-      val_print(ACS_PRINT_ERR, "   Failed to create MMU translation entry(s)\n", 0);
+      val_print(ERROR, "   Failed to create MMU translation entry(s)\n");
       return 1;
   }
   return 0;
@@ -217,7 +217,7 @@ uint32_t val_mmu_update_entry(uint64_t address, uint32_t size, uint64_t attr)
 
   /* If entry is already present return success */
   if (!val_mmu_check_for_entry(address)) {
-      val_print(ACS_PRINT_DEBUG, "\n   Address is already mapped\n", 0);
+      val_print(DEBUG, "\n   Address is already mapped\n");
       return 0;
   }
 
@@ -290,7 +290,7 @@ void val_setup_mair_register(void)
             continue;
 
         if (free_cnt == 0) {
-            val_print(ACS_PRINT_WARN,
+            val_print(WARN,
                       "\n   MAIR register full, could not add attribute 0x%02x", new_attr);
             break;
         }
@@ -304,8 +304,8 @@ void val_setup_mair_register(void)
     if (mair_val != current_mair)
         val_mair_write(mair_val, currentEL);
 
-    val_print(ACS_PRINT_DEBUG, "\n  Previous MAIR register value 0x%lx", current_mair);
-    val_print(ACS_PRINT_DEBUG, "\n  Current MAIR register value 0x%lx\n", mair_val);
+    val_print(DEBUG, "\n  Previous MAIR register value 0x%lx", current_mair);
+    val_print(DEBUG, "\n  Current MAIR register value 0x%lx\n", mair_val);
     return;
 }
 
@@ -332,8 +332,8 @@ uint32_t val_setup_mmu(void)
     pgt_desc.pgt_base = (uint64_t) tt_l0_base;
     pgt_desc.stage = PGT_STAGE1;
 
-    val_print(ACS_PRINT_DEBUG, "       mmu: ias=%d\n", pgt_desc.ias);
-    val_print(ACS_PRINT_DEBUG, "       mmu: oas=%d\n", pgt_desc.oas);
+    val_print(DEBUG, "       mmu: ias=%d\n", pgt_desc.ias);
+    val_print(DEBUG, "       mmu: oas=%d\n", pgt_desc.oas);
 
     /* Map regions */
 
@@ -349,9 +349,9 @@ uint32_t val_setup_mmu(void)
         mem_desc->length = mmap_region_list[i].length;
         mem_desc->attributes = mmap_region_list[i].attributes;
 
-        val_print(ACS_PRINT_DEBUG, "\n       Creating page table for region  : 0x%lx",
+        val_print(DEBUG, "\n       Creating page table for region  : 0x%lx",
                                                                         mem_desc->virtual_address);
-        val_print(ACS_PRINT_DEBUG, "- 0x%lx\n", (mem_desc->virtual_address + mem_desc->length) - 1);
+        val_print(DEBUG, "- 0x%lx\n", (mem_desc->virtual_address + mem_desc->length) - 1);
 
         if (val_pgt_create(mem_desc, &pgt_desc))
         {
@@ -391,8 +391,8 @@ uint32_t val_enable_mmu(void)
 
     val_tcr_write(tcr, currentEL);
 
-    val_print(ACS_PRINT_DEBUG, "       val_setup_mmu: TG0=0x%x\n", TCR_TG0);
-    val_print(ACS_PRINT_DEBUG, "       val_setup_mmu: tcr=0x%lx\n", tcr);
+    val_print(DEBUG, "       val_setup_mmu: TG0=0x%x\n", TCR_TG0);
+    val_print(DEBUG, "       val_setup_mmu: tcr=0x%lx\n", tcr);
 
 /* Enable MMU */
     val_sctlr_write((1 << 0) |  // M=1 Enable the stage 1 MMU
@@ -401,8 +401,8 @@ uint32_t val_enable_mmu(void)
                     val_sctlr_read(currentEL),
                     currentEL);
 
-    val_print(ACS_PRINT_DEBUG, "       val_enable_mmu: successful\n", 0);
-    val_print(ACS_PRINT_DEBUG, "       System Control EL2 is %llx", val_sctlr_read(currentEL));
+    val_print(DEBUG, "       val_enable_mmu: successful\n");
+    val_print(DEBUG, "       System Control EL2 is %llx", val_sctlr_read(currentEL));
 
     return ACS_STATUS_PASS;
 }

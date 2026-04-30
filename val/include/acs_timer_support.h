@@ -1,5 +1,5 @@
 /** @file
- * Copyright (c) 2016-2018, 2022, 2024-2025, Arm Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018, 2022, 2024-2026, Arm Limited or its affiliates. All rights reserved.
  * SPDX-License-Identifier : Apache-2.0
 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,8 @@
 
 #ifndef __ARM_ARCH_TIMER_H__
 #define __ARM_ARCH_TIMER_H__
+
+#include "val_sysreg_timer.h"
 
 #define ARM_ARCH_TIMER_ENABLE           (1 << 0)
 #define ARM_ARCH_TIMER_IMASK            (1 << 1)
@@ -59,113 +61,12 @@ ArmArchTimerWriteReg (
     uint64_t              *data_buf
   );
 
-uint64_t
-ArmReadCntFrq (
-  void
-  );
-
 void
 ArmWriteCntFrq (
   uint64_t   FreqInHz
   );
 
-uint64_t
-ArmReadCntPct (
-  void
-  );
-
-uint64_t
-ArmReadCntPctSS (
-  void
-);
-
-uint64_t
-ArmReadCntkCtl (
-  void
-  );
-
-void
-ArmWriteCntkCtl (
-  uint64_t   Val
-  );
-
-uint64_t
-ArmReadCntpTval (
-  void
-  );
-
-void
-ArmWriteCntpTval (
-  uint64_t   Val
-  );
-
-uint64_t
-ArmReadCntpCtl (
-  void
-  );
-
-void
-ArmWriteCntpCtl (
-  uint64_t   Val
-  );
-
-uint64_t
-ArmReadCntvTval (
-  void
-  );
-
-void
-ArmWriteCntvTval (
-  uint64_t   Val
-  );
-
-uint64_t
-ArmReadCntvCtl (
-  void
-  );
-
-void ArmWriteCntvCtl (uint64_t   Val);
-uint64_t ArmReadCntvCt (void);
-uint64_t ArmReadCntVctSS (void);
-uint64_t ArmReadCntpCval (void);
-void ArmWriteCntpCval (uint64_t   Val);
-
-uint64_t ArmReadCntvCval (void);
-void ArmWriteCntvCval (uint64_t   Val);
-uint64_t ArmReadCntvOff (void);
-void ArmWriteCntvOff (uint64_t   Val);
-
-uint64_t ArmReadCnthpCtl (void);
-void ArmWriteCnthpCtl (uint64_t Val);
-uint64_t ArmReadCnthpTval (void);
-void ArmWriteCnthpTval (uint64_t Val);
-
-uint64_t ArmReadCnthvCtl (void);
-void ArmWriteCnthvCtl (uint64_t Val);
-uint64_t ArmReadCnthvTval (void);
-void ArmWriteCnthvTval (uint64_t Val);
 void ArmGenericTimerEnableTimer (ARM_ARCH_TIMER_REGS reg);
 void ArmGenericTimerDisableTimer (ARM_ARCH_TIMER_REGS reg);
-
-uint64_t ArmReadHcrEl2(void);
-uint64_t ArmReadAA64MMFR1EL1(void);
-uint64_t ArmReadAA64MMFR4EL1(void);
-
-uint64_t ArmReadCntpCtl02(void);
-uint64_t ArmReadCntpTval02(void);
-uint64_t ArmReadCntpCval02(void);
-void     ArmWriteCntpCtl02(uint64_t val);
-void     ArmWriteCntpTval02(uint64_t val);
-void     ArmWriteCntpCval02(uint64_t val);
-
-uint64_t ArmReadCntvTval02(void);
-uint64_t ArmReadCntvCtl02(void);
-uint64_t ArmReadCntvCval02(void);
-void     ArmWriteCntvTval02(uint64_t val);
-void     ArmWriteCntvCtl02(uint64_t val);
-void     ArmWriteCntvCval02(uint64_t val);
-
-uint64_t ArmReadCntkCtl12(void);
-void     ArmWriteCntkCtl12(uint64_t val);
 
 #endif // __ARM_ARCH_TIMER_H__

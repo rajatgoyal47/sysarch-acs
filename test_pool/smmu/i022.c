@@ -44,16 +44,16 @@ payload()
   num_dma_req = num_pcie_rc;
   for (i = 0; i < num_pcie_rc; i++) {
       /* print info fields */
-      val_print(ACS_PRINT_DEBUG, "\n       RC segment no  : 0x%llx",
+      val_print(DEBUG, "\n       RC segment no  : 0x%llx",
                     val_iovirt_get_pcie_rc_info(RC_SEGMENT_NUM, i));
-      val_print(ACS_PRINT_DEBUG, "\n       CCA attribute  : 0x%x",
+      val_print(DEBUG, "\n       CCA attribute  : 0x%x",
                     val_iovirt_get_pcie_rc_info(RC_MEM_ATTRIBUTE, i));
-      val_print(ACS_PRINT_DEBUG, "\n       SMMU base addr : 0x%llx\n",
+      val_print(DEBUG, "\n       SMMU base addr : 0x%llx\n",
                     val_iovirt_get_pcie_rc_info(RC_SMMU_BASE, i));
 
       if (val_iovirt_get_pcie_rc_info(RC_MEM_ATTRIBUTE, i) == 0x1 &&
                                     val_iovirt_get_pcie_rc_info(RC_SMMU_BASE, i) == 0) {
-          val_print(ACS_PRINT_ERR,
+          val_print(ERROR,
                     "\n       DMA capable PCIe root port with segment no: %llx not behind a SMMU.",
                     val_iovirt_get_pcie_rc_info(RC_SEGMENT_NUM, i));
           test_fails++;
@@ -65,31 +65,31 @@ payload()
   num_dma_req += num_named_comp;
   for (i = 0; i < num_named_comp; i++) {
       /* print info fields */
-      val_print(ACS_PRINT_DEBUG, "\n       Named component  :", 0);
-      val_print(ACS_PRINT_DEBUG,
-                    (char8_t *)val_iovirt_get_named_comp_info(NAMED_COMP_DEV_OBJ_NAME, i), 0);
-      val_print(ACS_PRINT_DEBUG, "\n       CCA attribute    : 0x%x",
+      val_print(DEBUG, "\n       Named component  :");
+      val_print(DEBUG,
+                    (char8_t *)val_iovirt_get_named_comp_info(NAMED_COMP_DEV_OBJ_NAME, i));
+      val_print(DEBUG, "\n       CCA attribute    : 0x%x",
                     val_iovirt_get_named_comp_info(NAMED_COMP_CCA_ATTR, i));
-      val_print(ACS_PRINT_DEBUG, "\n       SMMU base addr   : 0x%llx\n",
+      val_print(DEBUG, "\n       SMMU base addr   : 0x%llx\n",
                     val_iovirt_get_named_comp_info(NAMED_COMP_SMMU_BASE, i));
       if (val_iovirt_get_named_comp_info(NAMED_COMP_CCA_ATTR, i) == 0x1 &&
                                     val_iovirt_get_named_comp_info(NAMED_COMP_SMMU_BASE, i) == 0) {
-          val_print(ACS_PRINT_ERR,
-                    "\n       DMA capable named component with namespace path: ", 0);
-          val_print(ACS_PRINT_ERR,
-                    (char8_t *)val_iovirt_get_named_comp_info(NAMED_COMP_DEV_OBJ_NAME, i), 0);
-          val_print(ACS_PRINT_ERR, " not behind a SMMU.", 0);
+          val_print(ERROR,
+                    "\n       DMA capable named component with namespace path: ");
+          val_print(ERROR,
+                    (char8_t *)val_iovirt_get_named_comp_info(NAMED_COMP_DEV_OBJ_NAME, i));
+          val_print(ERROR, " not behind a SMMU.");
           test_fails++;
       }
   }
 
   if (test_fails)
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+      val_set_status(index, RESULT_FAIL(01));
   else if (!num_dma_req) {
-      val_print(ACS_PRINT_DEBUG, "\n       No DMA requestors present", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+      val_print(DEBUG, "\n       No DMA requestors present");
+      val_set_status(index, RESULT_SKIP(02));
   } else {
-      val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(index, RESULT_PASS);
   }
 }
 

@@ -39,7 +39,7 @@ intr_handler(void)
 
   /* Clear the interrupt pending state */
 
-  val_print(ACS_PRINT_INFO, "\n       Received interrupt %x       ", 0);
+  val_print(TRACE, "\n       Received interrupt %x       ");
   val_gic_end_of_interrupt(int_id);
   return;
 }
@@ -62,10 +62,10 @@ payload()
   /* Get Number of nodes with RAS Functionality */
   status = val_ras_get_info(RAS_INFO_NUM_NODES, 0, &num_node);
   if (status || (num_node == 0)) {
-    val_print(ACS_PRINT_DEBUG, "\n       No RAS Nodes found in AEST table.", 0);
-    val_print(ACS_PRINT_DEBUG, "\n       The test must be considered fail if system \
-                                        components supports RAS nodes", 0);
-    val_set_status(index, RESULT_WARN(TEST_NUM, 01));
+    val_print(DEBUG, "\n       No RAS Nodes found in AEST table.");
+    val_print(DEBUG, "\n       The test must be considered fail if system \
+                                        components supports RAS nodes");
+    val_set_status(index, RESULT_WARNING(01));
     return;
   }
 
@@ -77,12 +77,12 @@ payload()
     status = val_ras_get_info(RAS_INFO_ERI_ID, node_index, &eri_id);
     if (status) {
       /* No ERI Support for this node */
-      val_print(ACS_PRINT_DEBUG, "\n       ERI Not supported for node %d", node_index);
+      val_print(DEBUG, "\n       ERI Not supported for node %d", node_index);
     } else {
       test_skip = 0;
       /* ERI Support, Check for SPI/PPI */
       if (IS_NOT_SPI_PPI(eri_id)) {
-        val_print(ACS_PRINT_ERR, "\n       ERI Not SPI/PPI for node %d", node_index);
+        val_print(ERROR, "\n       ERI Not SPI/PPI for node %d", node_index);
         fail_cnt++;
         continue;
       }
@@ -92,12 +92,12 @@ payload()
     status = val_ras_get_info(RAS_INFO_FHI_ID, node_index, &fhi_id);
     if (status) {
       /* No FHI Support for this node */
-      val_print(ACS_PRINT_DEBUG, "\n       FHI Not supported for node %d", node_index);
+      val_print(DEBUG, "\n       FHI Not supported for node %d", node_index);
     } else {
       test_skip = 0;
       /* FHI Support, Check for SPI/PPI */
       if (IS_NOT_SPI_PPI(fhi_id)) {
-        val_print(ACS_PRINT_ERR, "\n       FHI Not SPI/PPI for node %d", node_index);
+        val_print(ERROR, "\n       FHI Not SPI/PPI for node %d", node_index);
         fail_cnt++;
         continue;
       }
@@ -112,7 +112,7 @@ payload()
       /* Get Error Record number for this Node */
       status = val_ras_get_info(RAS_INFO_START_INDEX, node_index, &rec_index);
       if (status) {
-        val_print(ACS_PRINT_DEBUG, "\n       Could not get Start Index for index %d", node_index);
+        val_print(DEBUG, "\n       Could not get Start Index for index %d", node_index);
         fail_cnt++;
         continue;
       }
@@ -131,7 +131,7 @@ payload()
         warn_cnt++;
         break;
       } else if (status) {
-        val_print(ACS_PRINT_ERR, "\n       val_ras_setup_error failed, node %d", node_index);
+        val_print(ERROR, "\n       val_ras_setup_error failed, node %d", node_index);
         fail_cnt++;
         break;
       }
@@ -142,7 +142,7 @@ payload()
         warn_cnt++;
         break;
       } else if (status) {
-        val_print(ACS_PRINT_ERR, "\n       val_ras_inject_error failed, node %d", node_index);
+        val_print(ERROR, "\n       val_ras_inject_error failed, node %d", node_index);
         fail_cnt++;
         break;
       }
@@ -151,7 +151,7 @@ payload()
       val_ras_wait_timeout(1);
 
       if (intr_pending) {
-        val_print(ACS_PRINT_ERR, "\n       Not Connected to GIC for node %d", node_index);
+        val_print(ERROR, "\n       Not Connected to GIC for node %d", node_index);
         fail_cnt++;
         continue;
       }
@@ -159,13 +159,13 @@ payload()
   }
 
   if (fail_cnt)
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+    val_set_status(index, RESULT_FAIL(01));
   else if (warn_cnt)
-    val_set_status(index, RESULT_WARN(TEST_NUM, 01));
+    val_set_status(index, RESULT_WARNING(01));
   else if (test_skip)
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+    val_set_status(index, RESULT_SKIP(02));
   else
-    val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+    val_set_status(index, RESULT_PASS);
 
   return;
 }

@@ -60,10 +60,10 @@ val_pfdi_check_implementation(void)
 uint32_t val_pfdi_reserved_bits_check_is_zero(uint32_t reserved_bits)
 {
     if (reserved_bits != VAL_PFDI_RESERVED_BYTE_ZERO) {
-        val_print(ACS_PRINT_ERR, "\n       CHECK RSVD BITS: FAILED [0x%08x]", reserved_bits);
+        val_print(ERROR, "\n       CHECK RSVD BITS: FAILED [0x%08x]", reserved_bits);
         return ACS_STATUS_FAIL;
     } else
-        val_print(ACS_PRINT_DEBUG, "\n       CHECK RSVD BITS: PASSED", 0);
+        val_print(DEBUG, "\n       CHECK RSVD BITS: PASSED");
     return ACS_STATUS_PASS;
 }
 

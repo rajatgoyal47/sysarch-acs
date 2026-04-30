@@ -58,15 +58,15 @@ payload(void)
   num_ecam = val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0);
 
   if (num_ecam == 0) {
-      val_print(ACS_PRINT_ERR, "\n       No ECAMs discovered              ", 0);
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+      val_print(ERROR, "\n       No ECAMs discovered              ");
+      val_set_status(pe_index, RESULT_SKIP(01));
       return;
   }
 
   while (tbl_index < bdf_tbl_ptr->num_entries)
   {
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
-      val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
+      val_print(DEBUG, "\n       BDF - 0x%x", bdf);
 
       /* If test runs for atleast an endpoint */
       test_skip = 0;
@@ -93,7 +93,7 @@ payload(void)
           entry_type_offset += PCIE_DWORD_SIZE;
 
       for (entry = 0; entry < num_entries; entry++) {
-          val_print(ACS_PRINT_DEBUG, "\n       Reading entry at offset %llx", entry_type_offset);
+          val_print(DEBUG, "\n       Reading entry at offset %llx", entry_type_offset);
 
           /* Read Entry type register present in Enhanced Allocation capability struct(14h) */
           val_pcie_read_cfg(bdf, cap_base + entry_type_offset, &reg_value);
@@ -102,7 +102,7 @@ payload(void)
           enable_value = (reg_value >> EA_ENTRY_TYPE_ENABLE_SHIFT) & EA_ENTRY_TYPE_ENABLE_MASK;
           if (enable_value)
           {
-              val_print(ACS_PRINT_ERR, "\n       Enhanced Allocation enabled for BDF 0x%x", bdf);
+              val_print(ERROR, "\n       Enhanced Allocation enabled for BDF 0x%x", bdf);
               test_fails++;
           }
 
@@ -114,14 +114,14 @@ payload(void)
   }
 
   if (test_skip == 1) {
-      val_print(ACS_PRINT_DEBUG,
-               "\n       Found no Endpoint with PCIe Capability. Skipping test", 0);
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+      val_print(DEBUG,
+               "\n       Found no Endpoint with PCIe Capability. Skipping test");
+      val_set_status(pe_index, RESULT_SKIP(01));
   }
   else if (test_fails)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, test_fails));
+      val_set_status(pe_index, RESULT_FAIL(test_fails));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

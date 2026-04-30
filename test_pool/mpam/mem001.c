@@ -51,15 +51,15 @@ get_buffer_size(uint32_t msc_index, uint32_t rsrc_index, uint64_t addr_len, uint
 
     membw = val_mpam_msc_get_mscbw(msc_index, rsrc_index);
     if (membw == HMAT_INVALID_INFO) {
-        val_print(ACS_PRINT_WARN, "\n       Using default buffer sizes for memcpy", 0);
+        val_print(WARN, "\n       Using default buffer sizes for memcpy");
         buffer_size = mbwpbm_config_data[index].memcopy_size;
-        val_print(ACS_PRINT_WARN, "  buffer_size: %llx", buffer_size);
+        val_print(WARN, "  buffer_size: %llx", buffer_size);
         return buffer_size;
     }
 
-    val_print(ACS_PRINT_DEBUG, "\n       Channel BW - %d MB/s", membw);
+    val_print(DEBUG, "\n       Channel BW - %d MB/s", membw);
     limited_bw = membw / (mbwpbm_config_data[index].partition_percent);
-    val_print(ACS_PRINT_DEBUG, "\n       Restricting Channel BW to %d MB/s", limited_bw);
+    val_print(DEBUG, "\n       Restricting Channel BW to %d MB/s", limited_bw);
 
     /* Calculate required buffer to index 0 and use the same for other variations of
            partition percentage */
@@ -68,11 +68,11 @@ get_buffer_size(uint32_t msc_index, uint32_t rsrc_index, uint64_t addr_len, uint
     else
         buffer_size = mbwpbm_config_data[0].memcopy_size;
 
-    val_print(ACS_PRINT_DEBUG, "\n       Buffer Size - 0x%llx", buffer_size);
+    val_print(DEBUG, "\n       Buffer Size - 0x%llx", buffer_size);
 
     /* Check if this buffer is possible to allocate */
     if (addr_len < (2 * buffer_size)) {
-        val_print(ACS_PRINT_WARN, "\n       Insufficient buffer size to validate the test", 0);
+        val_print(WARN, "\n       Insufficient buffer size to validate the test");
         return ACS_STATUS_SKIP;
     }
 
@@ -113,8 +113,8 @@ void payload(void)
 
         rsrc_node_cnt = val_mpam_get_info(MPAM_MSC_RSRC_COUNT, msc_index, 0);
 
-        val_print(ACS_PRINT_DEBUG, "\n       msc index  = %d", msc_index);
-        val_print(ACS_PRINT_DEBUG, "\n       Resource count = %d ", rsrc_node_cnt);
+        val_print(DEBUG, "\n       msc index  = %d", msc_index);
+        val_print(DEBUG, "\n       Resource count = %d ", rsrc_node_cnt);
 
         for (rsrc_index = 0; rsrc_index < rsrc_node_cnt; rsrc_index++) {
 
@@ -135,16 +135,16 @@ void payload(void)
         minmax_partid = GET_MIN_VALUE(minmax_partid, val_mpam_get_max_partid(msc_index));
     }
 
-    val_print(ACS_PRINT_TEST,
+    val_print(INFO,
         "\n       %d MSC Memory Nodes support MBW Portion Partitioning", mbwpbm_node_cnt);
 
     /* Skip this test if no MBWPBM supported MSC present in the system */
     if (mbwpbm_node_cnt == 0) {
-        val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+        val_set_status(pe_index, RESULT_SKIP(01));
         return;
     }
 
-    val_print(ACS_PRINT_DEBUG, "\n       MinMax PARTID = %d\n", minmax_partid);
+    val_print(DEBUG, "\n       MinMax PARTID = %d\n", minmax_partid);
 
     /* Disable all types of partitioning for all other nodes */
     for (msc_index = 0; msc_index < total_nodes; msc_index++) {
@@ -188,7 +188,7 @@ void payload(void)
     /* Iterate through various partition settings and gather MBWU monitor count for each */
     for (index = 0; index < sizeof(mbwpbm_config_data)/sizeof(mbwpbm_config_t); index++) {
 
-        val_print(ACS_PRINT_DEBUG,
+        val_print(DEBUG,
             "\n       Programming MSC with %d percent of MBW Portion partitioning",
                                     mbwpbm_config_data[index].partition_percent);
 
@@ -199,13 +199,13 @@ void payload(void)
 
                 if (val_mpam_get_info(MPAM_MSC_RSRC_TYPE, msc_index, rsrc_index)
                                                                         != MPAM_RSRC_TYPE_MEMORY) {
-                    val_print(ACS_PRINT_WARN, "\n       MSC %d not a memory node. Skipping MSC",
+                    val_print(WARN, "\n       MSC %d not a memory node. Skipping MSC",
                                 msc_index);
                     continue;
                 }
 
-                val_print(ACS_PRINT_DEBUG, "\n       MSC Index: %d", msc_index);
-                val_print(ACS_PRINT_DEBUG, "  RIS Index: %d", rsrc_index);
+                val_print(DEBUG, "\n       MSC Index: %d", msc_index);
+                val_print(DEBUG, "  RIS Index: %d", rsrc_index);
 
                 if (val_mpam_msc_supports_ris(msc_index))
                     val_mpam_memory_configure_ris_sel(msc_index, rsrc_index);
@@ -231,19 +231,19 @@ void payload(void)
                 addr_base = val_mpam_memory_get_base(msc_index, rsrc_index);
                 addr_len  = val_mpam_memory_get_size(msc_index, rsrc_index);
 
-                val_print(ACS_PRINT_DEBUG, "\n       addr_base is %llx", addr_base);
-                val_print(ACS_PRINT_DEBUG, "\n       addr_len is %llx", addr_len);
+                val_print(DEBUG, "\n       addr_base is %llx", addr_base);
+                val_print(DEBUG, "\n       addr_len is %llx", addr_len);
 
                 buf_size  = get_buffer_size(msc_index, rsrc_index, addr_len, index);
                 if (buf_size == ACS_STATUS_SKIP) {
-                    val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 02));
+                    val_set_status(pe_index, RESULT_SKIP(02));
                     return;
                 }
 
                 if ((addr_base == SRAT_INVALID_INFO) || (addr_len == SRAT_INVALID_INFO) ||
                     (addr_len <= 2 * buf_size)) { /* src and dst buffer size */
-                    val_print(ACS_PRINT_ERR, "\n       No SRAT mem range info found", 0);
-                    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+                    val_print(ERROR, "\n       No SRAT mem range info found");
+                    val_set_status(pe_index, RESULT_FAIL(01));
 
                     /* Restore MPAM2_EL2 settings */
                     val_mpam_reg_write(MPAM2_EL2, mpam2_el2_temp);
@@ -254,8 +254,8 @@ void payload(void)
                 dest_buf = (void *)val_mem_alloc_at_address(addr_base + buf_size, buf_size);
 
                 if ((src_buf == NULL) || (dest_buf == NULL)) {
-                    val_print(ACS_PRINT_ERR, "\n       Memory allocation of buffers failed", 0);
-                    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
+                    val_print(ERROR, "\n       Memory allocation of buffers failed");
+                    val_set_status(pe_index, RESULT_FAIL(02));
 
                     /* Restore MPAM2_EL2 settings */
                     val_mpam_reg_write(MPAM2_EL2, mpam2_el2_temp);
@@ -263,14 +263,14 @@ void payload(void)
                 }
 
                 if (!val_mpam_get_mbwumon_count(msc_index)) {
-                    val_print(ACS_PRINT_TEST,
-                          "\n       No MBWU Monitor found to validate the test. Skipping test", 0);
-                          val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 03));
+                    val_print(INFO,
+                          "\n       No MBWU Monitor found to validate the test. Skipping test");
+                          val_set_status(pe_index, RESULT_SKIP(03));
                           return;
                 }
 
-                val_print(ACS_PRINT_DEBUG,
-                          "\n       Using MBWU monitor to measure MBW count during buffer copy", 0);
+                val_print(DEBUG,
+                          "\n       Using MBWU monitor to measure MBW count during buffer copy");
                 /* configure MBWU Monitor for this memory resource node */
                 val_mpam_memory_configure_mbwumon(msc_index);
 
@@ -285,7 +285,7 @@ void payload(void)
                 };
 
                 start_count = val_mpam_memory_mbwumon_read_count(msc_index);
-                val_print(ACS_PRINT_TEST, "\n        Start count is %llx", start_count);
+                val_print(INFO, "\n        Start count is %llx", start_count);
 
                 /* perform memory operation */
                 val_memcpy(src_buf, dest_buf, buf_size);
@@ -297,7 +297,7 @@ void payload(void)
                 };
 
                 end_count = val_mpam_memory_mbwumon_read_count(msc_index);
-                val_print(ACS_PRINT_TEST, "\n        End count is %llx", end_count);
+                val_print(INFO, "\n        End count is %llx", end_count);
 
                 /* read the memory bandwidth usage monitor */
                 counter[enabled_scenarios++][msc_index][rsrc_index] =
@@ -307,7 +307,7 @@ void payload(void)
                 val_mpam_memory_mbwumon_disable(msc_index);
                 val_mpam_memory_mbwumon_reset(msc_index);
 
-                val_print(ACS_PRINT_TEST,
+                val_print(INFO,
                     "\n       byte_count = 0x%llx bytes", end_count - start_count);
 
                 /* Free the buffers to the heap manager */
@@ -334,9 +334,9 @@ void payload(void)
                 if (val_mpam_msc_supports_mbwpbm(msc_index))  {
                     if (counter[index][msc_index][rsrc_index]
                                                     > counter[index-1][msc_index][rsrc_index]) {
-                        val_print(ACS_PRINT_ERR, "\n       Failed for msc_index : %d", msc_index);
-                        val_print(ACS_PRINT_ERR, "\n       cfg_index : %d", index);
-                        val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+                        val_print(ERROR, "\n       Failed for msc_index : %d", msc_index);
+                        val_print(ERROR, "\n       cfg_index : %d", index);
+                        val_set_status(pe_index, RESULT_FAIL(01));
                         return;
                     }
                 }
@@ -344,7 +344,7 @@ void payload(void)
         }
     }
 
-    val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+    val_set_status(pe_index, RESULT_PASS);
 
     return;
 }

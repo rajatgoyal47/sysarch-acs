@@ -24,7 +24,7 @@
 
 #define get_min(a, b) ((a) < (b))?(a):(b)
 
-#define PGT_DEBUG_LEVEL ACS_PRINT_INFO
+#define PGT_DEBUG_LEVEL TRACE
 IOREMMAP_LIST *ioremmap_list;
 
 
@@ -126,7 +126,7 @@ uint32_t get_entries_per_level(uint32_t page_size)
         case(PAGE_SIZE_64K):  //64kb granule
             return MAX_ENTRIES_64K;
         default:
-            val_print(ACS_PRINT_ERR, "\n       %llx granularity not supported.", page_size);
+            val_print(ERROR, "\n       %llx granularity not supported.", page_size);
             return 0;
     }
 }
@@ -143,7 +143,7 @@ uint64_t get_block_size(uint32_t level)
             else if (page_size == PAGE_SIZE_16K)
                 return (uint64_t)(page_size * entries * entries * 2); // only 2 lookup tables in L0
             else {
-                val_print(ACS_PRINT_ERR, "\n       L0 tables not supported for page size %llx",
+                val_print(ERROR, "\n       L0 tables not supported for page size %llx",
                                                                                         page_size);
                 return 0;
             }
@@ -371,7 +371,7 @@ uint64_t val_pgt_ioremap_attr(pgt_descriptor_t pgt_desc,
         uint64_t *pte = val_find_pte(pgt_desc, a);
 
         if (!pte) {
-            val_print(ACS_PRINT_INFO, "Cannot find PTE for 0x%lx\n", a);
+            val_print(TRACE, "Cannot find PTE for 0x%lx\n", a);
             continue;
         }
         flag = 1;
@@ -502,9 +502,8 @@ uint32_t fill_translation_table(tt_descriptor_t tt_desc, memory_region_descripto
             tt_base_next_level = val_memory_alloc_pages(1);
             if (tt_base_next_level == NULL)
             {
-                val_print(ACS_PRINT_ERR,
-                "\n       fill_translation_table: page allocation failed     ",
-                0);
+                val_print(ERROR,
+                "\n       fill_translation_table: page allocation failed     ");
                 return ACS_STATUS_ERR;
             }
             val_memory_set(tt_base_next_level, page_size, 0);
@@ -631,7 +630,7 @@ uint32_t val_pgt_create(memory_region_descriptor_t *mem_desc, pgt_descriptor_t *
     if (pgt_desc->pgt_base == (uint64_t) NULL) {
         tt_base = (uint64_t *) val_memory_alloc_pages(1);
         if (tt_base == NULL) {
-            val_print(ACS_PRINT_ERR, "\n      val_pgt_create: page allocation failed     ", 0);
+            val_print(ERROR, "\n      val_pgt_create: page allocation failed     ");
             return ACS_STATUS_ERR;
         }
         val_memory_set(tt_base, page_size, 0);
@@ -654,21 +653,20 @@ uint32_t val_pgt_create(memory_region_descriptor_t *mem_desc, pgt_descriptor_t *
         if ((mem_desc->virtual_address & (uint64_t)(page_size - 1)) != 0 ||
             (mem_desc->physical_address & (uint64_t)(page_size - 1)) != 0)
             {
-                val_print(ACS_PRINT_ERR, "\n       val_pgt_create: addr alignment err     ", 0);
+                val_print(ERROR, "\n       val_pgt_create: addr alignment err     ");
                 return ACS_STATUS_ERR;
             }
 
         if (mem_desc->physical_address >= (0x1ull << pgt_desc->oas))
         {
-            val_print(ACS_PRINT_ERR,
-                      "\n       val_pgt_create: output address size error     ",
-                      0);
+            val_print(ERROR,
+                      "\n       val_pgt_create: output address size error     ");
             return ACS_STATUS_ERR;
         }
 
         if (mem_desc->virtual_address >= (0x1ull << pgt_desc->ias))
         {
-            val_print(ACS_PRINT_WARN,
+            val_print(WARN,
                       "\n       val_pgt_create: input address size error, "
                       "truncating to %d-bits     ",
                       pgt_desc->ias);

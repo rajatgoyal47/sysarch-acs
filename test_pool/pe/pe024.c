@@ -36,9 +36,9 @@ payload(void)
   data = val_pe_reg_read(ID_AA64MMFR0_EL1);
 
   if (data & 0x0020) //bits 7:4 == 0010
-	val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+	val_set_status(index, RESULT_PASS);
   else
-	val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+	val_set_status(index, RESULT_FAIL(01));
 
   return;
 

@@ -62,7 +62,7 @@ payload(void)
       /* Check entry is i-EP */
       if (dp_type == iEP_EP)
       {
-          val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
+          val_print(DEBUG, "\n       BDF - 0x%x", bdf);
 
           /* Read iEP atomicop completer bits */
           val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS, &cap_base);
@@ -86,7 +86,7 @@ payload(void)
           if ((atomicop_32_cap || atomicop_64_cap || atomicop_128_cap) &&
              ((rp_routing_cap == 0) && (rp_requester_cap == 0)))
           {
-              val_print(ACS_PRINT_ERR, "\n       BDF 0x%x atomicop completer fail", bdf);
+              val_print(ERROR, "\n       BDF 0x%x atomicop completer fail", bdf);
               test_fails++;
           }
 
@@ -96,20 +96,20 @@ payload(void)
           if ((ep_requester_cap) &&
              ((rp_routing_cap == 0) && (rp_requester_cap == 0)))
           {
-              val_print(ACS_PRINT_ERR, "\n       BDF 0x%x atomicop requester fail", bdf);
+              val_print(ERROR, "\n       BDF 0x%x atomicop requester fail", bdf);
               test_fails++;
           }
      }
   }
 
   if (test_skip == 1) {
-      val_print(ACS_PRINT_DEBUG, "\n       No iEP_EP type device found. Skipping test", 0);
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+      val_print(DEBUG, "\n       No iEP_EP type device found. Skipping test");
+      val_set_status(pe_index, RESULT_SKIP(01));
   }
   else if (test_fails)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, test_fails));
+      val_set_status(pe_index, RESULT_FAIL(test_fails));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

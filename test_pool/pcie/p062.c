@@ -57,10 +57,10 @@ payload(void)
       /* Check for RCiEP, iEP_EP and iEP_RP type devices */
       if (dp_type == RCiEP || dp_type == iEP_EP || dp_type == iEP_RP)
       {
-          val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x ", bdf);
+          val_print(DEBUG, "\n       BDF - 0x%x ", bdf);
           /* Extract Hdr Type */
           hdr_type = val_pcie_function_header_type(bdf);
-          val_print(ACS_PRINT_INFO, "\n       HDR TYPE 0x%x ", hdr_type);
+          val_print(TRACE, "\n       HDR TYPE 0x%x ", hdr_type);
 
           max_bar = 0;
           /* For Type0 header max bars 6, type1 header max bars 2 */
@@ -68,7 +68,7 @@ payload(void)
              max_bar = TYPE0_MAX_BARS;
           else if (hdr_type == TYPE1_HEADER)
              max_bar = TYPE1_MAX_BARS;
-          val_print(ACS_PRINT_INFO, "\n       MAX BARS 0x%x ", max_bar);
+          val_print(TRACE, "\n       MAX BARS 0x%x ", max_bar);
 
           for (bar_index = 0; bar_index < max_bar; bar_index++)
           {
@@ -86,8 +86,8 @@ payload(void)
               addr_type = (reg_value >> BAR_MDT_SHIFT) & BAR_MDT_MASK;
               if ((addr_type != BITS_32) && (addr_type != BITS_64))
               {
-                  val_print(ACS_PRINT_ERR, "\n       BDF 0x%x ", bdf);
-                  val_print(ACS_PRINT_ERR, " Addr Type: 0x%x", addr_type);
+                  val_print(ERROR, "\n       BDF 0x%x ", bdf);
+                  val_print(ERROR, " Addr Type: 0x%x", addr_type);
                   test_fails++;
                   continue;
               }
@@ -99,7 +99,7 @@ payload(void)
               /* Check BAR must be MMIO */
               if (reg_value & BAR_MIT_MASK)
               {
-                 val_print(ACS_PRINT_ERR, "\n       BDF 0x%x Not MMIO", 0);
+                 val_print(ERROR, "\n       BDF 0x%x Not MMIO");
                  test_fails++;
               }
            }
@@ -107,11 +107,11 @@ payload(void)
   }
 
   if (test_skip == 1)
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_SKIP(01));
   else if (test_fails)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, test_fails));
+      val_set_status(pe_index, RESULT_FAIL(test_fails));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

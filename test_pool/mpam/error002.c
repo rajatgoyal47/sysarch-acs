@@ -43,12 +43,12 @@ void payload(void)
     total_nodes = val_mpam_get_msc_count();
 
     /* Save MPAM2_EL2 to a temp storage */
-    mpam2_el2_temp = AA64ReadMpam2();
+    mpam2_el2_temp = read_mpam2_el2();
 
     for (index = 0; index < total_nodes; index++) {
 
         if (!val_mpam_msc_supports_esr(index)) {
-            val_print(ACS_PRINT_DEBUG, "\n       MSC index %d does not support ESR", index);
+            val_print(DEBUG, "\n       MSC index %d does not support ESR", index);
             continue;
         }
 
@@ -57,7 +57,7 @@ void payload(void)
         status    = val_mpam_msc_reset_errcode(index);
 
         if (!status) {
-            val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+            val_set_status(pe_index, RESULT_FAIL(01));
             return;
         }
 
@@ -66,7 +66,7 @@ void payload(void)
         if (status == ACS_STATUS_SKIP) {
             /* Restore MPAM2_EL2 settings */
             val_mpam_reg_write(MPAM2_EL2, mpam2_el2_temp);
-            val_print(ACS_PRINT_WARN, "\n       MSC PARTID range exceeds PE PARTID range \n", 0);
+            val_print(WARN, "\n       MSC PARTID range exceeds PE PARTID range \n");
             continue;
         }
 
@@ -78,12 +78,12 @@ void payload(void)
 
         /* Read Error Status Register and check if the error code is recorded */
         esr_errcode = val_mpam_msc_get_errcode(index);
-        val_print(ACS_PRINT_DEBUG, "\n       Error code read is %llx", esr_errcode);
+        val_print(DEBUG, "\n       Error code read is %llx", esr_errcode);
 
         if (esr_errcode != ESR_ERRCODE_Req_PARTID_Range)
         {
-            val_print(ACS_PRINT_ERR, "\n       Expected errcode: %d", ESR_ERRCODE_Req_PARTID_Range);
-            val_print(ACS_PRINT_ERR, "\n       Actual errcode: %d", esr_errcode);
+            val_print(ERROR, "\n       Expected errcode: %d", ESR_ERRCODE_Req_PARTID_Range);
+            val_print(ERROR, "\n       Actual errcode: %d", esr_errcode);
             test_fail++;
         }
 
@@ -95,11 +95,11 @@ void payload(void)
     }
 
     if (test_skip)
-        val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+        val_set_status(pe_index, RESULT_SKIP(01));
     else if (test_fail)
-        val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
+        val_set_status(pe_index, RESULT_FAIL(02));
     else
-        val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+        val_set_status(pe_index, RESULT_PASS);
     return;
 }
 

@@ -70,16 +70,16 @@ val_wd_create_info_table(uint64_t *wd_info_table)
 {
 
   if (wd_info_table == NULL) {
-      val_print(ACS_PRINT_ERR, "Input for Create Info table cannot be NULL\n", 0);
+      val_print(ERROR, "Input for Create Info table cannot be NULL\n");
       return;
   }
-  val_print(ACS_PRINT_INFO, " Creating WATCHDOG INFO table\n", 0);
+  val_print(TRACE, " Creating WATCHDOG INFO table\n");
 
   g_wd_info_table = (WD_INFO_TABLE *)wd_info_table;
 
   pal_wd_create_info_table(g_wd_info_table);
 
-  val_print(ACS_PRINT_TEST, " WATCHDOG_INFO: Number of Watchdogs   : %4d\n",
+  val_print(INFO, " WATCHDOG_INFO: Number of Watchdogs   : %4d\n",
                                                             val_wd_get_info(0, WD_INFO_COUNT));
 }
 
@@ -98,8 +98,8 @@ val_wd_free_info_table(void)
         g_wd_info_table = NULL;
     }
     else {
-      val_print(ACS_PRINT_DEBUG,
-                  "\n g_wd_info_table pointer is already NULL", 0);
+      val_print(DEBUG,
+                  "\n g_wd_info_table pointer is already NULL");
     }
 }
 

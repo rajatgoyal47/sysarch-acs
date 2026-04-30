@@ -69,12 +69,12 @@ configure_monitoring_reg(uint32_t reg_offset)
 
     /* Read Error Status Register and check if the error code is recorded */
     esr_errcode = val_mpam_msc_get_errcode(msc_index);
-    val_print(ACS_PRINT_DEBUG, "\n       Error code read is %llx", esr_errcode);
+    val_print(DEBUG, "\n       Error code read is %llx", esr_errcode);
 
     if (esr_errcode != ESR_ERRCODE_RIS_NO_MON)
     {
-        val_print(ACS_PRINT_ERR, "\n       Expected errcode: %d", ESR_ERRCODE_RIS_NO_MON);
-        val_print(ACS_PRINT_ERR, "\n       Actual errcode: %d", esr_errcode);
+        val_print(ERROR, "\n       Expected errcode: %d", ESR_ERRCODE_RIS_NO_MON);
+        val_print(ERROR, "\n       Actual errcode: %d", esr_errcode);
 
         /* Check for RAZ/ WI*/
         status = check_for_raz_wi(reg_offset);
@@ -126,12 +126,12 @@ void payload(void)
     for (msc_index = 0; msc_index < total_nodes; msc_index++) {
 
         if (!val_mpam_msc_supports_esr(msc_index)) {
-            val_print(ACS_PRINT_DEBUG, "\n       MSC index %d does not support ESR", msc_index);
+            val_print(DEBUG, "\n       MSC index %d does not support ESR", msc_index);
             continue;
         }
 
         if (!val_mpam_msc_supports_ris(msc_index)) {
-            val_print(ACS_PRINT_DEBUG,
+            val_print(DEBUG,
                         "\n       MSC index %d does not support RIS", msc_index);
             continue;
         }
@@ -147,7 +147,7 @@ void payload(void)
             status    = val_mpam_msc_reset_errcode(msc_index);
 
             if (!status) {
-                val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+                val_set_status(pe_index, RESULT_FAIL(01));
                 return;
             }
 
@@ -177,11 +177,11 @@ void payload(void)
     }
 
     if (test_skip)
-        val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+        val_set_status(pe_index, RESULT_SKIP(01));
     else if (test_fail)
-        val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
+        val_set_status(pe_index, RESULT_FAIL(02));
     else
-        val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+        val_set_status(pe_index, RESULT_PASS);
     return;
 }
 

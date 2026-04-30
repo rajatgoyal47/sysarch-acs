@@ -51,8 +51,8 @@ esr(uint64_t interrupt_type, void *context)
   /* Update the ELR to point to next instrcution */
   val_pe_update_elr(context, branch_to_test);
 
-  val_print(ACS_PRINT_ERR, "\n       Error : Received Sync Exception type %d", interrupt_type);
-  val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+  val_print(ERROR, "\n       Error : Received Sync Exception type %d", interrupt_type);
+  val_set_status(index, RESULT_FAIL(01));
 }
 
 static
@@ -70,25 +70,25 @@ payload(void)
   branch_to_test = (uint64_t)&&exception_taken;
 
   if (count == 0) {
-      val_print(ACS_PRINT_WARN, "\n       No UART defined by Platform      ", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
+      val_print(WARN, "\n       No UART defined by Platform      ");
+      val_set_status(index, RESULT_SKIP(01));
       return;
   }
 
   while (count != 0) {
       l_uart_base = val_peripheral_get_info(UART_BASE0, count - 1);
       if (l_uart_base == 0) {
-          val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+          val_set_status(index, RESULT_SKIP(02));
           return;
       }
 
       /*Make sure access to Reserved doesn't cause any exceptions*/
       value = *((volatile uint32_t *)(l_uart_base + UART_RES));
-      val_print(ACS_PRINT_DEBUG, "\n       Value from UART Reserved Space 0x%llx", value);
+      val_print(DEBUG, "\n       Value from UART Reserved Space 0x%llx", value);
 
       *((volatile uint32_t *)(l_uart_base + UART_RES)) = (uint32_t)(0xDEAD);
 
-      val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(index, RESULT_PASS);
 
       count--;
   }

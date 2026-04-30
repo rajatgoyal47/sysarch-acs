@@ -31,12 +31,12 @@ static void payload(void)
 
     /* Read ID_AA64PFR0_EL1[47:44] for Activity monitors extension */
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64PFR0_EL1), 44, 47);
-    val_print_primary_pe(ACS_PRINT_DEBUG, "\n       ID_AA64PFR0_EL1.AMU[47:44]  = %llx",
+    val_print_primary_pe(DEBUG, "\n       ID_AA64PFR0_EL1.AMU[47:44]  = %llx",
                                                                            data, index);
     if (data != 0)
-        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+        val_set_status(index, RESULT_PASS);
     else
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+        val_set_status(index, RESULT_FAIL(01));
 }
 
 uint32_t pe033_entry(uint32_t num_pe)

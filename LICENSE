@@ -199,3 +199,50 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+# Other Licenses
+ - BSD-3-Clause
+      - Some source files originate from the
+        [cca-rmm-acs](https://github.com/ARM-software/cca-rmm-acs). These files
+        are licensed under the BSD-3-Clause which are a permissive licenses
+        compatible with Apache License, Version 2.0. Any contributions to this
+        code must also be made under the terms of BSD-3-Clause.
+      - These files are:
+         - val/include/val_arch.h
+         - val/include/val_logger.h
+         - val/include/val_sysreg.h
+         - val/include/val_sysreg_gic.h
+         - val/include/val_sysreg_mpam.h
+         - val/include/val_sysreg_pe.h
+         - val/include/val_sysreg_pmu_reg.h
+         - val/include/val_sysreg_ras.h
+         - val/include/val_sysreg_timer.h
+         - val/src/val_logger.c
+         - val/xlat_tables_v2/CMakeLists.txt
+         - val/xlat_tables_v2/include/arch.h
+         - val/xlat_tables_v2/include/arch_features.h
+         - val/xlat_tables_v2/include/arch_helpers.h
+         - val/xlat_tables_v2/include/asm_macros.S
+         - val/xlat_tables_v2/include/asm_macros_common.S
+         - val/xlat_tables_v2/include/assert.h
+         - val/xlat_tables_v2/include/assert_macros.S
+         - val/xlat_tables_v2/include/cdefs.h
+         - val/xlat_tables_v2/include/config.h
+         - val/xlat_tables_v2/include/debug.h
+         - val/xlat_tables_v2/include/def.h
+         - val/xlat_tables_v2/include/smc.h
+         - val/xlat_tables_v2/include/xlat_mmu_helpers.h
+         - val/xlat_tables_v2/include/xlat_tables.h
+         - val/xlat_tables_v2/include/xlat_tables_aarch64.h
+         - val/xlat_tables_v2/include/xlat_tables_arch.h
+         - val/xlat_tables_v2/include/xlat_tables_compat.h
+         - val/xlat_tables_v2/include/xlat_tables_defs.h
+         - val/xlat_tables_v2/include/xlat_tables_private.h
+         - val/xlat_tables_v2/include/xlat_tables_v2.h
+         - val/xlat_tables_v2/include/xlat_tables_v2_helpers.h
+         - val/xlat_tables_v2/src/cache_helpers.S
+         - val/xlat_tables_v2/src/enable_mmu.S
+         - val/xlat_tables_v2/src/smc.S
+         - val/xlat_tables_v2/src/xlat_tables_arch.c
+         - val/xlat_tables_v2/src/xlat_tables_core.c
+         - val/xlat_tables_v2/src/xlat_tables_utils.c

@@ -50,8 +50,8 @@ payload(void *arg)
 
   num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
   if (num_smmu == 0) {
-      val_print(ACS_PRINT_ERR, "\n       No SMMU Controllers are discovered               ", 0);
-      val_set_status(index, RESULT_SKIP(test_data->test_num, 1));
+      val_print(ERROR, "\n       No SMMU Controllers are discovered               ");
+      val_set_status(index, RESULT_SKIP(1));
       return;
   }
 
@@ -66,9 +66,9 @@ payload(void *arg)
           s1ts = VAL_EXTRACT_BITS(val_smmu_read_cfg(SMMUv2_IDR0, num_smmu), 30, 30);
           // Stage 1 translation functionality cannot be provided by SMMU v2 revision
           if (!s1ts) {
-              val_print(ACS_PRINT_ERR,
-                        "\n       SMMUv2 not providing Stage1 functionality  ", 0);
-              val_set_status(index, RESULT_FAIL(test_data->test_num, 1));
+              val_print(ERROR,
+                        "\n       SMMUv2 not providing Stage1 functionality  ");
+              val_set_status(index, RESULT_FAIL(1));
               return;
           }
       }
@@ -80,27 +80,27 @@ payload(void *arg)
               s1p = VAL_EXTRACT_BITS(val_smmu_read_cfg(SMMUv3_IDR0, num_smmu), 1, 1);
               // Stage 1 translation functionality cannot be provided by SMMU v3.0/3.1 revisions
               if (!s1p) {
-                  val_print(ACS_PRINT_ERR,
+                  val_print(ERROR,
                             "\n       SMMUv3.%d not providing Stage1 functionality  ", minor);
-                  val_set_status(index, RESULT_FAIL(test_data->test_num, 2));
+                  val_set_status(index, RESULT_FAIL(2));
                   return;
               }
           } else {
             /* If both PE & SMMU Implement S_EL2, Skip this test */
-            val_print(ACS_PRINT_DEBUG, "\n       S-EL2 implemented...Skipping", 0);
-            val_set_status(index, RESULT_SKIP(test_data->test_num, 2));
+            val_print(DEBUG, "\n       S-EL2 implemented...Skipping");
+            val_set_status(index, RESULT_SKIP(2));
             return;
           }
       }
       if (smmu_rev < 2) {
-         val_print(ACS_PRINT_ERR,
-                "\n       SMMU revision must be at least v2  ", 0);
-         val_set_status(index, RESULT_FAIL(test_data->test_num, 3));
+         val_print(ERROR,
+                "\n       SMMU revision must be at least v2  ");
+         val_set_status(index, RESULT_FAIL(3));
          return;
       }
   }
 
-  val_set_status(index, RESULT_PASS(test_data->test_num, 1));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

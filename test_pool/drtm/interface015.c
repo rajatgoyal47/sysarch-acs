@@ -32,9 +32,9 @@ payload(uint32_t num_pe)
 
   /*Status value less than zero are error case*/
   if (status < DRTM_ACS_SUCCESS) {
-    val_print(ACS_PRINT_DEBUG,
+    val_print(DEBUG,
             "\n       DRTM query DLME Image Authentication feature not supported err=%d", status);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+    val_set_status(index, RESULT_SKIP(1));
     return;
   }
 
@@ -42,16 +42,16 @@ payload(uint32_t num_pe)
   if (status > DRTM_ACS_SUCCESS) {
     if (val_drtm_reserved_bits_check_is_zero(
                       VAL_EXTRACT_BITS(features_dlme_img_auth, 1, 63)) != ACS_STATUS_PASS) {
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+      val_set_status(index, RESULT_FAIL(1));
       return;
     }
   } else {
-    val_print(ACS_PRINT_ERR,
-        "\n       DLME Image Authentication feature value not available in return value", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+    val_print(ERROR,
+        "\n       DLME Image Authentication feature value not available in return value");
+    val_set_status(index, RESULT_FAIL(2));
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

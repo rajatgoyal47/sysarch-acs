@@ -66,8 +66,8 @@ payload(void *arg)
       if (dp_type != test_data->dev_type)
           continue;
 
-      val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
-      val_print(ACS_PRINT_DEBUG, " dp_type is %llx", dp_type);
+      val_print(DEBUG, "\n       BDF - 0x%x", bdf);
+      val_print(DEBUG, " dp_type is %llx", dp_type);
 
       /* Retrieve the addr of PCI express capability (10h) */
       val_pcie_find_capability(bdf, PCIE_CAP, CID_PCIECS, &cap_base);
@@ -84,18 +84,18 @@ payload(void *arg)
       /* Valid payload size between 000b (129-bytes) to 101b (4096 bytes) */
       if (!((max_payload_value >= 0x00) && (max_payload_value <= 0x05)))
       {
-          val_print(ACS_PRINT_ERR, "\n        BDF 0x%x", bdf);
-          val_print(ACS_PRINT_ERR, " Cap Ptr Value: 0x%x", max_payload_value);
+          val_print(ERROR, "\n        BDF 0x%x", bdf);
+          val_print(ERROR, " Cap Ptr Value: 0x%x", max_payload_value);
           test_fails++;
       }
   }
 
   if (test_skip == 1)
-      val_set_status(pe_index, RESULT_SKIP(test_data->test_num, 01));
+      val_set_status(pe_index, RESULT_SKIP(01));
   else if (test_fails)
-      val_set_status(pe_index, RESULT_FAIL(test_data->test_num, test_fails));
+      val_set_status(pe_index, RESULT_FAIL(test_fails));
   else
-      val_set_status(pe_index, RESULT_PASS(test_data->test_num, 01));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

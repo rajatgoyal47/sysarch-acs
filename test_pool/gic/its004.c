@@ -45,8 +45,8 @@ payload()
   pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
   bdf_tbl_ptr = val_pcie_bdf_table_ptr();
   if ((!bdf_tbl_ptr) || (!bdf_tbl_ptr->num_entries)) {
-      val_print(ACS_PRINT_DEBUG, "\n       No entries in BDF table", 0);
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+      val_print(DEBUG, "\n       No entries in BDF table");
+      val_set_status(pe_index, RESULT_SKIP(1));
       return;
   }
 
@@ -68,8 +68,8 @@ payload()
                                           seg_num, &device_id,
                                           &stream_id, &its_id);
       if (status) {
-          val_print(ACS_PRINT_DEBUG, "\n       Could not get device info for BDF : 0x%x", bdf);
-          val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 1));
+          val_print(DEBUG, "\n       Could not get device info for BDF : 0x%x", bdf);
+          val_set_status(pe_index, RESULT_FAIL(1));
           return;
       }
 
@@ -77,11 +77,11 @@ payload()
       curr_grp_its_id = 0xFFFFFFFF;
       curr_smmu_id = 0xFFFFFFFF;
       curr_seg_num = 0xFFFFFFFF;
-      val_print(ACS_PRINT_INFO, "\n   BDF is  : 0x%x\n", bdf);
+      val_print(TRACE, "\n   BDF is  : 0x%x\n", bdf);
 
       smmu_id = val_iovirt_get_rc_smmu_index(seg_num, PCIE_CREATE_BDF_PACKED(bdf));
       if (smmu_id == ACS_INVALID_INDEX) {
-          val_print(ACS_PRINT_INFO,
+          val_print(TRACE,
               "\n       Skipping StreamID Association check, Bdf : 0x%llx Not Behind an SMMU", bdf);
           continue;
       }
@@ -104,28 +104,30 @@ payload()
       continue;
   }
 
-  val_print(ACS_PRINT_DEBUG,
-                  "\n       Checking ReqID-StreamID-DeviceID Association, Bdf : %x", bdf);
-  /* Check for stream_id & device_id */
-  if (curr_grp_sid_cons != (stream_id - req_id)) {
-      /* StreamID Constant Base Failure */
-      val_print(ACS_PRINT_ERR, "\n       ReqID-StreamID Association Fail for Bdf : %x", bdf);
-      test_fail++;
-  }
+  if (!test_skip) {
+      val_print(DEBUG,
+                      "\n       Checking ReqID-StreamID-DeviceID Association, Bdf : %x", bdf);
+      /* Check for stream_id & device_id */
+      if (curr_grp_sid_cons != (stream_id - req_id)) {
+          /* StreamID Constant Base Failure */
+          val_print(ERROR, "\n       ReqID-StreamID Association Fail for Bdf : %x", bdf);
+          test_fail++;
+      }
 
-  if (curr_grp_did_cons != (device_id - stream_id)) {
-      /* DeviceID Constant Base Failure */
-      val_print(ACS_PRINT_ERR,
-                    "\n       StreamID-DeviceID Association Fail for Bdf : %x", bdf);
-      test_fail++;
+      if (curr_grp_did_cons != (device_id - stream_id)) {
+          /* DeviceID Constant Base Failure */
+          val_print(ERROR,
+                        "\n       StreamID-DeviceID Association Fail for Bdf : %x", bdf);
+          test_fail++;
+      }
   }
 
   if (test_skip == 1)
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+      val_set_status(pe_index, RESULT_SKIP(1));
   else if (test_fail)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 2));
+      val_set_status(pe_index, RESULT_FAIL(2));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

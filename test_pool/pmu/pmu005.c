@@ -66,7 +66,7 @@ typedef struct {
 } test_data_t;
 
 /* This functions checks if counters collectively supports event list passed as parameter */
-test_status_t check_event_support(PMU_EVENT_TYPE_e *event_list, uint32_t num_events,
+uint32_t check_event_support(PMU_EVENT_TYPE_e *event_list, uint32_t num_events,
                                   uint64_t node_primary_instance, PMU_NODE_INFO_TYPE node_type)
 {
     uint32_t counter, event_idx;
@@ -77,8 +77,8 @@ test_status_t check_event_support(PMU_EVENT_TYPE_e *event_list, uint32_t num_eve
     /* Get PMU node index corresponding to the node instance primary */
     node_index = val_pmu_get_node_index(node_primary_instance, node_type);
     if (node_index == PMU_INVALID_INDEX) {
-        val_print(ACS_PRINT_ERR, "\n       Node primary instance : 0x%lx ", node_primary_instance);
-        val_print(ACS_PRINT_ERR, "\n       Node type : 0x%x has no PMU associated with it",
+        val_print(ERROR, "\n       Node primary instance : 0x%lx ", node_primary_instance);
+        val_print(ERROR, "\n       Node type : 0x%x has no PMU associated with it",
                 (uint32_t)node_type);
         return TEST_FAIL;
     }
@@ -86,8 +86,8 @@ test_status_t check_event_support(PMU_EVENT_TYPE_e *event_list, uint32_t num_eve
     /* Based on scenario to run check if minimum event counters are met*/
     num_counters = val_pmu_get_monitor_count(node_index);
     if (num_counters <= 0) {
-        val_print(ACS_PRINT_ERR, "\n       PMU node must support atleast one counter."
-                  , 0);
+        val_print(ERROR, "\n       PMU node must support atleast one counter."
+                  );
         return TEST_FAIL;
     }
 
@@ -103,15 +103,15 @@ test_status_t check_event_support(PMU_EVENT_TYPE_e *event_list, uint32_t num_eve
 
             if (val_pmu_configure_monitor(node_index, event_list[event_idx], counter) == 0) {
                 event_supported[event_idx] = 1;
-                val_print(ACS_PRINT_DEBUG, "\n       Counter : %d ", counter);
-                val_print(ACS_PRINT_DEBUG, "Supports event ID :%d", event_list[event_idx]);
+                val_print(DEBUG, "\n       Counter : %d ", counter);
+                val_print(DEBUG, "Supports event ID :%d", event_list[event_idx]);
             }
         }
     }
 
     for (event_idx = 0; event_idx < num_events; event_idx++) {
         if (!event_supported[event_idx]) {
-            val_print(ACS_PRINT_DEBUG, "\n       Missing support for event ID %d",
+            val_print(DEBUG, "\n       Missing support for event ID %d",
                       event_list[event_idx]);
             return TEST_FAIL;
         }
@@ -123,7 +123,7 @@ test_status_t check_event_support(PMU_EVENT_TYPE_e *event_list, uint32_t num_eve
 /* This payload checks for presence PMU monitor(s) with required event list passed as parameter */
 static void payload_check_pmu_monitors(void *arg)
 {
-    test_status_t status;
+    uint32_t status;
     uint64_t num_mem_range, mem_range_index, mc_prox_domain;
     uint64_t node_count, node_index, pcie_rc_id;
     uint32_t fail_cnt = 0;
@@ -142,8 +142,8 @@ static void payload_check_pmu_monitors(void *arg)
         /* Get number of memory ranges from SRAT table */
         num_mem_range = val_srat_get_info(SRAT_MEM_NUM_MEM_RANGE, 0);
         if (num_mem_range == 0 || num_mem_range == SRAT_INVALID_INFO) {
-            val_print(ACS_PRINT_ERR, "\n       No Proximity domains in the system", 0);
-            val_set_status(index, RESULT_FAIL(test_data->test_num, 02));
+            val_print(ERROR, "\n       No Proximity domains in the system");
+            val_set_status(index, RESULT_FAIL(02));
             return;
         }
 
@@ -181,23 +181,23 @@ static void payload_check_pmu_monitors(void *arg)
             }
         }
     } else {
-        val_print(ACS_PRINT_ERR, "\n       Invalid interface type passed to check_monitors()", 0);
-        val_set_status(index, RESULT_FAIL(test_data->test_num, 03));
+        val_print(ERROR, "\n       Invalid interface type passed to check_monitors()");
+        val_set_status(index, RESULT_FAIL(03));
         return;
     }
 
     if (!run_flag) {
-        val_print(ACS_PRINT_ERR, "\n       No PMU associated with PCIe interface", 0);
-        val_set_status(index, RESULT_FAIL(test_data->test_num, 04));
+        val_print(ERROR, "\n       No PMU associated with PCIe interface");
+        val_set_status(index, RESULT_FAIL(04));
         return;
     }
 
     if (fail_cnt) {
-        val_set_status(index, RESULT_FAIL(test_data->test_num, 05));
+        val_set_status(index, RESULT_FAIL(05));
         return;
     }
 
-    val_set_status(index, RESULT_PASS(test_data->test_num, 01));
+    val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

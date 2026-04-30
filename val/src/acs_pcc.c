@@ -122,7 +122,7 @@ void
 
   /* if platform not setting complete, return with failure */
   if (loop_cnt == 0) {
-      val_print(ACS_PRINT_ERR,
+      val_print(ERROR,
                 "\n    Platform fails to set command complete reg for PCC subspace id : 0x%x",
                 subspace_id);
       return NULL;
@@ -164,7 +164,7 @@ void
 
   /* if platform not setting complete, return with failure */
   if (loop_cnt == 0) {
-      val_print(ACS_PRINT_ERR,
+      val_print(ERROR,
           "\n    Platform fails to set command complete, post command for PCC subspace id : 0x%x",
           subspace_id);
       return NULL;
@@ -191,8 +191,7 @@ val_pcc_free_info_table(void)
         g_pcc_info_table = NULL;
     }
     else {
-      val_print(ACS_PRINT_ERR,
-                  "\n WARNING: g_pcc_info_table pointer is already NULL",
-        0);
+      val_print(ERROR,
+                  "\n WARNING: g_pcc_info_table pointer is already NULL");
     }
 }

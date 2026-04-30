@@ -54,11 +54,11 @@ payload(void)
           continue;
 
       e_bdf = val_exerciser_get_bdf(instance);
-      val_print(ACS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
+      val_print(DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
 
       /* Check if exerciser is child of one of the rootports */
       if (val_pcie_parent_is_rootport(e_bdf, &erp_bdf)) {
-          val_print(ACS_PRINT_DEBUG,
+          val_print(DEBUG,
               "\n       Exerciser not a downstream device to RP. Skipping 0x%x", e_bdf);
           continue;
       }
@@ -71,8 +71,8 @@ payload(void)
       status = val_exerciser_ops(START_TXN_MONITOR, CFG_READ, instance);
       if (status == PCIE_CAP_NOT_FOUND)
       {
-          val_print(ACS_PRINT_DEBUG, "\n       Unable to start transaction monitoring", 0);
-          val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+          val_print(DEBUG, "\n       Unable to start transaction monitoring");
+          val_set_status(pe_index, RESULT_SKIP(01));
           return;
       }
 
@@ -80,15 +80,15 @@ payload(void)
       status = val_exerciser_ops(STOP_TXN_MONITOR, CFG_READ, instance);
       if (status == PCIE_CAP_NOT_FOUND)
       {
-          val_print(ACS_PRINT_DEBUG, "\n       Unable to stop transaction monitoring", 0);
-          val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 02));
+          val_print(DEBUG, "\n       Unable to stop transaction monitoring");
+          val_set_status(pe_index, RESULT_SKIP(02));
           return;
       }
 
       val_exerciser_get_param(CFG_TXN_ATTRIBUTES, (uint64_t *)&header_type, 0, instance);
       if (header_type != TYPE0)
       {
-          val_print(ACS_PRINT_ERR, "\n       BDF 0x%x Sec Bus Transaction failure", erp_bdf);
+          val_print(ERROR, "\n       BDF 0x%x Sec Bus Transaction failure", erp_bdf);
           fail_cnt++;
       }
 
@@ -96,9 +96,9 @@ payload(void)
   }
 
   if (fail_cnt)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, fail_cnt));
+      val_set_status(pe_index, RESULT_FAIL(fail_cnt));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(pe_index, RESULT_PASS);
 
   return;
 
@@ -115,7 +115,7 @@ e010_entry(uint32_t num_pe)
   status = val_initialize_test (TEST_NUM, TEST_DESC, num_pe);
   if (status != ACS_STATUS_SKIP) {
       if (val_exerciser_test_init() != ACS_STATUS_PASS)
-          return TEST_SKIP_VAL;
+          return RESULT_SKIP(1);
       val_run_test_payload (TEST_NUM, num_pe, payload, 0);
   }
 

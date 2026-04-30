@@ -21,7 +21,7 @@
 
 #define TEST_NUM   (ACS_GIC_TEST_NUM_BASE + 16)
 #define TEST_RULE  "S_L5GI_01"
-#define TEST_DESC  "Check Non GIC Interrupts              "
+#define TEST_DESC  "Check Non standard GICv3 implmentation"
 
 static
 void
@@ -29,18 +29,27 @@ payload(void)
 {
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   uint32_t num_non_gic = 0;
-
+  uint32_t num_gicd = 0;
 
   num_non_gic = val_get_num_nongic_ctrl();
 
-  val_print(ACS_PRINT_DEBUG, "\n       Non GIC Interrupt count: %d", num_non_gic);
+  val_print(DEBUG, "\n       Non GIC Interrupt count: %d", num_non_gic);
   if (num_non_gic > 0) {
-      val_print(ACS_PRINT_ERR, "\n       Non GIC Interrupt found", 0);
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+      val_print(ERROR, "\n       Non GIC Interrupt found");
+      val_set_status(index, RESULT_FAIL(01));
       return;
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+  /* MADT permits only a single GICD structure. Exposing multiple GICDs via MADT would be treated
+     as a non-standard GICv3 implementation */
+  num_gicd = val_gic_get_info(GIC_INFO_NUM_GICD);
+  if (num_gicd > 1) {
+      val_print(ERROR, "\n       GIC Distributor count is greater than 1");
+      val_set_status(index, RESULT_FAIL(02));
+      return;
+  }
+
+  val_set_status(index, RESULT_PASS);
   return;
 }
 

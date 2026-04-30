@@ -107,8 +107,8 @@ payload(void)
    */
   pgt_base_array = val_aligned_alloc(MEM_ALIGN_4K, sizeof(uint64_t) * num_exercisers);
   if (!pgt_base_array) {
-      val_print(ACS_PRINT_ERR, "\n       mem alloc failure %x", 03);
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 03));
+      val_print(ERROR, "\n       mem alloc failure %x", 03);
+      val_set_status(pe_index, RESULT_FAIL(03));
       return;
   }
 
@@ -117,9 +117,9 @@ payload(void)
   /* Allocate a buffer to perform DMA tests on */
   dram_buf_in_virt = val_memory_alloc_pages(TEST_DATA_NUM_PAGES);
   if (!dram_buf_in_virt) {
-      val_print(ACS_PRINT_ERR, "\n       Cacheable mem alloc failure %x", 02);
+      val_print(ERROR, "\n       Cacheable mem alloc failure %x", 02);
       val_memory_free_aligned(pgt_base_array);
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
+      val_set_status(pe_index, RESULT_FAIL(02));
       return;
   }
 
@@ -131,12 +131,12 @@ payload(void)
 
   /* Get translation attributes via TCR and translation table base via TTBR */
   if (val_pe_reg_read_tcr(0 /*for TTBR0*/, &pgt_desc.tcr)) {
-    val_print(ACS_PRINT_ERR, "\n       Unable to get translation attributes via TCR", 0);
+    val_print(ERROR, "\n       Unable to get translation attributes via TCR");
     goto test_fail;
   }
 
   if (val_pe_reg_read_ttbr(0 /*TTBR0*/, &ttbr)) {
-    val_print(ACS_PRINT_ERR, "\n       Unable to get translation table via TBBR", 0);
+    val_print(ERROR, "\n       Unable to get translation table via TBBR");
     goto test_fail;
   }
 
@@ -148,7 +148,7 @@ payload(void)
    * our own page table later.
    */
   if (val_pgt_get_attributes(pgt_desc, (uint64_t)dram_buf_in_virt, &mem_desc->attributes)) {
-    val_print(ACS_PRINT_ERR, "\n       Unable to get memory attributes of the test buffer", 0);
+    val_print(ERROR, "\n       Unable to get memory attributes of the test buffer");
     goto test_fail;
   }
 
@@ -161,11 +161,11 @@ payload(void)
     bdf = bdf_tbl_ptr->device[tbl_index].bdf;
     dp_type = val_pcie_device_port_type(bdf);
     if ((dp_type != RCiEP) && (dp_type != iEP_EP) && (dp_type != iEP_RP)) {
-        val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x not an RCiEP/iEP device", bdf);
+        val_print(DEBUG, "\n       BDF - 0x%x not an RCiEP/iEP device", bdf);
         continue;
     }
 
-    val_print(ACS_PRINT_DEBUG, "\n      RCiEP/iEP BDF - 0x%x ", bdf);
+    val_print(DEBUG, "\n      RCiEP/iEP BDF - 0x%x ", bdf);
 
     /* Get rc index of RCiEP/iEP in IOVIRT mapping*/
     rc_index = val_iovirt_get_rc_index(PCIE_EXTRACT_BDF_SEG(bdf));
@@ -185,8 +185,8 @@ payload(void)
     /* Get exerciser bdf */
     e_bdf = val_exerciser_get_bdf(instance);
 
-    val_print(ACS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
-    val_print(ACS_PRINT_DEBUG, "\n       rc_index - 0x%x", rc_index);
+    val_print(DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
+    val_print(DEBUG, "\n       rc_index - 0x%x", rc_index);
 
     /* Get SMMU node index for this exerciser instance */
     master.smmu_index = val_iovirt_get_rc_smmu_index(PCIE_EXTRACT_BDF_SEG(e_bdf),
@@ -218,14 +218,14 @@ payload(void)
         /* Need to know input and output address sizes before creating page table */
         pgt_desc.ias = val_smmu_get_info(SMMU_IN_ADDR_SIZE, master.smmu_index);
         if (pgt_desc.ias == 0) {
-          val_print(ACS_PRINT_ERR,
+          val_print(ERROR,
                     "\n       Input address size of SMMU %d is 0", master.smmu_index);
           goto test_fail;
         }
 
         pgt_desc.oas = val_smmu_get_info(SMMU_OUT_ADDR_SIZE, master.smmu_index);
         if (pgt_desc.oas == 0) {
-          val_print(ACS_PRINT_ERR,
+          val_print(ERROR,
                     "\n       Output address size of SMMU %d is 0", master.smmu_index);
           goto test_fail;
         }
@@ -234,8 +234,8 @@ payload(void)
            will update pgt_desc.pgt_base to point to created translation table */
         pgt_desc.pgt_base = (uint64_t) NULL;
         if (val_pgt_create(mem_desc, &pgt_desc)) {
-          val_print(ACS_PRINT_ERR,
-                    "\n       Unable to create page table with given attributes", 0);
+          val_print(ERROR,
+                    "\n       Unable to create page table with given attributes");
           goto test_fail;
         }
 
@@ -245,7 +245,7 @@ payload(void)
            for VA to PA translations */
         if (val_smmu_map(master, pgt_desc))
         {
-            val_print(ACS_PRINT_ERR,
+            val_print(ERROR,
                      "\n       SMMU mapping failed (%x)     ", e_bdf);
             goto test_fail;
         }
@@ -258,7 +258,7 @@ payload(void)
     write_test_data(dram_buf_in_virt, dma_len);
 
     if (val_exerciser_set_param(DMA_ATTRIBUTES, dram_buf_in_iova, dma_len, instance)) {
-        val_print(ACS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
+        val_print(ERROR, "\n       DMA attributes setting failure %4x", instance);
         goto test_fail;
     }
 
@@ -266,7 +266,7 @@ payload(void)
     val_exerciser_ops(START_DMA, EDMA_TO_DEVICE, instance);
 
     if (val_exerciser_set_param(DMA_ATTRIBUTES, dram_buf_out_iova, dma_len, instance)) {
-        val_print(ACS_PRINT_ERR, "\n       DMA attributes setting failure %4x", instance);
+        val_print(ERROR, "\n       DMA attributes setting failure %4x", instance);
         goto test_fail;
     }
 
@@ -274,7 +274,7 @@ payload(void)
     val_exerciser_ops(START_DMA, EDMA_FROM_DEVICE, instance);
 
     if (val_memory_compare(dram_buf_in_virt, dram_buf_out_virt, dma_len)) {
-        val_print(ACS_PRINT_ERR, "\n       Data Comparasion failure for Exerciser %4x", instance);
+        val_print(ERROR, "\n       Data Comparasion failure for Exerciser %4x", instance);
         goto test_fail;
     }
 
@@ -282,16 +282,16 @@ payload(void)
   }
 
   if (test_skip == 1) {
-      val_print(ACS_PRINT_DEBUG, "\n       No RCiEP/iEP type devicefound, Skipping the test", 0);
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+      val_print(DEBUG, "\n       No RCiEP/iEP type devicefound, Skipping the test");
+      val_set_status(pe_index, RESULT_SKIP(01));
       goto test_clean;
   }
 
-  val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+  val_set_status(pe_index, RESULT_PASS);
   goto test_clean;
 
 test_fail:
-  val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 02));
+  val_set_status(pe_index, RESULT_FAIL(02));
 
 test_clean:
   /* Return the pages to the heap manager */
@@ -334,7 +334,7 @@ e019_entry(uint32_t num_pe)
   status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
   if (status != ACS_STATUS_SKIP) {
       if (val_exerciser_test_init() != ACS_STATUS_PASS)
-          return TEST_SKIP_VAL;
+          return RESULT_SKIP(1);
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
   }
 

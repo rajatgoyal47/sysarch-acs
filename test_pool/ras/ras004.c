@@ -42,16 +42,16 @@ payload()
   /* Get Number of nodes with RAS Functionality */
   status = val_ras_get_info(RAS_INFO_NUM_NODES, 0, &num_node);
   if (status || (num_node == 0)) {
-    val_print(ACS_PRINT_DEBUG, "\n       No RAS Nodes found in AEST table.", 0);
-    val_print(ACS_PRINT_DEBUG, "\n       The test must be considered fail if system \
-                                        components supports RAS nodes", 0);
-    val_set_status(index, RESULT_WARN(TEST_NUM, 01));
+    val_print(DEBUG, "\n       No RAS Nodes found in AEST table.");
+    val_print(DEBUG, "\n       The test must be considered fail if system \
+                                        components supports RAS nodes");
+    val_set_status(index, RESULT_WARNING(01));
     return;
   }
 
   if (num_node < 2) {
-    val_print(ACS_PRINT_DEBUG, "\n       RAS Nodes should be more than 1. Skipping...", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 01));
+    val_print(DEBUG, "\n       RAS Nodes should be more than 1. Skipping...");
+    val_set_status(index, RESULT_SKIP(01));
     return;
   }
 
@@ -61,14 +61,14 @@ payload()
     status = val_ras_get_info(RAS_INFO_BASE_ADDR, node_index, &base_addr);
     if (status) {
       /* Interface is System Register based, Skipping this node */
-      val_print(ACS_PRINT_DEBUG, "\n       Interface is SR, Skipping node %d", node_index);
+      val_print(DEBUG, "\n       Interface is SR, Skipping node %d", node_index);
       continue;
     }
 
     /* Get ERI number for Node, If Not Skip the Node */
     status = val_ras_get_info(RAS_INFO_ERI_ID, node_index, &eri_id);
     if (status) {
-      val_print(ACS_PRINT_DEBUG, "\n       ERI Not supported for index %d", node_index);
+      val_print(DEBUG, "\n       ERI Not supported for index %d", node_index);
       continue;
     }
 
@@ -81,7 +81,7 @@ payload()
       status = val_ras_get_info(RAS_INFO_BASE_ADDR, sec_node, &base_addr_sec);
       if (status) {
         /* Interface is System Register based, Skipping this node */
-        val_print(ACS_PRINT_DEBUG, "\n       Interface is SR, Skipping sec_node %d", sec_node);
+        val_print(DEBUG, "\n       Interface is SR, Skipping sec_node %d", sec_node);
         continue;
       }
 
@@ -92,14 +92,14 @@ payload()
       /* Get ERI number for this Node */
       status = val_ras_get_info(RAS_INFO_ERI_ID, sec_node, &eri_id_sec);
       if (status) {
-        val_print(ACS_PRINT_DEBUG, "\n       ERI Not supported for index %d", sec_node);
+        val_print(DEBUG, "\n       ERI Not supported for index %d", sec_node);
         continue;
       }
 
       /* Check if ERI is same otherwise fail the test */
       if (eri_id != eri_id_sec) {
-        val_print(ACS_PRINT_ERR, "\n       ERI Diff for Same Group Nodes. Index %d", node_index);
-        val_print(ACS_PRINT_ERR, " : %d", sec_node);
+        val_print(ERROR, "\n       ERI Diff for Same Group Nodes. Index %d", node_index);
+        val_print(ERROR, " : %d", sec_node);
         fail_cnt++;
         continue;
       }
@@ -107,15 +107,15 @@ payload()
   }
 
   if (fail_cnt) {
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+    val_set_status(index, RESULT_FAIL(01));
     return;
   } else if (test_skip) {
-    val_print(ACS_PRINT_ERR, "\n       No ERI found in RAS nodes ", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+    val_print(ERROR, "\n       No ERI found in RAS nodes ");
+    val_set_status(index, RESULT_SKIP(02));
     return;
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

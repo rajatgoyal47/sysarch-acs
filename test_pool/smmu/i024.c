@@ -35,15 +35,15 @@ static void payload(void)
   num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
 
   if (num_smmu == 0) {
-      val_print(ACS_PRINT_ERR, "\n       No SMMU Controllers are discovered ", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+      val_print(ERROR, "\n       No SMMU Controllers are discovered ");
+      val_set_status(index, RESULT_SKIP(02));
       return;
   }
 
   while (num_smmu--) {
       if (val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 2) {
-          val_print(ACS_PRINT_WARN, "\n       Not valid for SMMU v2           ", 0);
-          val_set_status(index, RESULT_SKIP(TEST_NUM, 03));
+          val_print(WARN, "\n       Not valid for SMMU v2           ");
+          val_set_status(index, RESULT_SKIP(03));
           return;
       }
 
@@ -51,13 +51,13 @@ static void payload(void)
        * if SMMU_IDR0.ATS[10:10] == 0b1 */
       data = VAL_EXTRACT_BITS(val_smmu_read_cfg(SMMUv3_IDR0, num_smmu), 10, 10);
       if (data != 1) {
-          val_print(ACS_PRINT_ERR, "\n       ATS is not supported for Smmu Index : %d ", num_smmu);
-          val_set_status(index, RESULT_FAIL(TEST_NUM, 01));
+          val_print(ERROR, "\n       ATS is not supported for Smmu Index : %d ", num_smmu);
+          val_set_status(index, RESULT_FAIL(01));
           return;
       }
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t i024_entry(uint32_t num_pe)

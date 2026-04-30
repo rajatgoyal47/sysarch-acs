@@ -50,7 +50,7 @@ payload(void)
       dp_type = val_pcie_device_port_type(bdf);
       if ((dp_type == RCiEP) || (dp_type == RCEC)) {
 
-          val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
+          val_print(DEBUG, "\n       BDF - 0x%x", bdf);
           /* If test runs for atleast an endpoint */
           test_skip = 0;
 
@@ -58,14 +58,14 @@ payload(void)
           hdr_type = val_pcie_function_header_type(bdf);
           /* Type must be 0 for RCiEP*/
           if (hdr_type != TYPE0_HEADER) {
-              val_print(ACS_PRINT_ERR, "\n       Invalid HDR TYPE 0x%x", hdr_type);
+              val_print(ERROR, "\n       Invalid HDR TYPE 0x%x", hdr_type);
               fail_cnt++;
               continue;
           }
 
           link_cap_sup = val_pcie_link_cap_support(bdf);
           if (link_cap_sup != 0) {
-              val_print(ACS_PRINT_ERR, "\n       Invalid Link Capabilities 0x%x", link_cap_sup);
+              val_print(ERROR, "\n       Invalid Link Capabilities 0x%x", link_cap_sup);
               fail_cnt++;
           }
 
@@ -73,13 +73,13 @@ payload(void)
   }
 
   if (test_skip == 1) {
-      val_print(ACS_PRINT_DEBUG, "\n       No RCiEP/ RCEC type device found. Skipping test", 0);
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+      val_print(DEBUG, "\n       No RCiEP/ RCEC type device found. Skipping test");
+      val_set_status(pe_index, RESULT_SKIP(1));
   }
   else if (fail_cnt)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, fail_cnt));
+      val_set_status(pe_index, RESULT_FAIL(fail_cnt));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

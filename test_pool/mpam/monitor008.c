@@ -73,7 +73,7 @@ mbwu_prepare_overflow(uint32_t msc_index, void *src_buf, void *dest_buf, uint64_
   val_mpam_mbwu_wait_for_update(msc_index);
 
   if (!val_mpam_mbwu_is_overflow_set(msc_index)) {
-    val_print(ACS_PRINT_ERR,
+    val_print(ERROR,
         "\n       Overflow status not set during setup for MSC %d", msc_index);
     goto exit_fail;
   }
@@ -112,7 +112,7 @@ payload(void)
   /* Program MPAM2_EL2 with DEFAULT_PARTID and default PMG */
   status = val_mpam_program_el2(DEFAULT_PARTID, DEFAULT_PMG);
   if (status) {
-    val_print(ACS_PRINT_ERR, "\n       MPAM2_EL2 programming failed", 0);
+    val_print(ERROR, "\n       MPAM2_EL2 programming failed");
     test_skip = 0;
     test_fail++;
     goto cleanup;
@@ -143,7 +143,7 @@ payload(void)
 
       if ((mem_base == SRAT_INVALID_INFO) || (mem_size == SRAT_INVALID_INFO) ||
           (mem_size <= 2 * buf_size)) {
-        val_print(ACS_PRINT_DEBUG,
+        val_print(DEBUG,
             "\n       MSC %d memory range invalid for MBWU test", msc_index);
         continue;
       }
@@ -153,7 +153,7 @@ payload(void)
       src_buf = (void *)val_mem_alloc_at_address(mem_base, buf_size);
       dest_buf = (void *)val_mem_alloc_at_address(mem_base + buf_size, buf_size);
       if ((src_buf == NULL) || (dest_buf == NULL)) {
-        val_print(ACS_PRINT_ERR, "\n       Mem allocation failed for MSC %d", msc_index);
+        val_print(ERROR, "\n       Mem allocation failed for MSC %d", msc_index);
         test_fail++;
         goto cleanup;
       }
@@ -166,7 +166,7 @@ payload(void)
 
       /* Clear overflow via control register and ensure counter resumes */
       if (val_mpam_mbwu_clear_overflow_status(msc_index)) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
             "\n       Overflow status not cleared via control write for MSC %d", msc_index);
         test_fail++;
         goto monitor_cleanup;
@@ -176,7 +176,7 @@ payload(void)
       post_clear_count = val_mpam_memory_mbwumon_read_count(msc_index);
       /* Check if Monitor Read Failed */
       if (post_clear_count == (uint64_t)MPAM_MON_NOT_READY) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
             "\n       Monitor not ready after clearing via control write for MSC %d",
             msc_index);
         test_fail++;
@@ -192,13 +192,13 @@ payload(void)
       resumed_count = val_mpam_memory_mbwumon_read_count(msc_index);
       /* Check if Monitor Read Failed */
       if (resumed_count == (uint64_t)MPAM_MON_NOT_READY) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
             "\n       Monitor not ready after resume traffic (control clear) for MSC %d",
             msc_index);
         test_fail++;
         goto monitor_cleanup;
       } else if (resumed_count <= post_clear_count) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
             "\n       Counter did not advance after control clear for MSC %d", msc_index);
         test_fail++;
         goto monitor_cleanup;
@@ -218,7 +218,7 @@ payload(void)
       val_mpam_mbwu_wait_for_update(msc_index);
 
       if (val_mpam_mbwu_is_overflow_set(msc_index)) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
             "\n       Overflow status not cleared by counter write for MSC %d", msc_index);
         test_fail++;
         goto monitor_cleanup;
@@ -227,7 +227,7 @@ payload(void)
       post_clear_count = val_mpam_memory_mbwumon_read_count(msc_index);
       /* Check if Monitor Read Failed */
       if (post_clear_count == (uint64_t)MPAM_MON_NOT_READY) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
             "\n       Monitor not ready after counter write for MSC %d", msc_index);
         test_fail++;
         goto monitor_cleanup;
@@ -242,12 +242,12 @@ payload(void)
       resumed_count = val_mpam_memory_mbwumon_read_count(msc_index);
       /* Check if Monitor Read Failed */
       if (resumed_count == (uint64_t)MPAM_MON_NOT_READY) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
             "\n       Monitor not ready after resume traffic (counter write) for MSC %d",
             msc_index);
         test_fail++;
       } else if (resumed_count <= post_clear_count) {
-        val_print(ACS_PRINT_ERR,
+        val_print(ERROR,
             "\n       Counter did not advance after counter write clear for MSC %d",
             msc_index);
         test_fail++;
@@ -276,11 +276,11 @@ cleanup:
     val_mem_free_at_address((uint64_t)src_buf, buf_size);
 
   if (test_skip)
-    val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 1));
+    val_set_status(pe_index, RESULT_SKIP(1));
   else if (test_fail)
-    val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 1));
+    val_set_status(pe_index, RESULT_FAIL(1));
   else
-    val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+    val_set_status(pe_index, RESULT_PASS);
 
   return;
 }

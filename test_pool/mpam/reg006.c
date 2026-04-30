@@ -39,7 +39,7 @@ static void payload(void)
         if (!val_mpam_msc_supports_partid_nrw(msc_index))
             continue;
 
-        val_print(ACS_PRINT_DEBUG, "\n       MSC %d supports PARTID NRW", msc_index);
+        val_print(DEBUG, "\n       MSC %d supports PARTID NRW", msc_index);
 
         /* Read MPAMF_IDR register */
         mpamf_idr = val_mpam_mmr_read64(msc_index, REG_MPAMF_IDR);
@@ -51,18 +51,18 @@ static void payload(void)
         /* If PARTID narrowing is supported, MPAMCFG_DIS.NFU must not be implemented.
            Check for MPAMF_IDR.HAS_NFU = 0 */
         if (BITFIELD_READ(IDR_HAS_NFU, mpamf_idr)) {
-            val_print(ACS_PRINT_ERR, "\n       MSC %d has NFU bit implemented", msc_index);
+            val_print(ERROR, "\n       MSC %d has NFU bit implemented", msc_index);
             nfu_bit++;
         }
     }
 
     if (nfu_bit != 0) {
         /* Fail The Test */
-        val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+        val_set_status(pe_index, RESULT_FAIL(01));
         return;
     }
 
-    val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+    val_set_status(pe_index, RESULT_PASS);
     return;
 }
 

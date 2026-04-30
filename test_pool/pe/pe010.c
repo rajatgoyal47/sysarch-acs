@@ -35,8 +35,8 @@ esr(uint64_t interrupt_type, void *context)
   /* Update the ELR to point to next instrcution */
   val_pe_update_elr(context, (uint64_t)branch_to_test);
 
-  val_print(ACS_PRINT_ERR, "\n       Error : Received Exception of type %d", interrupt_type);
-  val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+  val_print(ERROR, "\n       Error : Received Exception of type %d", interrupt_type);
+  val_set_status(index, RESULT_FAIL(1));
 }
 
 static
@@ -66,8 +66,8 @@ isr()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
   /* We received our interrupt, so disable PMUIRQ from generating further interrupts */
   val_pe_reg_write(PMOVSCLR_EL0, 0x1);
-  val_print(ACS_PRINT_INFO, "\n Received PMUIRQ ", 0);
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_print(TRACE, "\n Received PMUIRQ ");
+  val_set_status(index, RESULT_PASS);
   val_gic_end_of_interrupt(int_id);
 
   return;
@@ -87,20 +87,20 @@ payload()
   data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64DFR0_EL1), 8, 11);
   if ((data == 0x0) || (data == 0xF)) {
       /* PMUver not implemented, Skipping. */
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+      val_set_status(index, RESULT_SKIP(1));
       return;
   }
 
   int_id = val_pe_get_pmu_gsiv(index);
   if (int_id == 0) {
       /* PMU interrupt number not updated */
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+      val_set_status(index, RESULT_SKIP(2));
       return;
   }
 
   if (val_gic_install_isr(int_id, isr)) {
-      val_print(ACS_PRINT_ERR, "\n       GIC Install Handler Failed...", 0);
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+      val_print(ERROR, "\n       GIC Install Handler Failed...");
+      val_set_status(index, RESULT_FAIL(1));
       return;
   }
 
@@ -117,8 +117,8 @@ payload()
   val_pe_reg_write(PMCR_EL0, pmcr_value);
 exception_taken:
   if (timeout == 0) {
-      val_print(ACS_PRINT_ERR, "\n       Interrupt not recieved within timeout", 0);
-      val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+      val_print(ERROR, "\n       Interrupt not recieved within timeout");
+      val_set_status(index, RESULT_FAIL(2));
   }
 }
 

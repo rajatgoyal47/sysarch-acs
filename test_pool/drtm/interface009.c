@@ -32,13 +32,13 @@ payload(uint32_t num_pe)
   smccc_major_ver = SMCCC_VERSION_GET_MAJOR(val_drtm_get_smccc_ver());
   if (smccc_major_ver < 1)
   {
-    val_print(ACS_PRINT_ERR, "\n       Version not as expected, Current version =%d",
+    val_print(ERROR, "\n       Version not as expected, Current version =%d",
                              smccc_major_ver);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+    val_set_status(index, RESULT_FAIL(1));
     return;
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

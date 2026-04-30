@@ -53,24 +53,24 @@ payload(void)
       {
           /* Test runs for atleast one RP/iEP_RP */
           test_skip = 0;
-          val_print(ACS_PRINT_DEBUG, "\n       BDF - 0x%x", bdf);
+          val_print(DEBUG, "\n       BDF - 0x%x", bdf);
 
           /* Fail if AER is not supported. */
           if (val_pcie_find_capability(bdf, PCIE_ECAP, ECID_AER, &cap_base) != PCIE_SUCCESS) {
-              val_print(ACS_PRINT_ERR, "\n       BDF 0x%x: AER Cap unsupported", bdf);
+              val_print(ERROR, "\n       BDF 0x%x: AER Cap unsupported", bdf);
               test_fails++;
           }
       }
   }
 
   if (test_skip == 1) {
-      val_print(ACS_PRINT_DEBUG, "\n       No RP/iEP_RP type device found. Skipping test", 0);
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 2));
+      val_print(DEBUG, "\n       No RP/iEP_RP type device found. Skipping test");
+      val_set_status(pe_index, RESULT_SKIP(2));
   }
   else if (test_fails)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, test_fails));
+      val_set_status(pe_index, RESULT_FAIL(test_fails));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 1));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

@@ -21,6 +21,8 @@
 #include "platform_image_def.h"
 #include "platform_override_struct.h"
 #include "platform_override_fvp.h"
+#include "pal_pl011_uart.h"
+#include "acs_interface.h"
 
 /**
   Conduits for service calls (SMC vs HVC).
@@ -232,7 +234,7 @@ void map_gic_device_region(uint32_t gicc_count, uint32_t gicd_count,
         base_address = platform_gic_cfg.gicr_rd_base[i];
         mmap_region_list[mmap_list_curr_index].virtual_address  = base_address;
         mmap_region_list[mmap_list_curr_index].physical_address = base_address;
-        mmap_region_list[mmap_list_curr_index].length           = 0x4 * length;
+        mmap_region_list[mmap_list_curr_index].length           = PLATFORM_OVERRIDE_GICRIRD_LENGTH;
         mmap_region_list[mmap_list_curr_index].attributes       = attr;
         mmap_list_curr_index++;
     }
@@ -898,11 +900,13 @@ static uint8_t  heap_init_done;
   @return None
 **/
 void
-pal_print(char *string, uint64_t data)
+pal_print(uint64_t data)
 {
+   char *buf = (char *)(uintptr_t)data;
 
-  print(ACS_PRINT_ERR, string, data);
-  return;
+    while (*buf != '\0') {
+        pal_uart_putc(*buf++);
+    }
 }
 
 /**

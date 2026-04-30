@@ -55,7 +55,7 @@ payload()
           continue;
 
       e_bdf = val_exerciser_get_bdf(instance);
-      val_print(ACS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
+      val_print(DEBUG, "\n       Exerciser BDF - 0x%x", e_bdf);
 
       val_pcie_enable_eru(e_bdf);
       val_pcie_enable_msa(e_bdf);
@@ -74,14 +74,14 @@ payload()
        * Skip the RAS check if not supported */
       poison_support = val_exerciser_check_poison_data_forwarding_support();
       if (poison_support == 0) {
-          val_print(ACS_PRINT_DEBUG, "\n       Poison forwarding not supported", 0);
+          val_print(DEBUG, "\n       Poison forwarding not supported");
           goto get_bar_data;
       }
 
       ras_node = val_exerciser_get_pcie_ras_compliant_err_node(e_bdf, erp_bdf);
       if (ras_node == NOT_IMPLEMENTED) {
-          val_print(ACS_PRINT_ERR, "\n       No RAS compliant node to record PCIe Error", 0);
-          val_print(ACS_PRINT_ERR, "\n       Skipping RAS check for BDF  - 0x%x", e_bdf);
+          val_print(ERROR, "\n       No RAS compliant node to record PCIe Error");
+          val_print(ERROR, "\n       Skipping RAS check for BDF  - 0x%x", e_bdf);
           goto get_bar_data;
       }
 
@@ -93,13 +93,13 @@ get_bar_data:
       /* Get BAR 0 details for this instance */
       status = val_exerciser_get_data(EXERCISER_DATA_BAR0_SPACE, &e_data, instance);
       if (status == NOT_IMPLEMENTED) {
-          val_print(ACS_PRINT_ERR, "\n       pal_exerciser_get_data() for MMIO not implemented", 0);
+          val_print(ERROR, "\n       pal_exerciser_get_data() for MMIO not implemented");
 
           /* Disable the Poison mode in the exerciser*/
           val_exerciser_set_param(DISABLE_POISON_MODE, 0, 0, instance);
           continue;
       } else if (status) {
-          val_print(ACS_PRINT_ERR, "\n       Exerciser %d data read error", instance);
+          val_print(ERROR, "\n       Exerciser %d data read error", instance);
 
           /* Disable the Poison mode in the exerciser*/
           val_exerciser_set_param(DISABLE_POISON_MODE, 0, 0, instance);
@@ -112,12 +112,12 @@ get_bar_data:
       /* Read the BAR address should result in poisoned TLP being forwarded to the PE*/
       bar_data = (*(volatile addr_t *)e_data.bar_space.base_addr);
       if (bar_data != PCIE_UNKNOWN_RESPONSE) {
-          val_print(ACS_PRINT_ERR, "\n       Memory reads not returning all 1's, BDF %x", e_bdf);
+          val_print(ERROR, "\n       Memory reads not returning all 1's, BDF %x", e_bdf);
           fail_cnt++;
       }
 
       if (poison_support == 0) {
-          val_print(ACS_PRINT_DEBUG, "\n       Skippping RAS check for BDF  - 0x%x", e_bdf);
+          val_print(DEBUG, "\n       Skippping RAS check for BDF  - 0x%x", e_bdf);
 
           /* Disable the Poison mode in the exerciser*/
           val_exerciser_set_param(DISABLE_POISON_MODE, 0, 0, instance);
@@ -127,7 +127,7 @@ get_bar_data:
       /* Get the RAS Error Status register value of the RAS node implemented*/
       data = val_exerciser_get_ras_status(ras_node, e_bdf, erp_bdf);
       if (data == NOT_IMPLEMENTED) {
-          val_print(ACS_PRINT_ERR, "\n       Couldn't read ERR STATUS reg for node %x", ras_node);
+          val_print(ERROR, "\n       Couldn't read ERR STATUS reg for node %x", ras_node);
           fail_cnt++;
 
           /* Disable the Poison mode in the exerciser*/
@@ -137,31 +137,31 @@ get_bar_data:
 
       /* SERR code to be 0x19 for PCIe error */
       if ((data & SERR_MASK) != 0x19) {
-          val_print(ACS_PRINT_ERR, "\n       SERR bits did not record PCIe error, bdf %x", e_bdf);
+          val_print(ERROR, "\n       SERR bits did not record PCIe error, bdf %x", e_bdf);
           fail_cnt++;
       }
 
       /* PN bit to be set if Poisoned value is detected */
       if (!((data >> PN_SHIFT) & PN_MASK)) {
-          val_print(ACS_PRINT_ERR, "\n       Poisoned(PN) bit not set, bdf %x", e_bdf);
+          val_print(ERROR, "\n       Poisoned(PN) bit not set, bdf %x", e_bdf);
           fail_cnt++;
       }
 
       /* UE and ER bit to be set indicating Error is undeferred and reported */
       if (((data >> UE_ER_SHIFT) & UE_ER_MASK) != 0x3) {
-          val_print(ACS_PRINT_ERR, "\n       ER and UE bit not set, bdf %x", e_bdf);
+          val_print(ERROR, "\n       ER and UE bit not set, bdf %x", e_bdf);
           fail_cnt++;
       }
 
       /* UET bit to be 0x3 for PCIe error Uncorrected error, Signaled or Recoverable error*/
       if (((data >> UET_SHIFT) & UET_MASK) != 0x3) {
-          val_print(ACS_PRINT_ERR, "\n       UET error not received, bdf %x", e_bdf);
+          val_print(ERROR, "\n       UET error not received, bdf %x", e_bdf);
           fail_cnt++;
       }
 
       /* DE to be 0 indicating that no errors was deferred*/
       if ((data >> DE_SHIFT) & DE_MASK) {
-          val_print(ACS_PRINT_ERR, "\n       DE bit must not be set, bdf %x", e_bdf);
+          val_print(ERROR, "\n       DE bit must not be set, bdf %x", e_bdf);
           fail_cnt++;
       }
 
@@ -171,11 +171,11 @@ get_bar_data:
   }
 
   if (test_skip)
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_SKIP(01));
   else if (fail_cnt)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_FAIL(01));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS);
 
   return;
 }
@@ -191,7 +191,7 @@ e028_entry(uint32_t num_pe)
   status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
   if (status != ACS_STATUS_SKIP) {
       if (val_exerciser_test_init() != ACS_STATUS_PASS)
-          return TEST_SKIP_VAL;
+          return TEST_SKIP;
       val_run_test_payload(TEST_NUM, num_pe, payload, 0);
   }
 

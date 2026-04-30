@@ -110,26 +110,26 @@ payload(void)
       bdf = bdf_tbl_ptr->device[tbl_index++].bdf;
       dp_type = val_pcie_device_port_type(bdf);
       if (dp_type == iEP_EP) {
-          val_print(ACS_PRINT_DEBUG, "\n        BDF - 0x%x ", bdf);
+          val_print(DEBUG, "\n        BDF - 0x%x ", bdf);
           /* If test runs for atleast an endpoint */
           test_skip = 0;
 
           if (func_ecam_is_rp_ecam(bdf))
           {
-              val_print(ACS_PRINT_ERR, "dp_type: 0x%x ", dp_type);
+              val_print(ERROR, "dp_type: 0x%x ", dp_type);
               fail_cnt++;
           }
       }
   }
 
   if (test_skip == 1) {
-      val_print(ACS_PRINT_DEBUG, "\n       No iEP_EP type device found. Skipping test", 0);
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+      val_print(DEBUG, "\n       No iEP_EP type device found. Skipping test");
+      val_set_status(pe_index, RESULT_SKIP(01));
   }
   else if (fail_cnt)
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, fail_cnt));
+      val_set_status(pe_index, RESULT_FAIL(fail_cnt));
   else
-      val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+      val_set_status(pe_index, RESULT_PASS);
 }
 
 uint32_t

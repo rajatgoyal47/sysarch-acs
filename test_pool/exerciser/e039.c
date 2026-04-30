@@ -42,15 +42,15 @@ esr(uint64_t interrupt_type, void *context)
   /* Update the ELR to point to next instrcution */
   val_pe_update_elr(context, (uint64_t)branch_to_test);
 
-  val_print(ACS_PRINT_ERR, "\n       Received Exception of type %d", interrupt_type);
-  val_set_status(index, RESULT_FAIL(TEST_NUM, 02));
+  val_print(ERROR, "\n       Received Exception of type %d", interrupt_type);
+  val_set_status(index, RESULT_FAIL(02));
 }
 
 static
 void
 payload(void)
 {
-  char *baseptr;
+  char *baseptr = NULL;
   uint32_t idx;
   uint32_t pe_index;
   uint32_t bdf;
@@ -66,8 +66,8 @@ payload(void)
   branch_to_test = &&test_fail;
   if (status)
   {
-      val_print(ACS_PRINT_ERR, "\n       Failed in installing the exception handler", 0);
-      val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 01));
+      val_print(ERROR, "\n       Failed in installing the exception handler");
+      val_set_status(pe_index, RESULT_FAIL(01));
       return;
   }
 
@@ -81,15 +81,15 @@ payload(void)
           continue;
 
     bdf = val_exerciser_get_bdf(instance);
-    val_print(ACS_PRINT_DEBUG, "\n       Exerciser BDF - 0x%x", bdf);
+    val_print(DEBUG, "\n       Exerciser BDF - 0x%x", bdf);
 
     /* Get BAR 0 details for this instance */
     status = val_exerciser_get_data(EXERCISER_DATA_MMIO_SPACE, &e_data, instance);
     if (status == NOT_IMPLEMENTED) {
-        val_print(ACS_PRINT_ERR, "\n       pal_exerciser_get_data() for MMIO not implemented", 0);
+        val_print(ERROR, "\n       pal_exerciser_get_data() for MMIO not implemented");
         goto test_fail;
     } else if (status) {
-        val_print(ACS_PRINT_ERR, "\n       Exerciser %d data read error     ", instance);
+        val_print(ERROR, "\n       Exerciser %d data read error     ", instance);
         goto test_fail;
     }
 
@@ -101,6 +101,7 @@ payload(void)
 
         /* Map the mmio space to ARM normal memory in MMU page tables */
         for (idx = 0; idx < sizeof(ARM_NORMAL_MEM_ARRAY)/sizeof(ARM_NORMAL_MEM_ARRAY[0]); idx++) {
+          baseptr = NULL;
             status = val_memory_ioremap((void *)e_data.bar_space.base_addr,
                                                     512,
                                                     ARM_NORMAL_MEM_ARRAY[idx], (void **)&baseptr);
@@ -110,9 +111,9 @@ payload(void)
             }
 
             if (status) {
-                val_print(ACS_PRINT_ERR,
+                val_print(ERROR,
                             "\n       Failed in BAR ioremap for instance %x", instance);
-                val_print(ACS_PRINT_DEBUG, "   Status :0x%x", status);
+                val_print(DEBUG, "   Status :0x%x", status);
                 goto test_fail;
             }
 
@@ -122,35 +123,38 @@ payload(void)
             /* Write predefined data to an unaligned address in mmio space and read it back */
             val_mmio_write((addr_t)(baseptr+3), TEST_DATA);
             if (TEST_DATA != val_mmio_read((addr_t)(baseptr+3))) {
-                val_print(ACS_PRINT_ERR,
+                val_print(ERROR,
                         "\n       Exerciser BAR space access error %x", instance);
                 goto test_fail;
             }
 
             /* Remove BAR mapping from MMU page tables */
             val_memory_unmap(baseptr);
+            baseptr = NULL;
         }
     }
   }
 
   if (test_skip) {
-      val_print(ACS_PRINT_DEBUG,
-                "\n       No exerciser with prefetchable mmio space, Skipping test", 0);
-      val_set_status(pe_index, RESULT_SKIP(TEST_NUM, 01));
+      val_print(DEBUG,
+                "\n       No exerciser with prefetchable mmio space, Skipping test");
+      val_set_status(pe_index, RESULT_SKIP(01));
       return;
   }
 
-  val_set_status(pe_index, RESULT_PASS(TEST_NUM, 01));
+  val_set_status(pe_index, RESULT_PASS);
   return;
 
 test_warn_unimplemented:
-  val_memory_unmap(baseptr);
-  val_set_status(pe_index, RESULT_WARN(TEST_NUM, 01));
+  if (baseptr != NULL)
+      val_memory_unmap(baseptr);
+  val_set_status(pe_index, RESULT_WARNING(01));
   return;
 
 test_fail:
-  val_memory_unmap(baseptr);
-  val_set_status(pe_index, RESULT_FAIL(TEST_NUM, 03));
+  if (baseptr != NULL)
+      val_memory_unmap(baseptr);
+  val_set_status(pe_index, RESULT_FAIL(03));
   return;
 
 }
@@ -167,7 +171,7 @@ e039_entry(uint32_t num_pe)
   status = val_initialize_test(TEST_NUM, TEST_DESC, num_pe);
   if (status != ACS_STATUS_SKIP) {
      if (val_exerciser_test_init() != ACS_STATUS_PASS)
-         return TEST_SKIP_VAL;
+         return RESULT_SKIP(0);
      val_run_test_payload(TEST_NUM, num_pe, payload, 0);
   }
 

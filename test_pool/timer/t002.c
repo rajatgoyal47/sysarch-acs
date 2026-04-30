@@ -31,24 +31,24 @@ payload()
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
   if (val_timer_get_info(TIMER_INFO_NUM_PLATFORM_TIMERS, 0) == 0) {
-      val_print(ACS_PRINT_INFO, "\n Physical EL1 timer flag = %x",
+      val_print(TRACE, "\n Physical EL1 timer flag = %x",
                 val_timer_get_info(TIMER_INFO_PHY_EL1_FLAGS, 0));
-      val_print(ACS_PRINT_INFO, "\n Physical EL2 timer flag = %x",
+      val_print(TRACE, "\n Physical EL2 timer flag = %x",
                 val_timer_get_info(TIMER_INFO_PHY_EL2_FLAGS, 0));
-      val_print(ACS_PRINT_INFO, "\n Virtual EL1 timer flag  = %x",
+      val_print(TRACE, "\n Virtual EL1 timer flag  = %x",
                 val_timer_get_info(TIMER_INFO_VIR_EL1_FLAGS, 0));
 
       if ((val_timer_get_info(TIMER_INFO_PHY_EL1_FLAGS, 0) & BSA_TIMER_FLAG_ALWAYS_ON) &&
         (val_timer_get_info(TIMER_INFO_PHY_EL2_FLAGS, 0) & BSA_TIMER_FLAG_ALWAYS_ON) &&
         (val_timer_get_info(TIMER_INFO_VIR_EL1_FLAGS, 0) & BSA_TIMER_FLAG_ALWAYS_ON)) {
-          val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+          val_set_status(index, RESULT_PASS);
       } else {
-          val_print(ACS_PRINT_ERR, "\n       PE Timers are not always-on\n"
-                                   "       And no system wake up timer", 0);
-          val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+          val_print(ERROR, "\n       PE Timers are not always-on\n"
+                                   "       And no system wake up timer");
+          val_set_status(index, RESULT_FAIL(1));
       }
   } else {
-      val_set_status(index, RESULT_PASS(TEST_NUM, 2));
+      val_set_status(index, RESULT_PASS);
   }
 
 }

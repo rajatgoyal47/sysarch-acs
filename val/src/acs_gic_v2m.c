@@ -39,14 +39,14 @@ uint32_t val_gic_v2m_parse_info(void)
   uint32_t i;
 
   if (g_gic_info_table == NULL) {
-      val_print(ACS_PRINT_DEBUG, "GIC INFO table not available\n", 0);
+      val_print(DEBUG, "GIC INFO table not available\n");
       return ACS_STATUS_SKIP;
   }
 
   /* Allocate memory to store MSI Frame info */
   g_v2m_msi_info = (GICv2m_MSI_FRAME_INFO *) val_aligned_alloc(MEM_ALIGN_4K, 1024);
   if (!g_v2m_msi_info) {
-      val_print(ACS_PRINT_DEBUG, "\n       GICv2m : MSI Frame Info Failed.", 0);
+      val_print(DEBUG, "\n       GICv2m : MSI Frame Info Failed.");
       return ACS_STATUS_SKIP;
   }
 
@@ -84,7 +84,7 @@ uint64_t val_gic_v2m_get_info(V2M_MSI_INFO_e type, uint32_t instance)
   uint32_t spi_base, spi_count;
 
   if (g_v2m_msi_info == NULL) {
-      val_print(ACS_PRINT_ERR, "\n   Get GICv2m info called before table is filled ", 0);
+      val_print(ERROR, "\n   Get GICv2m info called before table is filled ");
       return 0;
   }
 
@@ -118,7 +118,7 @@ uint64_t val_gic_v2m_get_info(V2M_MSI_INFO_e type, uint32_t instance)
       return g_v2m_msi_info->msi_info[instance].flags;
 
   default:
-      val_print(ACS_PRINT_ERR, "\n    V2M_MSI_INFO - TYPE not recognized %d  ", type);
+      val_print(ERROR, "\n    V2M_MSI_INFO - TYPE not recognized %d  ", type);
       break;
   }
   return ACS_STATUS_ERR;

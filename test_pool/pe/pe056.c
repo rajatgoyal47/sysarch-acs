@@ -34,15 +34,15 @@ static void payload(void)
        trapping for WFE instruction */
     data = VAL_EXTRACT_BITS(val_pe_reg_read(ID_AA64MMFR1_EL1), 32, 35);
     if (index == primary_pe_idx)
-        val_print(ACS_PRINT_DEBUG, "\n       ID_AA64MMFR1_EL1.TWED = %llx", data);
+        val_print(DEBUG, "\n       ID_AA64MMFR1_EL1.TWED = %llx", data);
 
     if (data == 1)
-        val_set_status(index, RESULT_PASS(TEST_NUM, 01));
+        val_set_status(index, RESULT_PASS);
     else {
         if (index == primary_pe_idx)
-            val_print(ACS_PRINT_WARN,
-                "\n       Recommended WFE fine-tuning delay feature not implemented", 0);
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 02));
+            val_print(WARN,
+                "\n       Recommended WFE fine-tuning delay feature not implemented");
+        val_set_status(index, RESULT_SKIP(02));
     }
 }
 

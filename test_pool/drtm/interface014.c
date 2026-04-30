@@ -57,32 +57,32 @@ payload(uint32_t num_pe)
 
   /* Check if DRTM_SET_TCB_HASH is implemented */
   if (status != DRTM_ACS_SUCCESS) {
-    val_print(ACS_PRINT_DEBUG,
+    val_print(DEBUG,
               "\n       DRTM_SET_TCB_HASH function not supported err=%d", status);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+    val_set_status(index, RESULT_SKIP(1));
     return;
   }
 
   /* If DRTM_SET_TCB_HASH is implemented then DRTM_LOCK_TCB_HASHES must be implemented */
   status = g_drtm_features.lock_tcb_hashes;
   if (status != DRTM_ACS_SUCCESS) {
-    val_print(ACS_PRINT_ERR,
+    val_print(ERROR,
               "\n       DRTM_LOCK_TCB_HASHES function not supported err=%d", status);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+    val_set_status(index, RESULT_FAIL(1));
     return;
   }
 
   /* num_hashes value zero indicates that hashes cannot be recorded with DRTM_SET_TCB_HASH */
   if (!num_hashes) {
-    val_print(ACS_PRINT_ERR, "\n       Max Hashes can be recorded with DRTM_SET_TCB_HASH is 0", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+    val_print(ERROR, "\n       Max Hashes can be recorded with DRTM_SET_TCB_HASH is 0");
+    val_set_status(index, RESULT_SKIP(2));
   }
 
   drtm_hash_table = (DRTM_TCB_HASH_TABLE *)val_memory_alloc(sizeof(DRTM_TCB_HASH_TABLE_HDR) +
             ((sizeof(uint32_t) + (sizeof(uint8_t) * SHA_256_DIGEST_SIZE_BYTES)) * NUM_OF_HASHES));
   if (!drtm_hash_table) {
-    val_print(ACS_PRINT_ERR, "\n       Failed to allocate tcb hash table", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
+    val_print(ERROR, "\n       Failed to allocate tcb hash table");
+    val_set_status(index, RESULT_FAIL(2));
     return;
   }
 
@@ -91,16 +91,16 @@ payload(uint32_t num_pe)
 
   status = val_drtm_set_tcb_hash((uint64_t)drtm_hash_table);
   if (status != DRTM_ACS_INVALID_PARAMETERS) {
-    val_print(ACS_PRINT_ERR, "\n       DRTM set invalid parameters failed %d", status);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 3));
+    val_print(ERROR, "\n       DRTM set invalid parameters failed %d", status);
+    val_set_status(index, RESULT_FAIL(3));
     goto free_tcb_hash;
   }
 
   /* CASE 2: Do Lock TCB Hashes and Set Tcb Hash to check return status as DENIED */
   status = val_drtm_lock_tcb_hashes();
   if (status != DRTM_ACS_SUCCESS) {
-    val_print(ACS_PRINT_ERR, "\n       DRTM Lock Hashes failed err=%d", status);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 4));
+    val_print(ERROR, "\n       DRTM Lock Hashes failed err=%d", status);
+    val_set_status(index, RESULT_FAIL(4));
     goto free_tcb_hash;
   }
   /* Refill the hash table with revision as 1 */
@@ -108,13 +108,13 @@ payload(uint32_t num_pe)
 
   status = val_drtm_set_tcb_hash((uint64_t)drtm_hash_table);
   if (status != DRTM_ACS_DENIED) {
-    val_print(ACS_PRINT_ERR, "\n       DRTM set Hash denied failed", 0);
-    val_set_status(index, RESULT_FAIL(TEST_NUM, 5));
+    val_print(ERROR, "\n       DRTM set Hash denied failed");
+    val_set_status(index, RESULT_FAIL(5));
     goto free_tcb_hash;
   }
 
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 
 free_tcb_hash:
   val_memory_free(drtm_hash_table);

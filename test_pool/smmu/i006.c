@@ -33,27 +33,27 @@ payload()
 
   num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
   if (num_smmu == 0) {
-      val_print(ACS_PRINT_DEBUG, "\n       No SMMU Controllers are discovered ", 0);
-      val_set_status(index, RESULT_SKIP(TEST_NUM, 3));
+      val_print(DEBUG, "\n       No SMMU Controllers are discovered ");
+      val_set_status(index, RESULT_SKIP(3));
       return;
   }
 
   while (num_smmu--) {
       if (val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 3) {
-          val_print(ACS_PRINT_DEBUG, "\n       Not valid for SMMU v3             ", 0);
-          val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+          val_print(DEBUG, "\n       Not valid for SMMU v3             ");
+          val_set_status(index, RESULT_SKIP(2));
           return;
       }
 
       if (!val_iovirt_check_unique_ctx_intid(num_smmu)) {
-          val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
-          val_print(ACS_PRINT_ERR, "\n       Unique interrupt ID per context bank check "
-                                   "failed for SMMU %x", 0);
+          val_print(ERROR, "\n       Unique interrupt ID per context bank check "
+                                   "failed for SMMU %x");
+          val_set_status(index, RESULT_FAIL(1));
           return;
       }
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 0));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

@@ -29,10 +29,10 @@ payload()
   uint64_t data = 0;
   uint32_t index = val_pe_get_index_mpid(val_pe_get_mpid());
 
-  if (!g_crypto_support) {
-        val_print_primary_pe(ACS_PRINT_DEBUG, "\n       Crypto extension not supported",
+  if (!acs_policy_get_crypto_support()) {
+        val_print_primary_pe(DEBUG, "\n       Crypto extension not supported",
                                                                                       0, index);
-        val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+        val_set_status(index, RESULT_SKIP(1));
         return;
   }
 
@@ -40,9 +40,9 @@ payload()
 
   //bits 7:4, 11:8, 15:12 must be non-zero
   if (((data >> 4) & 0xF) && ((data >> 8) & 0xF) && ((data >> 12) & 0xF))
-        val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+        val_set_status(index, RESULT_PASS);
   else
-        val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
+        val_set_status(index, RESULT_FAIL(1));
 
   return;
 

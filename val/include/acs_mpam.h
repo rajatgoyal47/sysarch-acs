@@ -18,6 +18,8 @@
 #ifndef __ACS_MPAM_H__
 #define __ACS_MPAM_H__
 
+#include "val_sysreg_mpam.h"
+
 /* The return value is always 64-bit, type casting is needed by the caller and (m > n) */
 #define CLEAR_BITS_M_TO_N(num, m, n)  (num & ((~0UL << (m+1)) | ((1UL << n) - 1)))
 
@@ -78,12 +80,6 @@ typedef enum {
 
 void val_mpam_reg_write(MPAM_SYS_REGS reg_id, uint64_t write_data);
 uint64_t val_mpam_reg_read(MPAM_SYS_REGS reg_id);
-uint64_t AA64ReadMpamidr(void);
-uint64_t AA64ReadMpam1(void);
-uint64_t AA64ReadMpam2(void);
-void AA64IssueDSB(void);
-void AA64WriteMpam1(uint64_t write_data);
-void AA64WriteMpam2(uint64_t write_data);
 
 uint64_t val_mpam_get_info(MPAM_INFO_e type, uint32_t msc_index, uint32_t rsrc_index);
 uint32_t val_mpam_msc_supports_mbwpart(uint32_t msc_index);

@@ -67,20 +67,23 @@ freePfdiAcsMem(void)
 }
 
 static UINT32
-apply_cli_defaults(void)
+apply_cli_defaults(acs_run_request_t *ctx)
 {
-  if (g_rule_count == 0) {
-      g_arch_selection = ARCH_PFDI;
+  if (ctx == NULL)
+      return ACS_STATUS_FAIL;
+
+  if (ctx->rule_count == 0) {
+      ctx->arch_selection = ARCH_PFDI;
   }
 
-  if (g_level_filter_mode == LVL_FILTER_NONE) {
-      g_level_filter_mode = LVL_FILTER_MAX;
-      g_level_value = PFDI_LEVEL_1;
+  if (ctx->level_filter_mode == LVL_FILTER_NONE) {
+      ctx->level_filter_mode = LVL_FILTER_MAX;
+      ctx->level_value = PFDI_LEVEL_1;
   }
 
-  if (g_level_value >= PFDI_LEVEL_SENTINEL) {
-      val_print(ACS_PRINT_ERR, "\nInvalid level value passed (%d), ", g_level_value);
-      val_print(ACS_PRINT_ERR, "value should be less than %d.", PFDI_LEVEL_SENTINEL);
+  if (ctx->level_value >= PFDI_LEVEL_SENTINEL) {
+      val_print(ERROR, "\nInvalid level value passed (%d), ", ctx->level_value);
+      val_print(ERROR, "value should be less than %d.", PFDI_LEVEL_SENTINEL);
       return ACS_STATUS_FAIL;
   }
 
@@ -91,19 +94,22 @@ UINT32
 execute_tests()
 {
   UINT32 Status;
+  acs_run_request_t *ctx;
 
-  Status = apply_cli_defaults();
+  ctx = acs_get_run_request_mut();
+
+  Status = apply_cli_defaults(ctx);
   if (Status != ACS_STATUS_PASS) {
       goto exit_close;
   }
 
-  val_print(ACS_PRINT_TEST, "\n\n PFDI Architecture Compliance Suite", 0);
-  val_print(ACS_PRINT_TEST, "\n          Version %d.", PFDI_ACS_MAJOR_VER);
-  val_print(ACS_PRINT_TEST, "%d.", PFDI_ACS_MINOR_VER);
-  val_print(ACS_PRINT_TEST, "%d\n", PFDI_ACS_SUBMINOR_VER);
+  val_print(INFO, "\n\n PFDI Architecture Compliance Suite");
+  val_print(INFO, "\n          Version %d.", PFDI_ACS_MAJOR_VER);
+  val_print(INFO, "%d.", PFDI_ACS_MINOR_VER);
+  val_print(INFO, "%d\n", PFDI_ACS_SUBMINOR_VER);
 
-  val_print(ACS_PRINT_TEST, "\n Starting tests with print level : %2d\n\n", g_print_level);
-  val_print(ACS_PRINT_TEST, "\n Creating Platform Information Tables\n", 0);
+  val_print(INFO, "\n Starting tests with print level : %2d\n\n", acs_policy_get_print_level());
+  val_print(INFO, "\n Creating Platform Information Tables\n");
 
   Status = createPeInfoTable();
   if (Status)
@@ -117,28 +123,29 @@ execute_tests()
 
   Status = val_pfdi_check_implementation();
   if (Status == PFDI_ACS_NOT_IMPLEMENTED) {
-      val_print(ACS_PRINT_ERR, "\n      PFDI not implemented - Skipping all PFDI tests\n", 0);
+      val_print(ERROR, "\n      PFDI not implemented - Skipping all PFDI tests\n");
       goto exit_summary;
   } else if (Status != ACS_STATUS_PASS) {
       goto exit_summary;
   }
 
-  if ((g_rule_count > 0 && g_rule_list != NULL) || (g_arch_selection != ARCH_NONE)) {
-      g_rule_count = filter_rule_list_by_cli(&g_rule_list, g_rule_count);
-      if (g_rule_count == 0 || g_rule_list == NULL)
+  if ((ctx->rule_count > 0 && ctx->rule_list != NULL) || (ctx->arch_selection != ARCH_NONE)) {
+      filter_rule_list_by_cli(ctx);
+      if (ctx->rule_count == 0 || ctx->rule_list == NULL)
           goto exit_summary;
 
       print_selection_summary();
-      run_tests(g_rule_list, g_rule_count);
+      run_tests(ctx);
   } else {
-    val_print(ACS_PRINT_TEST, "\nNo rules selected for execution.\n", 0);
+    val_print(INFO, "\nNo rules selected for execution.\n");
   }
 
 exit_summary:
   val_print_acs_test_status_summary();
-  val_print(ACS_PRINT_ERR, "\n      *** PFDI tests complete. *** \n\n", 0);
+  val_print(ERROR, "\n      *** PFDI tests complete. *** \n\n");
 
 exit_close:
+  acs_release_run_request(ctx);
   freePfdiAcsMem();
 
   if (g_acs_log_file_handle) {

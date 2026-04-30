@@ -94,13 +94,13 @@ mpam_reg_offset_name(uint32_t reg_offset)
 #define MPAM_PRINT_REG(op, reg_offset, value)                                 \
   do {                                                                        \
       char8_t *name__ = mpam_reg_offset_name(reg_offset);                     \
-      val_print(ACS_PRINT_DEBUG, "\n       MPAM_" op " ", 0);                 \
+      val_print(DEBUG, "\n       MPAM_" op " ");                 \
       if (name__ != NULL) {                                                   \
-          val_print(ACS_PRINT_DEBUG, name__, 0);                              \
+          val_print(DEBUG, name__);                              \
       } else {                                                                \
-          val_print(ACS_PRINT_DEBUG, "0x%x", reg_offset);                     \
+          val_print(DEBUG, "0x%x", reg_offset);                     \
       }                                                                       \
-      val_print(ACS_PRINT_DEBUG, " : 0x%llx",                                 \
+      val_print(DEBUG, " : 0x%llx",                                 \
                 (unsigned long long)(value));                                \
   } while (0)
 
@@ -116,14 +116,14 @@ val_mpam_reg_read(MPAM_SYS_REGS reg_id)
 {
   switch (reg_id) {
   case MPAMIDR_EL1:
-      return AA64ReadMpamidr();
+      return read_mpamidr_el1();
   case MPAM2_EL2:
-      return AA64ReadMpam2();
+      return read_mpam2_el2();
   case MPAM1_EL1:
-      return AA64ReadMpam1();
+      return read_mpam1_el1();
   default:
       val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()),
-                        RESULT_FAIL(0, STATUS_SYS_REG_ACCESS_FAIL), NULL);
+                        RESULT_FAIL(STATUS_SYS_REG_ACCESS_FAIL), NULL);
   }
 
   return 0;
@@ -142,14 +142,14 @@ val_mpam_reg_write(MPAM_SYS_REGS reg_id, uint64_t write_data)
 {
   switch (reg_id) {
   case MPAM2_EL2:
-      AA64WriteMpam2(write_data);
+      write_mpam2_el2(write_data);
       break;
   case MPAM1_EL1:
-      AA64WriteMpam1(write_data);
+      write_mpam1_el1(write_data);
       break;
   default:
       val_report_status(val_pe_get_index_mpid(val_pe_get_mpid()),
-                        RESULT_FAIL(0, STATUS_SYS_REG_ACCESS_FAIL), NULL);
+                        RESULT_FAIL(STATUS_SYS_REG_ACCESS_FAIL), NULL);
   }
 
   return;
@@ -172,12 +172,12 @@ val_mpam_get_info(MPAM_INFO_e type, uint32_t msc_index, uint32_t rsrc_index)
   MPAM_MSC_NODE *msc_entry;
 
   if (g_mpam_info_table == NULL) {
-      val_print(ACS_PRINT_WARN, "\n   MPAM info table not found", 0);
+      val_print(WARN, "\n   MPAM info table not found");
       return MPAM_INVALID_INFO;
   }
 
   if (msc_index >= g_mpam_info_table->msc_count) {
-      val_print(ACS_PRINT_ERR, "Invalid MSC index = 0x%lx ", msc_index);
+      val_print(ERROR, "Invalid MSC index = 0x%lx ", msc_index);
       return 0;
   }
 
@@ -186,9 +186,9 @@ val_mpam_get_info(MPAM_INFO_e type, uint32_t msc_index, uint32_t rsrc_index)
   for (i = 0; i < g_mpam_info_table->msc_count; i++, msc_entry = MPAM_NEXT_MSC(msc_entry)) {
       if (msc_index == i) {
           if (rsrc_index > msc_entry->rsrc_count - 1) {
-              val_print(ACS_PRINT_ERR,
+              val_print(ERROR,
                       "\n   Invalid MSC resource index = 0x%lx for", rsrc_index);
-              val_print(ACS_PRINT_ERR, "MSC index = 0x%lx ", msc_index);
+              val_print(ERROR, "MSC index = 0x%lx ", msc_index);
               return MPAM_INVALID_INFO;
           }
           switch (type) {
@@ -221,7 +221,7 @@ val_mpam_get_info(MPAM_INFO_e type, uint32_t msc_index, uint32_t rsrc_index)
           case MPAM_MSC_INTERFACE_TYPE:
               return msc_entry->intrf_type;
           default:
-              val_print(ACS_PRINT_ERR,
+              val_print(ERROR,
                        "\n   This MPAM info option for type %d is not supported", type);
               return MPAM_INVALID_INFO;
           }
@@ -245,7 +245,7 @@ val_srat_get_info(SRAT_INFO_e type, uint64_t data)
   uint32_t i = 0;
 
   if (g_srat_info_table == NULL) {
-      val_print(ACS_PRINT_WARN, "\n   SRAT info table not found", 0);
+      val_print(WARN, "\n   SRAT info table not found");
       return SRAT_INVALID_INFO;
   }
 
@@ -300,7 +300,7 @@ val_srat_get_info(SRAT_INFO_e type, uint64_t data)
       return SRAT_INVALID_INFO;
       break;
   default:
-      val_print(ACS_PRINT_ERR,
+      val_print(ERROR,
                     "\n    This SRAT info option for type %d is not supported", type);
       break;
   }
@@ -319,12 +319,12 @@ val_srat_get_prox_domain(uint64_t mem_range_index)
   uint32_t  i = 0;
 
   if (g_srat_info_table == NULL) {
-      val_print(ACS_PRINT_WARN, "\n   SRAT info table not found", 0);
+      val_print(WARN, "\n   SRAT info table not found");
       return SRAT_INVALID_INFO;
   }
 
   if (mem_range_index >= g_srat_info_table->num_of_mem_ranges) {
-      val_print(ACS_PRINT_WARN, "\n   Invalid index", 0);
+      val_print(WARN, "\n   Invalid index");
       return SRAT_INVALID_INFO;
   }
 
@@ -349,7 +349,7 @@ uint32_t
 val_mpam_get_msc_count(void)
 {
     if (g_mpam_info_table == NULL) {
-        val_print(ACS_PRINT_WARN, "\n   MPAM info table not found", 0);
+        val_print(WARN, "\n   MPAM info table not found");
         return 0;
     }
     else
@@ -664,7 +664,7 @@ val_mpam_msc_get_mscbw(uint32_t msc_index, uint32_t rsrc_index)
     prox_domain = val_mpam_get_info(MPAM_MSC_RSRC_DESC1, msc_index, rsrc_index);
 
     if (g_hmat_info_table == NULL) {
-        val_print(ACS_PRINT_WARN, "\n   HMAT info table not found", 0);
+        val_print(WARN, "\n   HMAT info table not found");
         return HMAT_INVALID_INFO;
     }
 
@@ -674,7 +674,7 @@ val_mpam_msc_get_mscbw(uint32_t msc_index, uint32_t rsrc_index)
                                    g_hmat_info_table->bw_info[i].read_bw);
         }
     }
-    val_print(ACS_PRINT_WARN, "\n       Invalid Proximity domain 0x%lx", prox_domain);
+    val_print(WARN, "\n       Invalid Proximity domain 0x%lx", prox_domain);
     return HMAT_INVALID_INFO;
 }
 
@@ -1010,7 +1010,7 @@ void
 val_mpam_create_info_table(uint64_t *mpam_info_table)
 {
   if (mpam_info_table == NULL) {
-    val_print(ACS_PRINT_ERR, "\n Pre-allocated memory pointer is NULL\n", 0);
+    val_print(ERROR, "\n Pre-allocated memory pointer is NULL\n");
     return;
   }
 
@@ -1018,9 +1018,9 @@ val_mpam_create_info_table(uint64_t *mpam_info_table)
 #ifndef TARGET_LINUX
   pal_mpam_create_info_table(g_mpam_info_table);
 
-  val_print(ACS_PRINT_TEST,
+  val_print(INFO,
                 " MPAM INFO: Number of MSC nodes       :    %d\n", g_mpam_info_table->msc_count);
-  val_print(ACS_PRINT_DEBUG, "Memory mapping MSC nodes\n", 0);
+  val_print(DEBUG, "Memory mapping MSC nodes\n");
 
   /* TODO - Check if MSC memory mapping requires a flag/ cmdline option */
   memory_map_msc();
@@ -1039,7 +1039,7 @@ val_mpam_update_msc_device_names(void)
 {
 #ifndef TARGET_LINUX
   if (g_mpam_info_table == NULL) {
-    val_print(ACS_PRINT_ERR, "MPAM info table is not created\n", 0);
+    val_print(ERROR, "MPAM info table is not created\n");
     return;
   }
   pal_mpam_parse_dsdt_info(g_mpam_info_table);
@@ -1059,7 +1059,7 @@ val_mpam_free_info_table(void)
         g_mpam_info_table = NULL;
     }
     else {
-      val_print(ACS_PRINT_ERR,
+      val_print(ERROR,
                   "\n WARNING: g_mpam_info_table pointer is already NULL",
         0);
     }
@@ -1081,15 +1081,15 @@ val_mpam_get_msc_device_info(uint32_t msc_index, uint32_t *device_id, uint32_t *
   MPAM_MSC_NODE *msc_node;
 
   if (g_mpam_info_table == NULL) {
-    val_print(ACS_PRINT_ERR, "MPAM info table is not created\n", 0);
+    val_print(ERROR, "MPAM info table is not created\n");
     return ACS_STATUS_ERR;
   }
   if (device_id == NULL) {
-    val_print(ACS_PRINT_ERR, "MPAM info invalid params\n", 0);
+    val_print(ERROR, "MPAM info invalid params\n");
     return ACS_STATUS_ERR;
   }
   if (msc_index >= g_mpam_info_table->msc_count) {
-    val_print(ACS_PRINT_ERR, "MPAM info invalid MSC index %d\n", msc_index);
+    val_print(ERROR, "MPAM info invalid MSC index %d\n", msc_index);
     return ACS_STATUS_ERR;
   }
 
@@ -1100,20 +1100,20 @@ val_mpam_get_msc_device_info(uint32_t msc_index, uint32_t *device_id, uint32_t *
   identifier = msc_node->identifier;
   device_name = msc_node->device_obj_name;
   if (device_name[0] == '\0') {
-    val_print(ACS_PRINT_ERR, "MPAM info missing device name for MSC %d\n", msc_index);
+    val_print(ERROR, "MPAM info missing device name for MSC %d\n", msc_index);
     return ACS_STATUS_ERR;
   }
 
   uint32_t status = val_iovirt_get_named_comp_device_info(device_name,
                                                           identifier, device_id, its_id);
   if (status == 0) {
-    val_print(ACS_PRINT_INFO, " MPAM MSC Device info: idx=%d", msc_index);
-    val_print(ACS_PRINT_INFO, " id=0x%x", identifier);
-    val_print(ACS_PRINT_INFO, " dev=0x%x", *device_id);
-    val_print(ACS_PRINT_INFO, " its=0x%x\n", its_id ? *its_id : 0);
+    val_print(TRACE, " MPAM MSC Device info: idx=%d", msc_index);
+    val_print(TRACE, " id=0x%x", identifier);
+    val_print(TRACE, " dev=0x%x", *device_id);
+    val_print(TRACE, " its=0x%x\n", its_id ? *its_id : 0);
   } else {
-    val_print(ACS_PRINT_ERR, " MPAM MSC devinfo failed: idx=%d", msc_index);
-    val_print(ACS_PRINT_ERR, " id=0x%x\n", identifier);
+    val_print(ERROR, " MPAM MSC devinfo failed: idx=%d", msc_index);
+    val_print(ERROR, " id=0x%x\n", identifier);
   }
   return status;
 }
@@ -1130,7 +1130,7 @@ void
 val_hmat_create_info_table(uint64_t *hmat_info_table)
 {
   if (hmat_info_table == NULL) {
-    val_print(ACS_PRINT_ERR, "\n Pre-allocated memory pointer is NULL\n", 0);
+    val_print(ERROR, "\n Pre-allocated memory pointer is NULL\n");
     return;
   }
 #ifndef TARGET_LINUX
@@ -1139,7 +1139,7 @@ val_hmat_create_info_table(uint64_t *hmat_info_table)
   pal_hmat_create_info_table(g_hmat_info_table);
 
   if (g_hmat_info_table->num_of_mem_prox_domain != 0)
-      val_print(ACS_PRINT_TEST,
+      val_print(INFO,
                 " HMAT INFO: Number of Prox domains    :    %d\n",
                                     g_hmat_info_table->num_of_mem_prox_domain);
 #endif
@@ -1168,7 +1168,7 @@ void
 val_srat_create_info_table(uint64_t *srat_info_table)
 {
   if (srat_info_table == NULL) {
-    val_print(ACS_PRINT_ERR, "\n Pre-allocated memory pointer is NULL\n", 0);
+    val_print(ERROR, "\n Pre-allocated memory pointer is NULL\n");
     return;
   }
 #ifndef TARGET_LINUX
@@ -1177,7 +1177,7 @@ val_srat_create_info_table(uint64_t *srat_info_table)
   pal_srat_create_info_table(g_srat_info_table);
 
   if (g_srat_info_table->num_of_mem_ranges != 0)
-      val_print(ACS_PRINT_TEST,
+      val_print(INFO,
                 " SRAT INFO: Number of Memory Ranges   :    %d\n",
                                     g_srat_info_table->num_of_mem_ranges);
 #endif
@@ -1413,7 +1413,7 @@ void val_mpam_configure_cmin(uint32_t msc_index, uint16_t partid, uint32_t cmin_
 
     num_fractional_bits = val_mpam_get_cmax_wd(msc_index);
     if (num_fractional_bits > 16) {
-        val_print(ACS_PRINT_ERR, "\n       Number of fractional bits = %d not permitted",
+        val_print(ERROR, "\n       Number of fractional bits = %d not permitted",
                                                                             num_fractional_bits);
         num_fractional_bits = 16;
     }
@@ -1711,7 +1711,7 @@ val_mpam_mmr_read(uint32_t msc_index, uint32_t reg_offset)
       MPAM_PRINT_REG("Read", reg_offset, value);
       return value;
   } else {
-    val_print(ACS_PRINT_ERR,
+    val_print(ERROR,
               "\n    Invalid interface type reported for MPAM MSC index = %x", msc_index);
     return 0;  /* zero considered as safe return */
     }
@@ -1748,7 +1748,7 @@ val_mpam_mmr_read64(uint32_t msc_index, uint32_t reg_offset)
       MPAM_PRINT_REG("Read", reg_offset, value);
       return value;
   } else {
-    val_print(ACS_PRINT_ERR,
+    val_print(ERROR,
               "\n    Invalid interface type reported for MPAM MSC index = %x", msc_index);
     return 0;  /* zero considered as safe return */
   }
@@ -1780,7 +1780,7 @@ val_mpam_mmr_write(uint32_t msc_index, uint32_t reg_offset, uint32_t data)
       val_mpam_pcc_write(msc_index, reg_offset, data);
       MPAM_PRINT_REG("Write", reg_offset, data);
   } else {
-    val_print(ACS_PRINT_ERR,
+    val_print(ERROR,
               "\n    Invalid interface type reported for MPAM MSC index = %x", msc_index);
   }
   val_mem_issue_dsb();
@@ -1813,7 +1813,7 @@ val_mpam_mmr_write64(uint32_t msc_index, uint32_t reg_offset, uint64_t data)
       val_mpam_pcc_write(msc_index, reg_offset + 4, (uint32_t)(data >> 32));
       MPAM_PRINT_REG("Write", reg_offset, data);
   } else {
-    val_print(ACS_PRINT_ERR,
+    val_print(ERROR,
               "\n    Invalid interface type reported for MPAM MSC index = %x", msc_index);
   }
   val_mem_issue_dsb();
@@ -1857,11 +1857,11 @@ val_mpam_pcc_read(uint32_t msc_index, uint32_t reg_offset)
               (uint32_t)subspace_id, *(uint32_t *)&header, (void *)&parameter, sizeof(parameter));
 
   if (response == NULL || response->status != MPAM_PCC_CMD_SUCCESS) {
-      val_print(ACS_PRINT_ERR,
+      val_print(ERROR,
                 "\n    Failed to read MPAM register with offset (0x%x) via PCC", reg_offset);
-      val_print(ACS_PRINT_ERR, " for MSC index = 0x%x", msc_index);
+      val_print(ERROR, " for MSC index = 0x%x", msc_index);
       if (response != NULL) {
-          val_print(ACS_PRINT_ERR, "\n    PCC command response code = 0x%x", response->status);
+          val_print(ERROR, "\n    PCC command response code = 0x%x", response->status);
       }
       return MPAM_PCC_SAFE_RETURN;
   } else {
@@ -1908,11 +1908,11 @@ val_mpam_pcc_write(uint32_t msc_index, uint32_t reg_offset, uint32_t data)
               (uint32_t)subspace_id, *(uint32_t *)&header, (void *)&parameter, sizeof(parameter));
 
   if (response == NULL || response->status != MPAM_PCC_CMD_SUCCESS) {
-      val_print(ACS_PRINT_ERR,
+      val_print(ERROR,
                 "\n    Failed to read MPAM register with offset (0x%x) via PCC", reg_offset);
-      val_print(ACS_PRINT_ERR, " for MSC index = 0x%x", msc_index);
+      val_print(ERROR, " for MSC index = 0x%x", msc_index);
       if (response != NULL) {
-          val_print(ACS_PRINT_ERR, "\n    PCC command response code = 0x%x", response->status);
+          val_print(ERROR, "\n    PCC command response code = 0x%x", response->status);
       }
       return;
   }
@@ -1957,7 +1957,7 @@ uint32_t val_alloc_shared_memcpybuf(uint64_t mem_base, uint64_t buffer_size, uin
   buffer = (void *)val_memory_alloc(pe_count * sizeof(uint64_t));
 
   if (!buffer) {
-      val_print(ACS_PRINT_ERR, "Allocate Pool for shared memcpy buf failed\n", 0);
+      val_print(ERROR, "Allocate Pool for shared memcpy buf failed\n");
       return 0;
   }
 
@@ -1969,7 +1969,7 @@ uint32_t val_alloc_shared_memcpybuf(uint64_t mem_base, uint64_t buffer_size, uin
                                                     buffer_size);
 
       if (g_shared_memcpy_buffer[pe_index] == NULL) {
-          val_print(ACS_PRINT_ERR, "Alloc address for shared memcpy buffer failed %x\n", pe_index);
+          val_print(ERROR, "Alloc address for shared memcpy buffer failed %x\n", pe_index);
           val_mem_free_shared_memcpybuf(pe_index);
           return 0;
       }
@@ -2012,16 +2012,16 @@ uint32_t val_mpam_program_el2(uint16_t partid, uint8_t pmg)
     pe_max_partid = (mpamidr >> MPAMIDR_PARTID_MAX_SHIFT) & MPAMIDR_PARTID_MAX_MASK;
 
     if (partid > pe_max_partid) {
-        val_print(ACS_PRINT_ERR, "\n       PARTID value (0x%x)", partid);
-        val_print(ACS_PRINT_ERR, " specified more than PE supported value (0x%x)", pe_max_partid);
+        val_print(ERROR, "\n       PARTID value (0x%x)", partid);
+        val_print(ERROR, " specified more than PE supported value (0x%x)", pe_max_partid);
         return 1;
     }
 
     /* Extract max PMG supported by MPAMIDR_EL1 */
     pe_max_pmg = (mpamidr >> MPAMIDR_PMG_MAX_SHIFT) & MPAMIDR_PMG_MAX_MASK;
     if (pmg > pe_max_pmg) {
-        val_print(ACS_PRINT_ERR, "\n       PMG value (0x%x)", pmg);
-        val_print(ACS_PRINT_ERR, " specified more than PE supported value (0x%x)", pe_max_pmg);
+        val_print(ERROR, "\n       PMG value (0x%x)", pmg);
+        val_print(ERROR, " specified more than PE supported value (0x%x)", pe_max_pmg);
         return 1;
     }
 
@@ -2035,7 +2035,7 @@ uint32_t val_mpam_program_el2(uint16_t partid, uint8_t pmg)
     mpam2_el2 |= (((uint64_t)pmg << MPAMn_ELx_PMG_D_SHIFT) |
                   ((uint64_t)partid << MPAMn_ELx_PARTID_D_SHIFT));
 
-    val_print(ACS_PRINT_DEBUG, "\n       Writing MPAM2_EL2: 0x%llx", mpam2_el2);
+    val_print(DEBUG, "\n       Writing MPAM2_EL2: 0x%llx", mpam2_el2);
     val_mpam_reg_write(MPAM2_EL2, mpam2_el2);
 
     return 0;
@@ -2055,8 +2055,8 @@ val_mpam_msc_endis_partid(uint32_t msc_index, bool enable, bool nfu_flag, uint16
 
     /* Check if the PARTID is valid */
     if (partid >= val_mpam_get_max_partid(msc_index)) {
-        val_print(ACS_PRINT_ERR, "\n       PARTID value (0x%x)", partid);
-        val_print(ACS_PRINT_ERR, " specified more than MSC supported value (0x%x)",
+        val_print(ERROR, "\n       PARTID value (0x%x)", partid);
+        val_print(ERROR, " specified more than MSC supported value (0x%x)",
                   val_mpam_get_max_partid(msc_index));
         return 1;
     }
@@ -2097,7 +2097,7 @@ val_mpam_reset_csumon(uint32_t msc_index, uint16_t mon_sel)
     /* if CSUMON_IDR.CSU_RO == 1, accesses to this register are R0 */
     if (BITFIELD_READ(CSUMON_IDR_CSU_RO,
                                         val_mpam_mmr_read(msc_index, REG_MPAMF_CSUMON_IDR))) {
-         val_print(ACS_PRINT_WARN,
+         val_print(WARN,
                    "\n       Cannot reset CSU monitor value as it is Read-Only", 0);
         return 1;
     }
@@ -2122,7 +2122,7 @@ val_mpam_write_csumon(uint32_t msc_index, uint32_t value)
     /* if CSUMON_IDR.CSU_RO == 1, accesses to this register are R0 */
     if (BITFIELD_READ(CSUMON_IDR_CSU_RO,
                                         val_mpam_mmr_read(msc_index, REG_MPAMF_CSUMON_IDR))) {
-      val_print(ACS_PRINT_WARN,
+      val_print(WARN,
                    "\n       Cannot write CSU monitor value as it is Read-Only", 0);
       return 1;
     }
@@ -2242,12 +2242,12 @@ val_mpam_msc_request_msi(uint32_t msc_index, uint32_t device_id, uint32_t its_id
 
     its_index = mpam_get_its_index(its_id);
     if (its_index >= g_gic_its_info->GicNumIts) {
-        val_print(ACS_PRINT_ERR, "\n       Could not find ITS ID [%x]", its_id);
+        val_print(ERROR, "\n       Could not find ITS ID [%x]", its_id);
         return ACS_STATUS_ERR;
     }
 
     if ((g_gic_its_info->GicRdBase == 0) || (g_gic_its_info->GicDBase == 0)) {
-        val_print(ACS_PRINT_DEBUG, "\n       GICD/GICRD Base Invalid value", 0);
+        val_print(DEBUG, "\n       GICD/GICRD Base Invalid value");
         return ACS_STATUS_ERR;
     }
 

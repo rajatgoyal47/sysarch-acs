@@ -40,8 +40,8 @@ payload()
   num_smmu = val_smmu_get_info(SMMU_NUM_CTRL, 0);
 
   if (num_smmu == 0) {
-    val_print(ACS_PRINT_ERR, "\n       No SMMU Controllers are discovered                  ", 0);
-    val_set_status(index, RESULT_SKIP(TEST_NUM, 1));
+    val_print(ERROR, "\n       No SMMU Controllers are discovered                  ");
+    val_set_status(index, RESULT_SKIP(1));
     return;
   }
 
@@ -54,8 +54,8 @@ payload()
 
   while (num_smmu--) {
       if (val_smmu_get_info(SMMU_CTRL_ARCH_MAJOR_REV, num_smmu) == 2) {
-          val_print(ACS_PRINT_WARN, "\n       Not valid for SMMU v2           ", 0);
-          val_set_status(index, RESULT_SKIP(TEST_NUM, 2));
+          val_print(WARN, "\n       Not valid for SMMU v2           ");
+          val_set_status(index, RESULT_SKIP(2));
           return;
       }
 
@@ -63,20 +63,20 @@ payload()
 
       if ((data_pe_endian == 1) && ((data == 1) || (data == 2))) {
           /* If PE supports big endian */
-          val_set_status(index, RESULT_FAIL(TEST_NUM, 1));
-          val_print(ACS_PRINT_ERR, "\n       PE supports big endian, "
+          val_set_status(index, RESULT_FAIL(1));
+          val_print(ERROR, "\n       PE supports big endian, "
                                    "but SMMU %x does not", num_smmu);
           return;
       } else if ((data_pe_endian == 0) && ((data == 1) || (data == 3))) {
           /* If PE supports little endian */
-          val_set_status(index, RESULT_FAIL(TEST_NUM, 2));
-          val_print(ACS_PRINT_ERR, "\n       PE supports little endian, "
+          val_set_status(index, RESULT_FAIL(2));
+          val_print(ERROR, "\n       PE supports little endian, "
                                    "but SMMU %x does not", num_smmu);
           return;
       }
   }
 
-  val_set_status(index, RESULT_PASS(TEST_NUM, 1));
+  val_set_status(index, RESULT_PASS);
 }
 
 uint32_t

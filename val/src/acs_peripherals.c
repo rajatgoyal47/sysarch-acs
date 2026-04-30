@@ -217,7 +217,7 @@ val_peripheral_dump_info(void)
   num_ecam = val_pcie_get_info(PCIE_INFO_NUM_ECAM, 0);
   if (num_ecam == 0)
   {
-      val_print(ACS_PRINT_DEBUG, "\n No ECAM is present", 0);
+      val_print(DEBUG, "\n No ECAM is present");
       return;
   }
 
@@ -230,7 +230,7 @@ val_peripheral_dump_info(void)
       for (bus = start_bus; bus <= end_bus; bus++)
       {
           if (pal_pcie_check_bus_valid(bus)) {
-              val_print(ACS_PRINT_DEBUG,
+              val_print(DEBUG,
                "       Bus 0x%x marked as invalid in Platform API...Skipping\n", bus);
               continue;
           }
@@ -244,8 +244,8 @@ val_peripheral_dump_info(void)
                   if (reg_value == PCIE_UNKNOWN_RESPONSE)
                       continue;
                   val_pcie_read_cfg(dev_bdf, TYPE01_RIDR, &reg_value);
-                  val_print(ACS_PRINT_DEBUG, "\n BDF is %x", dev_bdf);
-                  val_print(ACS_PRINT_DEBUG, "\n Class code is %x", reg_value);
+                  val_print(DEBUG, "\n BDF is %x", dev_bdf);
+                  val_print(DEBUG, "\n Class code is %x", reg_value);
                   base_cc = reg_value >> TYPE01_BCC_SHIFT;
                   if (base_cc == CNTRL_CC)
                       ntwk++;
@@ -261,9 +261,9 @@ val_peripheral_dump_info(void)
   }
 
 
-  val_print(ACS_PRINT_DEBUG, "\n Peripheral: Num of Network ctrl      :    %d\n", ntwk);
-  val_print(ACS_PRINT_DEBUG, " Peripheral: Num of Storage ctrl      :    %d\n", strg);
-  val_print(ACS_PRINT_DEBUG, " Peripheral: Num of Display ctrl      :    %d\n", dply);
+  val_print(DEBUG, "\n Peripheral: Num of Network ctrl      :    %d\n", ntwk);
+  val_print(DEBUG, " Peripheral: Num of Storage ctrl      :    %d\n", strg);
+  val_print(DEBUG, " Peripheral: Num of Display ctrl      :    %d\n", dply);
 
 }
 
@@ -289,18 +289,18 @@ val_peripheral_create_info_table(uint64_t *peripheral_info_table)
 {
 
   g_peripheral_info_table = (PERIPHERAL_INFO_TABLE *)peripheral_info_table;
-  val_print(ACS_PRINT_INFO, " Creating PERIPHERAL INFO table\n", 0);
+  val_print(TRACE, " Creating PERIPHERAL INFO table\n");
 
   pal_peripheral_create_info_table(g_peripheral_info_table);
 
-  val_print(ACS_PRINT_TEST, " Peripheral: Num of USB controllers   :    %d\n",
+  val_print(INFO, " Peripheral: Num of USB controllers   :    %d\n",
     val_peripheral_get_info(NUM_USB, 0));
-  val_print(ACS_PRINT_TEST, " Peripheral: Num of SATA controllers  :    %d\n",
+  val_print(INFO, " Peripheral: Num of SATA controllers  :    %d\n",
     val_peripheral_get_info(NUM_SATA, 0));
-  val_print(ACS_PRINT_TEST, " Peripheral: Num of UART controllers  :    %d\n",
+  val_print(INFO, " Peripheral: Num of UART controllers  :    %d\n",
     val_peripheral_get_info(NUM_UART, 0));
 
-  if (g_print_level <= ACS_PRINT_INFO)
+  if (acs_policy_get_print_level() <= TRACE)
     val_peripheral_dump_info();
 
 }
@@ -321,8 +321,8 @@ val_peripheral_free_info_table(void)
         g_peripheral_info_table = NULL;
     }
     else {
-      val_print(ACS_PRINT_DEBUG,
-              "\n g_peripheral_info_table pointer is already NULL", 0);
+      val_print(DEBUG,
+              "\n g_peripheral_info_table pointer is already NULL");
     }
 }
 
