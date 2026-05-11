@@ -4710,6 +4710,15 @@ RULE_ID_e b_per_08_rule_list[] = {
     /* E.13 - PCIe Precision Time Measurement */
     PCI_PTM_1,
 
+    /* BSA Section H */
+    /* H.1 - ITS Groups */
+    ITS_01, ITS_02, ITS_03, ITS_04,
+    ITS_05, ITS_06, ITS_07, ITS_08,
+    /* H.2 - Generation of DeviceID Values */
+    ITS_DEV_1, ITS_DEV_2, ITS_DEV_3,
+    ITS_DEV_4, ITS_DEV_5, ITS_DEV_6,
+    ITS_DEV_7, ITS_DEV_8, ITS_DEV_9,
+
     RULE_ID_SENTINEL
 };
 

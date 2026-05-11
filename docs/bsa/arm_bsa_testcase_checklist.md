@@ -1024,8 +1024,8 @@ The checklist provides information about:
       <td>A direct test will be added in future</td>
     </tr>
     <tr>
-      <td rowspan="68">L1</td>
-      <td rowspan="68">B_PER_08</td>
+      <td rowspan="85">L1</td>
+      <td rowspan="85">B_PER_08</td>
       <td>PCI_IN_01</td>
       <td>801</td>
       <td>Check ECAM Presence</td>
@@ -1614,6 +1614,159 @@ The checklist provides information about:
     </tr>
     <tr>
       <td>PCI_PTM_1</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>ITS_01</td>
+      <td>251</td>
+      <td>Check number of ITS blocks in a group</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>ITS_02</td>
+      <td>252</td>
+      <td>Check ITS block association with group</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>ITS_03</td>
+      <td>1511</td>
+      <td>MSI-capable device linked to ITS group</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Exerciser VIP required</td>
+    </tr>
+    <tr>
+      <td>ITS_04</td>
+      <td>1535</td>
+      <td>MSI-cap device can target any ITS blk</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Exerciser VIP required</td>
+    </tr>
+    <tr>
+      <td>ITS_05</td>
+      <td>1512</td>
+      <td>MSI to ITS Blk outside assigned group</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Exerciser VIP required</td>
+    </tr>
+    <tr>
+      <td>ITS_06</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>ITS_07</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>ITS_08</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>ITS_DEV_1</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>ITS_DEV_2</td>
+      <td>253</td>
+      <td>Check uniqueness of StreamID</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>ITS_DEV_3</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>ITS_DEV_4</td>
+      <td>1513</td>
+      <td>MSI originating from different master</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Exerciser VIP required</td>
+    </tr>
+    <tr>
+      <td>ITS_DEV_5</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>ITS_DEV_6</td>
+      <td>1504</td>
+      <td>MSI-X triggers intr with unique ID</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Exerciser VIP required</td>
+    </tr>
+    <tr>
+      <td>ITS_DEV_7</td>
+      <td>254</td>
+      <td>Check Device's SID/RID/DID behind SMMU</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>ITS_DEV_8</td>
+      <td>255</td>
+      <td>Check Device IDs not behind SMMU</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>ITS_DEV_9</td>
       <td>Not Covered</td>
       <td></td>
       <td></td>
@@ -3609,6 +3762,7 @@ The checklist provides information about:
 </table>
 
 ## Latest Checklist Changes
+- Updated B_PER_08 to include ITS Rules.
 - **RI_ Added:** RI_PWR_1
 - Updated B_WD_02.
 - Updated checklist to be consistent with I-VGLFZ.
