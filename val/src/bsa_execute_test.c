@@ -38,7 +38,6 @@ extern PCIE_INFO_TABLE *g_pcie_info_table;
 extern pcie_device_bdf_table *g_pcie_bdf_table;
 extern uint32_t pcie_bdf_table_list_flag;
 extern uint32_t g_pcie_integrated_devices;
-extern uint32_t g_its_init;
 
 #define OPERATING_SYSTEM    0
 #define HYPERVISOR          1
@@ -353,7 +352,6 @@ val_bsa_timer_execute_tests(uint32_t num_pe, uint32_t *g_sw_view)
           status |= t003_entry(num_pe);
           status |= t004_entry(num_pe);
           status |= t005_entry(num_pe);
-          status |= t007_entry(num_pe);
       }
   }
 

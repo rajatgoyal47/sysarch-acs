@@ -474,11 +474,11 @@ The checklist provides information about:
       <td>L5</td>
       <td>S_L5TI_01</td>
       <td>S_L5TI_01</td>
-      <td>Not Covered</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>406</td>
+      <td>Check OS visible counter reports 1GHz</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
       <td></td>
     </tr>
     <tr>
@@ -1865,7 +1865,7 @@ The checklist provides information about:
       <td>PCI_IN_13</td>
       <td></td>
       <td>Check RootPort NP Memory Access</td>
-      <td>No</td>
+      <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
       <td>iEP RP</td>
@@ -3266,11 +3266,11 @@ The checklist provides information about:
       <td>Version 8.0</td>
       <td>S_L8TI_01</td>
       <td>S_L8TI_01</td>
-      <td>406</td>
-      <td>Check Minimum Counter Frequency 50MHz</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
       <td></td>
     </tr>
     <tr>
