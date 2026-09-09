@@ -20,7 +20,11 @@
 #include "acs_gic.h"
 
 #define TEST_NUM   (ACS_GIC_TEST_NUM_BASE + 16)
+#ifdef PC_BSA
+#define TEST_RULE  "PGKDP"
+#else
 #define TEST_RULE  "S_L5GI_01"
+#endif
 #define TEST_DESC  "Check Non standard GICv3 implementation"
 
 static

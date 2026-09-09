@@ -113,5 +113,6 @@ uint32_t g013_entry(uint32_t num_pe);
 uint32_t g014_entry(uint32_t num_pe);
 uint32_t g015_entry(uint32_t num_pe);
 uint32_t g016_entry(uint32_t num_pe);
+uint32_t g020_entry(uint32_t num_pe);
 
 #endif

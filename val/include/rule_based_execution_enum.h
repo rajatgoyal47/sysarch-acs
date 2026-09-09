@@ -139,6 +139,8 @@ typedef enum {
     P_L1GI_02,
     P_L1GI_03,
     P_L1GI_04,
+    TTLFJ,
+    PGKDP,
     P_L1PP_01,
 
     /* PERIPHERAL rules */
@@ -682,6 +684,7 @@ typedef enum {
     G016_ENTRY,
     G013_ENTRY,
     G015_ENTRY,
+    G020_ENTRY,
     V2M004_ENTRY,
     V2M001_ENTRY,
     V2M002_ENTRY,

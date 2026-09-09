@@ -266,6 +266,26 @@ The checklist provides information about:
       <td>No</td>
     </tr>
     <tr>
+      <td>215</td>
+      <td>Check GICv4.1 or higher compliant</td>
+      <td>2</td>
+      <td>TTLFJ</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td>216</td>
+      <td>Check Non standard GICv3 implementation</td>
+      <td>2</td>
+      <td>PGKDP</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+    </tr>
+    <tr>
       <td>214</td>
       <td>Check All PPI Interrupt IDs</td>
       <td>1</td>

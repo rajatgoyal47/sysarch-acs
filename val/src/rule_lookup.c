@@ -48,6 +48,8 @@ const pcbsa_rule_entry_t pcbsa_rule_list[] = {
     { P_L1GI_03,   PCBSA_LEVEL_1 },
     { P_L1GI_04,   PCBSA_LEVEL_1 },
     { P_L1PP_01,   PCBSA_LEVEL_1 },
+    { TTLFJ,       PCBSA_LEVEL_2 },
+    { PGKDP,       PCBSA_LEVEL_2 },
 
     /* SMMU */
     { P_L1SM_01,   PCBSA_LEVEL_1 },
