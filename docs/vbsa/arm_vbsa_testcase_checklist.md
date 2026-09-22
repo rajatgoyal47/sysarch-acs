@@ -196,8 +196,8 @@ The checklist provides information about:
       <td>Related rules from other specifications: B_MEM_03 (BSA), B_MEM_06 (BSA)</td>
     </tr>
     <tr>
-      <td rowspan="5">L1</td>
-      <td rowspan="5"><a href="arm_vbsa_architecture_compliance_test_scenario.md#v_l1gi_01--check-vgic-architectural-compliance">V_L1GI_01</td>
+      <td rowspan="17">L1</td>
+      <td rowspan="17"><a href="arm_vbsa_architecture_compliance_test_scenario.md#v_l1gi_01--check-vgic-architectural-compliance">V_L1GI_01</td>
       <td></td>
       <td></td>
       <td>Check vGIC architectural compliance</td>
@@ -224,9 +224,105 @@ The checklist provides information about:
     <tr>
       <td>B_GIC_03</td>
       <td>203</td>
-      <td>If PCIe, GICv3 then ITS, LPI</td>
+      <td>If PCIe and GICv3+, check ITS/LPI and applicable Section F rules</td>
       <td>✅</td>
       <td>❌</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>B_GIC_03 / ITS_03</td>
+      <td>1511</td>
+      <td>MSI-capable device linked to ITS group</td>
+      <td>✅</td>
+      <td>❌</td>
+      <td>Exerciser VIP required</td>
+    </tr>
+    <tr>
+      <td>B_GIC_03 / ITS_05</td>
+      <td>1512</td>
+      <td>MSI to ITS Blk outside assigned group</td>
+      <td>✅</td>
+      <td>❌</td>
+      <td>Exerciser VIP required</td>
+    </tr>
+    <tr>
+      <td>B_GIC_03 / ITS_06</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>B_GIC_03 / ITS_DEV_1</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>B_GIC_03 / ITS_DEV_2</td>
+      <td>253</td>
+      <td>Check uniqueness of StreamID</td>
+      <td>✅</td>
+      <td>❌</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>B_GIC_03 / ITS_DEV_3</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>B_GIC_03 / ITS_DEV_4</td>
+      <td>1513</td>
+      <td>MSI originating from different master</td>
+      <td>✅</td>
+      <td>❌</td>
+      <td>Exerciser VIP required</td>
+    </tr>
+    <tr>
+      <td>B_GIC_03 / ITS_DEV_5</td>
+      <td>256</td>
+      <td>MSI-capable devices have DeviceID</td>
+      <td>✅</td>
+      <td>❌</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>B_GIC_03 / ITS_DEV_6</td>
+      <td>1504</td>
+      <td>Write to ITS GITS_TRANSLATER</td>
+      <td>✅</td>
+      <td>❌</td>
+      <td>Exerciser VIP required</td>
+    </tr>
+    <tr>
+      <td>B_GIC_03 / ITS_DEV_7</td>
+      <td>254</td>
+      <td>Check Device's SID/RID/DID behind SMMU</td>
+      <td>✅</td>
+      <td>❌</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>B_GIC_03 / ITS_DEV_8</td>
+      <td>255</td>
+      <td>Check Device IDs not behind SMMU</td>
+      <td>✅</td>
+      <td>❌</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>B_GIC_03 / ITS_DEV_9</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
       <td></td>
     </tr>
     <tr>
@@ -615,8 +711,8 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td rowspan="74">L1</td>
-      <td rowspan="74"><a href="arm_vbsa_architecture_compliance_test_scenario.md#v_l1pr_02--check-virt-pcie-arch-compliance">V_L1PR_02</td>
+      <td rowspan="86">L1</td>
+      <td rowspan="86"><a href="arm_vbsa_architecture_compliance_test_scenario.md#v_l1pr_02--check-virt-pcie-arch-compliance">V_L1PR_02</td>
       <td></td>
       <td></td>
       <td>Check Virt PCIe arch compliance</td>
@@ -931,10 +1027,106 @@ The checklist provides information about:
     <tr>
       <td>PCI_MSI_1</td>
       <td>839</td>
-      <td>Check MSI support for PCIe dev</td>
+      <td>Check PCIe MSI support and applicable Section F rules</td>
       <td>✅</td>
       <td>❌</td>
       <td>MSI/MSI-X support required</td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_03</td>
+      <td>1511</td>
+      <td>MSI-capable device linked to ITS group</td>
+      <td>✅</td>
+      <td>❌</td>
+      <td>Exerciser VIP required</td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_05</td>
+      <td>1512</td>
+      <td>MSI to ITS Blk outside assigned group</td>
+      <td>✅</td>
+      <td>❌</td>
+      <td>Exerciser VIP required</td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_06</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_1</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_2</td>
+      <td>253</td>
+      <td>Check uniqueness of StreamID</td>
+      <td>✅</td>
+      <td>❌</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_3</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_4</td>
+      <td>1513</td>
+      <td>MSI originating from different master</td>
+      <td>✅</td>
+      <td>❌</td>
+      <td>Exerciser VIP required</td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_5</td>
+      <td>256</td>
+      <td>MSI-capable devices have DeviceID</td>
+      <td>✅</td>
+      <td>❌</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_6</td>
+      <td>1504</td>
+      <td>Write to ITS GITS_TRANSLATER</td>
+      <td>✅</td>
+      <td>❌</td>
+      <td>Exerciser VIP required</td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_7</td>
+      <td>254</td>
+      <td>Check Device's SID/RID/DID behind SMMU</td>
+      <td>✅</td>
+      <td>❌</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_8</td>
+      <td>255</td>
+      <td>Check Device IDs not behind SMMU</td>
+      <td>✅</td>
+      <td>❌</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_9</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
     </tr>
     <tr>
       <td>PCI_MSI_2</td>
@@ -1225,6 +1417,7 @@ The checklist provides information about:
 </table>
 
 ## Latest Checklist Changes
+- Updated V_L1GI_01 and V_L1PR_02 for BSA 1.3 Errata 1132: added applicable Section F ITS and DeviceID rule coverage.
 - Updated V_L1PR_02 for BSA 1.3 Errata 1057: added RTDTC coverage and expanded PCI_PAS_1 coverage.
 - Removed PCI_PP_06 from the checklist, as rule statement got moved to recommendation.
 

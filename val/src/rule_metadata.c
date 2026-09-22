@@ -612,9 +612,9 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
         [B_GIC_03] = {
             .test_entry_id    = G003_ENTRY,
             .module_id        = GIC,
-            .rule_desc        = "If PCIe, GICv3 then ITS, LPI",
+            .rule_desc        = "If PCIe, GICv3 then ITS/LPI rules",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
-            .flag             = BASE_RULE,
+            .flag             = ALIAS_RULE,
             .test_num         = ACS_GIC_TEST_NUM_BASE + 3,
         },
         [B_GIC_04] = {
@@ -1989,9 +1989,9 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
         [PCI_MSI_1] = {
             .test_entry_id    = P039_ENTRY,
             .module_id        = PCIE,
-            .rule_desc        = "Check MSI support for PCIe dev",
+            .rule_desc        = "Check PCIe MSI and applicable ITS rules",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
-            .flag             = BASE_RULE,
+            .flag             = ALIAS_RULE,
             .test_num         = ACS_PCIE_TEST_NUM_BASE + 39,
         },
         [PCI_MSI_2] = {
@@ -4546,6 +4546,16 @@ const RULE_ID_e rtdtc_rule_list[] = {
     RULE_ID_SENTINEL
 };
 
+/* BSA Section F - ITS and DeviceID rules */
+const RULE_ID_e section_f_its_rule_list[] = {
+    /* ITS rules */
+    ITS_03, ITS_05, ITS_06,
+    /* DeviceID rules */
+    ITS_DEV_1, ITS_DEV_2, ITS_DEV_3, ITS_DEV_4, ITS_DEV_5,
+    ITS_DEV_6, ITS_DEV_7, ITS_DEV_8, ITS_DEV_9,
+    RULE_ID_SENTINEL
+};
+
 /* HVZJY */
 const RULE_ID_e hvzjy_rule_list[] = {
     /* BSA Section E */
@@ -4648,14 +4658,6 @@ const RULE_ID_e b_per_08_rule_list[] = {
     PCI_PAS_1,
     /* E.13 - PCIe Precision Time Measurement */
     PCI_PTM_1,
-
-    /* BSA Section F */
-    /* F.1 - ITS Groups */
-    ITS_03, ITS_05, ITS_06,
-    /* F.2 - Generation of DeviceID Values */
-    ITS_DEV_1, ITS_DEV_2, ITS_DEV_3,
-    ITS_DEV_4, ITS_DEV_5, ITS_DEV_6,
-    ITS_DEV_7, ITS_DEV_8, ITS_DEV_9,
 
     RULE_ID_SENTINEL
 };
@@ -4812,6 +4814,8 @@ const RULE_ID_e v_l1pr_02_rule_list[]   = {
 
 const alias_rule_map_t alias_rule_map[] = {
     /* BSA alias rules */
+    {B_GIC_03,  section_f_its_rule_list},
+    {PCI_MSI_1, section_f_its_rule_list},
     {B_WD_00,   b_wd_00_rule_list},
     {B_PER_08,  b_per_08_rule_list},
     {JKZMT,     jkzmt_rule_list},

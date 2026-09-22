@@ -106,6 +106,18 @@ Purpose: capture ACS scenario outlines for each VBSA rule. Each section:
 - #### B_GIC_01 — see section 2.4 in [BSA ACS Scenario Document](../bsa/arm_bsa_architecture_compliance_test_scenario.pdf#page13&search=B_GIC_01)
 - #### B_GIC_02 — see section 2.4 in [BSA ACS Scenario Document](../bsa/arm_bsa_architecture_compliance_test_scenario.pdf#page13&search=B_GIC_02)
 - #### B_GIC_03 — see section 2.4 in [BSA ACS Scenario Document](../bsa/arm_bsa_architecture_compliance_test_scenario.pdf#page13&search=B_GIC_03)
+    - ITS_03
+    - ITS_05
+    - ITS_06
+    - ITS_DEV_1
+    - ITS_DEV_2
+    - ITS_DEV_3
+    - ITS_DEV_4
+    - ITS_DEV_5
+    - ITS_DEV_6
+    - ITS_DEV_7
+    - ITS_DEV_8
+    - ITS_DEV_9
 - #### B_GIC_05 — see section 2.4 in [BSA ACS Scenario Document](../bsa/arm_bsa_architecture_compliance_test_scenario.pdf#page14&search=B_GIC_05)
 
 ---
@@ -319,6 +331,18 @@ Purpose: capture ACS scenario outlines for each VBSA rule. Each section:
 - E.4 - Message Signaled Interrupts
 
     - PCI_MSI_1
+        - ITS_03
+        - ITS_05
+        - ITS_06
+        - ITS_DEV_1
+        - ITS_DEV_2
+        - ITS_DEV_3
+        - ITS_DEV_4
+        - ITS_DEV_5
+        - ITS_DEV_6
+        - ITS_DEV_7
+        - ITS_DEV_8
+        - ITS_DEV_9
     - PCI_MSI_2
 
 - E.6 - Legacy Interrupts

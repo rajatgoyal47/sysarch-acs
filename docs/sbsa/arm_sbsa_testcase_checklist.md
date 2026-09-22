@@ -783,8 +783,8 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td rowspan="73">L6</td>
-      <td rowspan="73">S_L6PCI_1 - B_REP_1</td>
+      <td rowspan="85">L6</td>
+      <td rowspan="85">S_L6PCI_1 - B_REP_1</td>
       <td>RI_CRS_1</td>
       <td>Not Covered</td>
       <td></td>
@@ -1065,11 +1065,131 @@ The checklist provides information about:
     <tr>
       <td>PCI_MSI_1</td>
       <td>839</td>
-      <td>Check MSI support for PCIe dev</td>
+      <td>Check PCIe MSI support and applicable Section F rules</td>
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
       <td>MSI/MSI-X support required</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_03</td>
+      <td>1511</td>
+      <td>MSI-capable device linked to ITS group</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Exerciser VIP required</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_05</td>
+      <td>1512</td>
+      <td>MSI to ITS Blk outside assigned group</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Exerciser VIP required</td>
+      <td>pal_exerciser_ops (GENERATE_MSI)</td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_06</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_1</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_2</td>
+      <td>253</td>
+      <td>Check uniqueness of StreamID</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_3</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_4</td>
+      <td>1513</td>
+      <td>MSI originating from different master</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Exerciser VIP required</td>
+      <td>pal_exerciser_ops (GENERATE_MSI)</td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_5</td>
+      <td>256</td>
+      <td>MSI-capable devices have DeviceID</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_6</td>
+      <td>1504</td>
+      <td>Write to ITS GITS_TRANSLATER</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Exerciser VIP required</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_7</td>
+      <td>254</td>
+      <td>Check Device's SID/RID/DID behind SMMU</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_8</td>
+      <td>255</td>
+      <td>Check Device IDs not behind SMMU</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_9</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
       <td></td>
     </tr>
     <tr>
@@ -1512,8 +1632,8 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td rowspan="88">L6</td>
-      <td rowspan="88">S_L6PCI_1 - B_IEP_1</td>
+      <td rowspan="100">L6</td>
+      <td rowspan="100">S_L6PCI_1 - B_IEP_1</td>
       <td>RI_CRS_1</td>
       <td>Not Covered</td>
       <td></td>
@@ -1932,11 +2052,131 @@ The checklist provides information about:
     <tr>
       <td>PCI_MSI_1</td>
       <td>839</td>
-      <td>Check MSI support for PCIe dev</td>
+      <td>Check PCIe MSI support and applicable Section F rules</td>
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
       <td>MSI/MSI-X support required</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_03</td>
+      <td>1511</td>
+      <td>MSI-capable device linked to ITS group</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Exerciser VIP required</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_05</td>
+      <td>1512</td>
+      <td>MSI to ITS Blk outside assigned group</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Exerciser VIP required</td>
+      <td>pal_exerciser_ops (GENERATE_MSI)</td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_06</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_1</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_2</td>
+      <td>253</td>
+      <td>Check uniqueness of StreamID</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_3</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_4</td>
+      <td>1513</td>
+      <td>MSI originating from different master</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Exerciser VIP required</td>
+      <td>pal_exerciser_ops (GENERATE_MSI)</td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_5</td>
+      <td>256</td>
+      <td>MSI-capable devices have DeviceID</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_6</td>
+      <td>1504</td>
+      <td>Write to ITS GITS_TRANSLATER</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Exerciser VIP required</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_7</td>
+      <td>254</td>
+      <td>Check Device's SID/RID/DID behind SMMU</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_8</td>
+      <td>255</td>
+      <td>Check Device IDs not behind SMMU</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PCI_MSI_1 / ITS_DEV_9</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
       <td></td>
     </tr>
     <tr>
@@ -3808,6 +4048,7 @@ The checklist provides information about:
 </table>
 
 ## Latest Checklist Changes
+- Updated S_L6PCI_1 for BSA 1.3 Errata 1132: added applicable Section F ITS and DeviceID rule coverage to PCI_MSI_1.
 - Updated S_L6PCI_1 for BSA 1.3 Errata 1057: updated PCI_PAS_1, added RTDTC coverage, and removed RI_SMU_3 and RI_SMU_4 coverage.
 ### v26.08_SBSA_8.0.3
 - Updated S_L3_01 platform coverage.
