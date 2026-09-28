@@ -328,8 +328,8 @@ The checklist provides information about:
     <tr>
       <td>307</td>
       <td>SMMU_01: SMMUv3 Integration compliance</td>
-      <td rowspan="2">1</td>
-      <td rowspan="2">P_L1SM_04</td>
+      <td rowspan="3">1</td>
+      <td rowspan="3">P_L1SM_04</td>
       <td>Yes</td>
       <td>Yes</td>
       <td>Yes</td>
@@ -342,6 +342,14 @@ The checklist provides information about:
       <td></td>
       <td></td>
       <td></td>
+    </tr>
+    <tr>
+      <td>333</td>
+      <td>SMMU_03: Check SMMU 128-bit atomicity support</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
     </tr>
     <tr>
       <td>322</td>
