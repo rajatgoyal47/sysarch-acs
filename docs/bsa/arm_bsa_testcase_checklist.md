@@ -603,11 +603,41 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L1</td>
-      <td>B_SMMU_08</td>
+      <td rowspan="4">L1</td>
+      <td rowspan="4">B_SMMU_08</td>
       <td>B_SMMU_08</td>
       <td>304</td>
       <td>Check SMMU S-EL2 &amp; stage1 support</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>SMMU_01</td>
+      <td>307</td>
+      <td>SMMUv3 Integration compliance</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>SMMU_02</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td>ACS detects advertised stall support through IDR0.STALL_MODEL only; rule compliance requires integration/DV evidence.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>SMMU_03</td>
+      <td>333</td>
+      <td>Check SMMU 128-bit atomicity support</td>
       <td>Yes</td>
       <td>Yes</td>
       <td>No</td>
@@ -675,8 +705,8 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td rowspan="2">L1</td>
-      <td rowspan="2">B_SMMU_21</td>
+      <td rowspan="3">L1</td>
+      <td rowspan="3">B_SMMU_21</td>
       <td>SMMU_01</td>
       <td>307</td>
       <td>SMMUv3 Integration compliance</td>
@@ -694,6 +724,16 @@ The checklist provides information about:
       <td></td>
       <td></td>
       <td>ACS detects advertised stall support through IDR0.STALL_MODEL only; rule compliance requires integration/DV evidence.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>SMMU_03</td>
+      <td>333</td>
+      <td>Check SMMU 128-bit atomicity support</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
       <td></td>
     </tr>
     <tr>

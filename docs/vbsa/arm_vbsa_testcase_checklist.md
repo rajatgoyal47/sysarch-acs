@@ -314,14 +314,38 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td>L1</td>
-      <td><a href="arm_vbsa_architecture_compliance_test_scenario.md#v_l1sm_02--check-smmu-stage-1-support-for-ve">V_L1SM_02</td>
-      <td></td>
+      <td rowspan="4">L1</td>
+      <td rowspan="4"><a href="arm_vbsa_architecture_compliance_test_scenario.md#v_l1sm_02--check-smmu-stage-1-support-for-ve">V_L1SM_02</td>
+      <td>V_L1SM_02</td>
       <td>331</td>
       <td>Check SMMU stage 1 support for VE</td>
       <td>✅</td>
       <td>❌</td>
-      <td>Related rules from other specifications: B_SMMU_08 (BSA)</td>
+      <td>Related rule from BSA: B_SMMU_08</td>
+    </tr>
+    <tr>
+      <td>SMMU_01</td>
+      <td>307</td>
+      <td>SMMUv3 Integration compliance</td>
+      <td>✅</td>
+      <td>❌</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>SMMU_02</td>
+      <td>Not Covered</td>
+      <td></td>
+      <td>❌</td>
+      <td>❌</td>
+      <td>ACS detects advertised stall support through IDR0.STALL_MODEL only; rule compliance requires integration/DV evidence.</td>
+    </tr>
+    <tr>
+      <td>SMMU_03</td>
+      <td>333</td>
+      <td>Check SMMU 128-bit atomicity support</td>
+      <td>✅</td>
+      <td>❌</td>
+      <td></td>
     </tr>
     <tr>
       <td>L1</td>

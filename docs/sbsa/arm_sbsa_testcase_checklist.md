@@ -314,8 +314,8 @@ The checklist provides information about:
       <td></td>
     </tr>
     <tr>
-      <td rowspan="2">L4</td>
-      <td rowspan="2">S_L4SM_03</td>
+      <td rowspan="3">L4</td>
+      <td rowspan="3">S_L4SM_03</td>
       <td>SMMU_01</td>
       <td>307</td>
       <td>SMMUv3 Integration compliance</td>
@@ -333,6 +333,16 @@ The checklist provides information about:
       <td></td>
       <td></td>
       <td>ACS detects advertised stall support through IDR0.STALL_MODEL only; rule compliance requires integration/DV evidence.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>SMMU_03</td>
+      <td>333</td>
+      <td>Check SMMU 128-bit atomicity support</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td></td>
       <td></td>
     </tr>
     <tr>

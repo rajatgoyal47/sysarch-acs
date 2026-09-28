@@ -150,7 +150,7 @@ Purpose: capture ACS scenario outlines for each VBSA rule. Each section:
 ---
 
 ### V_L1SM_02 — Check SMMU stage 1 support for VE
-**Summary**: Invoke the test that verified B_SMMU_08, ensuring that S-EL2 check is disabled.
+**Summary**: Verify SMMU stage 1 support with the S-EL2 check disabled, then run the SMMU_01, SMMU_02, and SMMU_03 integration rules required by B_SMMU_08.
 
 #### Related BSA Rule
 - #### B_SMMU_08 — see section 2.5 in [BSA ACS Scenario Document](../bsa/arm_bsa_architecture_compliance_test_scenario.pdf#page16&search=B_SMMU_08)

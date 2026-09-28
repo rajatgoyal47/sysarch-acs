@@ -1200,7 +1200,7 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .module_id        = SMMU,
             .rule_desc        = "Check SMMU S-EL2 & stage1 support",
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
-            .flag             = BASE_RULE,
+            .flag             = ALIAS_RULE,
             .test_num         = ACS_SMMU_TEST_NUM_BASE + 4,
         },
         [B_SMMU_09] = {
@@ -1297,6 +1297,14 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
             .flag             = BASE_RULE,
             .test_num         = ACS_SMMU_TEST_NUM_BASE + 32,
+        },
+        [SMMU_03] = {
+            .test_entry_id    = I033_ENTRY,
+            .module_id        = SMMU,
+            .rule_desc        = "Check SMMU 128-bit atomicity",
+            .platform_bitmask = PLATFORM_BAREMETAL | PLATFORM_UEFI,
+            .flag             = BASE_RULE,
+            .test_num         = ACS_SMMU_TEST_NUM_BASE + 33,
         },
         [S_L4SM_01] = {
             .test_entry_id    = I008_ENTRY,
@@ -2672,7 +2680,7 @@ rule_test_map_t rule_test_map[RULE_ID_SENTINEL] = {
             .module_id        = SMMU,
             .rule_desc        = "Check SMMU stage 1 support for VE",
             .platform_bitmask = PLATFORM_UEFI,
-            .flag             = BASE_RULE,
+            .flag             = ALIAS_RULE,
             .test_num         = ACS_SMMU_TEST_NUM_BASE + 31,
         },
         [V_L1TM_01] = {
@@ -3643,6 +3651,7 @@ test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL] = {
     [I030_ENTRY] = i030_entry,
     [I031_ENTRY] = i031_entry,
     [I032_ENTRY] = i032_entry,
+    [I033_ENTRY] = i033_entry,
     [INTERFACE010_ENTRY] = interface010_entry,
     [INTERFACE011_ENTRY] = interface011_entry,
     [ITS003_ENTRY] = its003_entry,
@@ -3998,6 +4007,7 @@ test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL] = {
     [I025_ENTRY] = i025_entry,
     [I029_ENTRY] = i029_entry,
     [I032_ENTRY] = i032_entry,
+    [I033_ENTRY] = i033_entry,
     [T001_ENTRY] = t001_entry,
     [T002_ENTRY] = t002_entry,
     [T003_ENTRY] = t003_entry,
@@ -4434,6 +4444,7 @@ test_entry_fn_t test_entry_func_table[TEST_ENTRY_SENTINEL] = {
     [I029_ENTRY] = i029_entry,
     [I007_ENTRY] = i007_entry,
     [I032_ENTRY] = i032_entry,
+    [I033_ENTRY] = i033_entry,
     [PCI_PAS_1_ENTRY] = pci_pas_1_entry,
     [P042_ENTRY] = p042_entry,
     [P030_ENTRY] = p030_entry, // used in wrapper.
@@ -4529,8 +4540,9 @@ const RULE_ID_e bsa_l1_rule_list[] = {
 const RULE_ID_e b_wd_00_rule_list[]     = {B_WD_01, B_WD_02, B_WD_03, B_WD_04,
                                      RULE_ID_SENTINEL};
 
-/* B_SMMU_21 */
-const RULE_ID_e b_smmu_21_rule_list[]   = {SMMU_01, SMMU_02, RULE_ID_SENTINEL};
+/* B_SMMU_08, B_SMMU_21, V_L1SM_02 */
+const RULE_ID_e b_smmu_08_21_v_l1sm_02_rule_list[] = {
+    SMMU_01, SMMU_02, SMMU_03, RULE_ID_SENTINEL};
 
 /* JKZMT */
 const RULE_ID_e jkzmt_rule_list[] = {
@@ -4788,7 +4800,7 @@ const RULE_ID_e s_l6sm_04_rule_list[]   = {B_SMMU_03, B_SMMU_04, B_SMMU_05, B_SM
                                      B_SMMU_14, B_SMMU_23, RULE_ID_SENTINEL};
 
 const RULE_ID_e p_l1sm_04_s_l4sm_03_rule_list[] = {
-    SMMU_01, SMMU_02, RULE_ID_SENTINEL};
+    SMMU_01, SMMU_02, SMMU_03, RULE_ID_SENTINEL};
 
 /* PCBSA alias lists */
 /* P_L2WD_01 */
@@ -4872,7 +4884,8 @@ const alias_rule_map_t alias_rule_map[] = {
     {B_IEP_1,   b_iep_1_rule_list},
     {RTDTC,     rtdtc_rule_list},
     {B_PPI_00,  b_ppi_00_rule_list},
-    {B_SMMU_21, b_smmu_21_rule_list},
+    {B_SMMU_08, b_smmu_08_21_v_l1sm_02_rule_list},
+    {B_SMMU_21, b_smmu_08_21_v_l1sm_02_rule_list},
 
     /* SBSA alias rules */
     {S_L3_01,   bsa_l1_rule_list},
@@ -4904,6 +4917,7 @@ const alias_rule_map_t alias_rule_map[] = {
     {V_L1MM_01, v_l1mm_01_rule_list},
     {V_L1GI_01, v_l1gi_01_rule_list},
     {V_L1SM_01, v_l1sm_01_rule_list},
+    {V_L1SM_02, b_smmu_08_21_v_l1sm_02_rule_list},
     {V_L1PR_01, v_l1pr_01_rule_list},
     {V_L1PR_02, v_l1pr_02_rule_list},
 
