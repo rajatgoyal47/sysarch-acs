@@ -254,6 +254,11 @@ static uint32_t execute_rule_recursive(const acs_run_request_t *ctx,
             precheck_status = test_entry_func_table[entry_id](num_pe);
             val_log_set_indent(old_log_indent);
 
+            if (GET_STATE(precheck_status) == TEST_SKIP) {
+                rule_test_status = precheck_status;
+                goto exit_rule;
+            }
+
             if (GET_STATE(precheck_status) == TEST_FAIL) {
                 rule_test_status = RESULT_SKIP(0);
                 goto exit_rule;
