@@ -52,6 +52,9 @@ program_all_monitors_with_pmg(uint16_t partid, uint8_t pmg)
         val_print(DEBUG, "\n       Resource count = %d", rsrc_node_cnt);
 
         for (rsrc_index = 0; rsrc_index < rsrc_node_cnt; rsrc_index++) {
+            /* Capabilities are specific to the currently selected resource. */
+            max_pmg = 0;
+            csumon_count = 0;
 
             /* Check whether resource node is a PE Cache */
             if (val_mpam_get_info(MPAM_MSC_RSRC_TYPE, msc_index, rsrc_index) ==
@@ -65,13 +68,19 @@ program_all_monitors_with_pmg(uint16_t partid, uint8_t pmg)
                     if (val_mpam_msc_supports_ris(msc_index))
                         val_mpam_memory_configure_ris_sel(msc_index, rsrc_index);
 
+                    /* Prepare the request PARTID for narrowed or non-narrowed controls. */
+                    if (val_mpam_prepare_partid(msc_index, partid, 0) != ACS_STATUS_PASS)
+                        continue;
+
                     if (val_mpam_supports_cpor(msc_index)) {
 
                         max_pmg = val_mpam_get_max_pmg(msc_index);
                         val_mpam_configure_cpor(msc_index, partid, PARTITION_PERCENTAGE);
 
-                        if (val_mpam_supports_csumon(msc_index))
-                            csumon_count = val_mpam_get_csumon_count(msc_index);
+                        if (!val_mpam_supports_csumon(msc_index))
+                            continue;
+
+                        csumon_count = val_mpam_get_csumon_count(msc_index);
                     } else
                         continue;
 
@@ -108,6 +117,8 @@ set_status_for_all_csumon(uint32_t status)
         val_print(DEBUG, "\n       Resource count = %d ", rsrc_node_cnt);
 
         for (rsrc_index = 0; rsrc_index < rsrc_node_cnt; rsrc_index++) {
+            /* Do not reuse monitor capability state from another resource. */
+            csumon_count = 0;
 
             /* Check whether resource node is a PE Cache */
             if (val_mpam_get_info(MPAM_MSC_RSRC_TYPE, msc_index, rsrc_index) ==
@@ -123,8 +134,10 @@ set_status_for_all_csumon(uint32_t status)
 
                     if (val_mpam_supports_cpor(msc_index)) {
 
-                        if (val_mpam_supports_csumon(msc_index))
-                            csumon_count = val_mpam_get_csumon_count(msc_index);
+                        if (!val_mpam_supports_csumon(msc_index))
+                            continue;
+
+                        csumon_count = val_mpam_get_csumon_count(msc_index);
                     } else
                         continue;
 
@@ -164,6 +177,8 @@ read_all_msc_csu_counters(uint32_t expected_count)
         rsrc_node_cnt = val_mpam_get_info(MPAM_MSC_RSRC_COUNT, msc_index, 0);
 
         for (rsrc_index = 0; rsrc_index < rsrc_node_cnt; rsrc_index++) {
+            /* Do not reuse monitor capability state from another resource. */
+            csumon_count = 0;
 
             /* Check whether resource node is a PE Cache */
             if (val_mpam_get_info(MPAM_MSC_RSRC_TYPE, msc_index, rsrc_index) ==
@@ -179,8 +194,10 @@ read_all_msc_csu_counters(uint32_t expected_count)
 
                     if (val_mpam_supports_cpor(msc_index)) {
 
-                        if (val_mpam_supports_csumon(msc_index))
-                            csumon_count = val_mpam_get_csumon_count(msc_index);
+                        if (!val_mpam_supports_csumon(msc_index))
+                            continue;
+
+                        csumon_count = val_mpam_get_csumon_count(msc_index);
                     } else
                         continue;
 

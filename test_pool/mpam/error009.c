@@ -71,17 +71,16 @@ configure_partitioning_reg(uint32_t reg_offset)
     esr_errcode = val_mpam_msc_get_errcode(msc_index);
     val_print(DEBUG, "\n       Error code read is %llx", esr_errcode);
 
-    status = check_for_raz_wi(reg_offset);
-    if (status == ACS_STATUS_FAIL)
-        val_print(ERROR, "\n       Partitioning register is not RAZ/WI");
-
-    if ((esr_errcode != ESR_ERRCODE_RIS_NO_CTRL) &&
-        (esr_errcode != ESR_ERRCODE_NO_ERROR)) {
+    if (esr_errcode == ESR_ERRCODE_NO_ERROR) {
+        status = check_for_raz_wi(reg_offset);
+        if (status == ACS_STATUS_FAIL)
+            val_print(ERROR, "\n       Partitioning register is not RAZ/WI");
+        else
+            val_print(DEBUG, "\n       Error not reported; permitted RAZ/WI behavior observed");
+    } else if (esr_errcode != ESR_ERRCODE_RIS_NO_CTRL) {
         val_print(ERROR, "\n       Expected errcode: %d or no error", ESR_ERRCODE_RIS_NO_CTRL);
         val_print(ERROR, "\n       Actual errcode: %d", esr_errcode);
         status = ACS_STATUS_FAIL;
-    } else if (esr_errcode == ESR_ERRCODE_NO_ERROR) {
-        val_print(DEBUG, "\n       Error not reported; permitted RAZ/WI behavior observed");
     }
 
     return status;

@@ -30,6 +30,8 @@ partition003.c
 partition004.c
 partition005.c
 partition006.c
+partition007.c
+partition008.c
 monitor001.c
 monitor002.c
 monitor003.c

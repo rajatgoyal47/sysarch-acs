@@ -105,7 +105,8 @@ uint32_t val_mpam_msc_generate_psr_error(uint32_t msc_index)
 
     if (max_partid == MPAMIDR_PARTID_MAX_MASK) {
         val_print(WARN,
-                  "\n       MSC index %d: Max PARTID is 0xFFFF; cannot test out-of-range PARTID. Skipping MSC",
+                  "\n       MSC index %d: Max PARTID is 0xFFFF; "
+                  "cannot test out-of-range PARTID. Skipping MSC",
                   msc_index);
         return ACS_STATUS_SKIP;
     }
@@ -115,6 +116,8 @@ uint32_t val_mpam_msc_generate_psr_error(uint32_t msc_index)
     part_sel_value = (part_sel_value &
                       ~(PART_SEL_PARTID_SEL_MASK << PART_SEL_PARTID_SEL_SHIFT)) |
                      BITFIELD_SET(PART_SEL_PARTID_SEL, (max_partid + 1));
+    /* Exercise the request PARTID range even when narrowing is implemented. */
+    part_sel_value = BITFIELD_WRITE(part_sel_value, PART_SEL_INTERNAL, 0);
     val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, part_sel_value);
     val_print(DEBUG, "\n       PARTID written to MPAMCFG_PART_SEL is %d",
                                (max_partid + 1));
@@ -284,34 +287,48 @@ uint32_t val_mpam_msc_generate_pmgor_error(uint32_t msc_index)
            1. Caller       -  Error Tests
            2. Prerequisite -  None
   @param   msc_index  - index of the MSC node in the MPAM info table.
-  @return  None
+  @return  ACS_STATUS_PASS if the error stimulus was generated, otherwise ACS_STATUS_SKIP.
 **/
-void val_mpam_msc_generate_msmon_config_error(uint32_t msc_index, uint16_t mon_count)
+uint32_t val_mpam_msc_generate_msmon_config_error(uint32_t msc_index, uint16_t mon_count)
 {
 
     uint16_t max_partid;
+    uint32_t mon_sel;
 
     /* Extract max PARTID supported by this MSC */
     max_partid = val_mpam_get_max_partid(msc_index);
     val_print(DEBUG, "\n       MSC Max PARTID is %d", max_partid);
 
-    /* Write (mon_count-1) to MON_SEL register to configure the last monitor */
-    val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MON_SEL, mon_count - 1);
+    /* A full-width PARTID range has no value available for this error stimulus. */
+    if (max_partid == MPAMIDR_PARTID_MAX_MASK) {
+        val_print(WARN,
+                  "\n       MSC index %d: Max PARTID is 0xFFFF; "
+                  "cannot generate monitor PARTID range error",
+                  msc_index);
+        return ACS_STATUS_SKIP;
+    }
+
+    /* Select the last valid monitor while preserving the current RIS. */
+    mon_sel = val_mpam_mmr_read(msc_index, REG_MSMON_CFG_MON_SEL);
+    mon_sel = BITFIELD_WRITE(mon_sel, MON_SEL_MON_SEL, (mon_count - 1));
+    val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MON_SEL, mon_sel);
 
     if (val_mpam_supports_csumon(msc_index)) {
         /* Write (max_partid+1) to CSU monitor filter reg to raise monitor config error */
-        val_mpam_mmr_write(msc_index, REG_MSMON_CFG_CSU_FLT, max_partid + 1);
-        return;
+        val_mpam_mmr_write(msc_index, REG_MSMON_CFG_CSU_FLT,
+                           BITFIELD_SET(CSU_FLT_PARTID, (max_partid + 1)));
+        return ACS_STATUS_PASS;
     }
 
     if (val_mpam_msc_supports_mbwumon(msc_index)) {
         /* Write (max_partid+1) to MBW monitor filter reg to raise monitor config error */
-        val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MBWU_FLT, max_partid + 1);
-        return;
+        val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MBWU_FLT,
+                           BITFIELD_SET(MBWU_FLT_PARTID, (max_partid + 1)));
+        return ACS_STATUS_PASS;
     }
 
     val_mem_issue_dsb();
-    return;
+    return ACS_STATUS_SKIP;
 }
 
 /**

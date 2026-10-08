@@ -70,6 +70,8 @@
   ../../test_pool/mpam/partition004.c
   ../../test_pool/mpam/partition005.c
   ../../test_pool/mpam/partition006.c
+  ../../test_pool/mpam/partition007.c
+  ../../test_pool/mpam/partition008.c
   ../../test_pool/mpam/monitor001.c
   ../../test_pool/mpam/monitor002.c
   ../../test_pool/mpam/monitor003.c
