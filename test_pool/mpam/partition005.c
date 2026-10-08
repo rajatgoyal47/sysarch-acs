@@ -144,6 +144,11 @@ payload(void)
                 continue;
             };
 
+            /* Give each request PARTID a distinct control PARTID when narrowing is supported. */
+            if ((val_mpam_prepare_partid(msc_index, partid_x, 0) != ACS_STATUS_PASS) ||
+                (val_mpam_prepare_partid(msc_index, partid_y, 1) != ACS_STATUS_PASS))
+                continue;
+
             /* Step 2-3: Configure MPAMCFG_CMAX such that PARTID_X is assigned 75% of the cache and
                          PARTID_Y is assigned 25%, both with SOFTLIM = 0.*/
             val_mpam_configure_ccap(msc_index, partid_x, MPAMCFG_CMAX_DISABLE_SOFTLIM, 75);
@@ -157,6 +162,8 @@ payload(void)
             val_mpam_configure_cpor(msc_index, partid_y, 100);
 
             /* Allocate memory for source and destination buffers */
+            src_buf = NULL;
+            dest_buf = NULL;
             src_buf  = (void *)val_memory_alloc_pages(num_pages);
             dest_buf = (void *)val_memory_alloc_pages(num_pages);
 
@@ -167,6 +174,8 @@ payload(void)
                     val_memory_free_pages(dest_buf, num_pages);
                 if (src_buf != NULL)
                     val_memory_free_pages(src_buf, num_pages);
+                src_buf = NULL;
+                dest_buf = NULL;
                 return;
             }
 
@@ -199,6 +208,10 @@ payload(void)
 
             /* Step 5 -  Trigger buffercpy workload */
             val_memcpy(src_buf, dest_buf, BUFFER_SIZE);
+            val_mem_issue_dsb();
+            /* Keep ACS bookkeeping on the original PARTID. */
+            val_mpam_reg_write(MPAM2_EL2, saved_el2);
+
             /* Wait for some time before the memcpy settles and counters update */
             val_time_delay_ms(TIMEOUT_MEDIUM);
 
@@ -228,6 +241,10 @@ payload(void)
             }
 
             val_memcpy(src_buf, dest_buf, BUFFER_SIZE);
+            val_mem_issue_dsb();
+            /* Restore the original PARTID before disabling PARTID_Y. */
+            val_mpam_reg_write(MPAM2_EL2, saved_el2);
+
             /* Wait for some time before the memcpy settles and counters update */
             val_time_delay_ms(TIMEOUT_MEDIUM);
 
@@ -271,6 +288,10 @@ payload(void)
             val_mpam_csumon_enable(msc_index);
 
             val_memcpy(src_buf, dest_buf, BUFFER_SIZE);
+            val_mem_issue_dsb();
+            /* Keep ACS bookkeeping on the original PARTID. */
+            val_mpam_reg_write(MPAM2_EL2, saved_el2);
+
             /* Wait for some time before the memcpy settles and counters update */
             val_time_delay_ms(TIMEOUT_MEDIUM);
 
@@ -298,23 +319,25 @@ payload(void)
             /* Restore MPAM2_EL2 settings */
             val_mpam_reg_write(MPAM2_EL2, saved_el2);
 
+            /* Re-enable PARTID_Y before accessing or freeing its workload buffers. */
+            val_mpam_msc_endis_partid(msc_index,
+                                      1, // enable PARTID
+                                      0, // NFU not set
+                                      partid_y);
+
             /* Free the buffers to the heap manager */
             if (dest_buf != NULL) {
                 val_pe_cache_invalidate_range((uint64_t)dest_buf, BUFFER_SIZE);
                 val_mem_issue_dsb();
                 val_memory_free_pages(dest_buf, num_pages);
+                dest_buf = NULL;
             }
             if (src_buf != NULL) {
                 val_pe_cache_invalidate_range((uint64_t)src_buf, BUFFER_SIZE);
                 val_mem_issue_dsb();
                 val_memory_free_pages(src_buf, num_pages);
+                src_buf = NULL;
             }
-
-            /* Re-enable PARTID-Y for the next tests to behave properly */
-            val_mpam_msc_endis_partid(msc_index,
-                                      1, // enable PARTID
-                                      0, // NFU not set
-                                      partid_y);
 
         }
     }
@@ -330,23 +353,31 @@ payload(void)
     return;
 
 cleanup:
-    /* Free the buffers to the heap manager */
-    if (dest_buf != NULL) {
-        val_pe_cache_invalidate_range((uint64_t)dest_buf, BUFFER_SIZE);
-        val_mem_issue_dsb();
-        val_memory_free_pages(dest_buf, num_pages);
-    }
-    if (src_buf != NULL) {
-        val_pe_cache_invalidate_range((uint64_t)src_buf, BUFFER_SIZE);
-        val_mem_issue_dsb();
-        val_memory_free_pages(src_buf, num_pages);
-    }
-
     /* Disable CSU Mon */
     val_mpam_csumon_disable(msc_index);
 
     /* Restore MPAM2_EL2 settings */
     val_mpam_reg_write(MPAM2_EL2, saved_el2);
+
+    /* Ensure cleanup never accesses buffers through a disabled request PARTID. */
+    val_mpam_msc_endis_partid(msc_index,
+                              1, // enable PARTID
+                              0, // NFU not set
+                              partid_y);
+
+    /* Free the buffers to the heap manager */
+    if (dest_buf != NULL) {
+        val_pe_cache_invalidate_range((uint64_t)dest_buf, BUFFER_SIZE);
+        val_mem_issue_dsb();
+        val_memory_free_pages(dest_buf, num_pages);
+        dest_buf = NULL;
+    }
+    if (src_buf != NULL) {
+        val_pe_cache_invalidate_range((uint64_t)src_buf, BUFFER_SIZE);
+        val_mem_issue_dsb();
+        val_memory_free_pages(src_buf, num_pages);
+        src_buf = NULL;
+    }
 
     val_set_status(index, RESULT_FAIL(03));
     return;

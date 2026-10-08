@@ -17,10 +17,10 @@
   },
   "status_definitions": {
     "COVERED": {
-      "meaning": "Rule is closed for ACS coverage: directly covered, indirectly covered, or no standalone ACS check is required. See Notes for the reason."
+      "meaning": "Rule has a direct or indirect ACS test mapped to it."
     },
     "NOT_COVERED": {
-      "meaning": "Rule is not closed by ACS coverage. It is either not testable by ACS or is a coverage gap. See Notes for the reason."
+      "meaning": "Rule has no standalone ACS test. See Notes to determine whether no ACS check is required, the rule is not testable by ACS, or coverage is pending."
     }
   },
   "rules": [
@@ -39,7 +39,7 @@
     },
     {
       "rule_id": "DDGSM",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: MSC may implement zero or more resource controls. ACS checks controls only when discovered.",
       "sub_rules": [],
@@ -50,7 +50,7 @@
     },
     {
       "rule_id": "RBCMK",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: MSC may implement zero or more monitors. ACS checks monitors only when discovered.",
       "sub_rules": [],
@@ -87,7 +87,7 @@
     },
     {
       "rule_id": "LRZGD",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: different MPAM architecture versions may coexist. ACS validates each discovered MSC against its advertised version.",
       "sub_rules": [],
@@ -98,7 +98,7 @@
     },
     {
       "rule_id": "PBSTK",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: base memory behavior rules always apply. No separate SYS-MPAM ACS check is required.",
       "sub_rules": [],
@@ -144,7 +144,7 @@
     },
     {
       "rule_id": "QKQCF",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: Default PARTID 0 is architecturally defined; labeling non-MPAM requesters with it is permitted, not mandatory.",
       "sub_rules": [],
@@ -199,7 +199,7 @@
     },
     {
       "rule_id": "SJFGX",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: terminating completer has no downstream MPAM propagation to observe. No ACS runtime check is needed.",
       "sub_rules": [],
@@ -232,7 +232,7 @@
     },
     {
       "rule_id": "MRWWK",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: conditional cache-internal storage rule. ACS checks observable controls and monitors when present.",
       "sub_rules": [],
@@ -411,7 +411,7 @@
     },
     {
       "rule_id": "YWPPT",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: design statement for true two-space components. No separate ACS runtime check is needed.",
       "sub_rules": [],
@@ -558,7 +558,7 @@
     },
     {
       "rule_id": "KBJPW",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: write-hit portion update is permitted but not required, so there is no mandatory ACS behavior to check.",
       "sub_rules": [],
@@ -569,7 +569,7 @@
     },
     {
       "rule_id": "YBYPZ",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: reset/default-state behavior. SYS-MPAM ACS does not need a runtime check unless MPAM controls are discovered after boot.",
       "sub_rules": [],
@@ -789,7 +789,7 @@
     },
     {
       "rule_id": "QFCTM",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: allows controls and monitors to differ by PA space. No standalone ACS check is required.",
       "sub_rules": [],
@@ -800,7 +800,7 @@
     },
     {
       "rule_id": "CZMFT",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: defines when a resource can be partitioned. Actual controls are checked only when implemented.",
       "sub_rules": [],
@@ -811,7 +811,7 @@
     },
     {
       "rule_id": "XDZGT",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: describes possible RIS support for multiple resources. No standalone ACS check is required.",
       "sub_rules": [],
@@ -822,7 +822,7 @@
     },
     {
       "rule_id": "HLHYS",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: lists optional standard partitioning interfaces. ACS checks only implemented interfaces.",
       "sub_rules": [],
@@ -908,9 +908,11 @@
     },
     {
       "rule_id": "CSLHH",
-      "status": "NOT_COVERED",
-      "tests": [],
-      "notes": "Gap: needs a direct PARTID narrowing test that disables a request PARTID and verifies the enabled status controls request behavior.",
+      "status": "COVERED",
+      "tests": [
+        "partition008.c"
+      ],
+      "notes": "Direct: partition008 disables and re-enables a narrowed request PARTID and verifies that its enabled status controls request behavior.",
       "sub_rules": [],
       "platforms": [
         "BM",
@@ -919,7 +921,7 @@
     },
     {
       "rule_id": "QFRFQ",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: defines normal enabled-control behavior. Feature-specific tests cover the implemented controls.",
       "sub_rules": [],
@@ -1160,7 +1162,7 @@
     },
     {
       "rule_id": "HVRZS",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: lists optional bandwidth partitioning methods. ACS checks only methods that are implemented.",
       "sub_rules": [],
@@ -1290,7 +1292,7 @@
     },
     {
       "rule_id": "PXSBS",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: allows implementation-defined bandwidth tracking methods. No standalone ACS check is required.",
       "sub_rules": [],
@@ -1301,7 +1303,7 @@
     },
     {
       "rule_id": "ZDTLN",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: defines proportional stride as a generic proportional-control instance. No standalone ACS check is required.",
       "sub_rules": [],
@@ -1367,7 +1369,7 @@
     },
     {
       "rule_id": "MQRPH",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: internal priority partitioning is optional even when downstream priority exists. No mandatory ACS check.",
       "sub_rules": [],
@@ -1378,7 +1380,7 @@
     },
     {
       "rule_id": "RZDSR",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: downstream priority partitioning is optional even when internal priority exists. No mandatory ACS check.",
       "sub_rules": [],
@@ -1400,7 +1402,7 @@
     },
     {
       "rule_id": "JPLMZ",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: implementation-defined controls cannot be interpreted generically by ACS. No standalone ACS check is required.",
       "sub_rules": [],
@@ -1411,7 +1413,7 @@
     },
     {
       "rule_id": "DQTTD",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: PARTID narrowing support is optional. ACS checks narrowing behavior only if implemented.",
       "sub_rules": [],
@@ -1433,9 +1435,11 @@
     },
     {
       "rule_id": "GFYDF",
-      "status": "NOT_COVERED",
-      "tests": [],
-      "notes": "Gap: iNTPARTID mapping programming is testable when narrowing exists, but no current mapped test covers it.",
+      "status": "COVERED",
+      "tests": [
+        "partition007.c"
+      ],
+      "notes": "Direct: partition007 programs request-to-internal PARTID mappings and verifies that mapped requests use the selected internal PARTID controls.",
       "sub_rules": [],
       "platforms": [
         "BM",
@@ -1444,7 +1448,7 @@
     },
     {
       "rule_id": "WCQKV",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: defines monitor types. ACS checks monitors only when the corresponding monitor type is implemented.",
       "sub_rules": [],
@@ -1457,9 +1461,9 @@
       "rule_id": "ZGGMX",
       "status": "COVERED",
       "tests": [
-        "monitor001.c"
+        "partition007.c"
       ],
-      "notes": "Indirect: PARTID-based monitor tests use request PARTID filters; narrowing-specific behavior is not directly proven.",
+      "notes": "Direct: partition007 verifies that monitoring continues to filter on the original request PARTID when PARTID narrowing is enabled.",
       "sub_rules": [],
       "platforms": [
         "BM",
@@ -1605,7 +1609,7 @@
     },
     {
       "rule_id": "KCWDZ",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: monitor registers are permitted to be RO. No check is needed unless RW behavior is advertised.",
       "sub_rules": [],
@@ -1616,7 +1620,7 @@
     },
     {
       "rule_id": "XLWYW",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: rW monitor reprogramming without disable is permitted. No mandatory ACS behavior to check.",
       "sub_rules": [],
@@ -1664,7 +1668,7 @@
     },
     {
       "rule_id": "FVFYC",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: automatic NRDY clear is not required for event monitors. No mandatory ACS check.",
       "sub_rules": [],
@@ -1675,7 +1679,7 @@
     },
     {
       "rule_id": "ZTXDS",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: software-defined NRDY use is permitted when automatic update is absent. No mandatory ACS check.",
       "sub_rules": [],
@@ -1743,7 +1747,7 @@
     },
     {
       "rule_id": "SQSMV",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: capture reset after copy is permitted but not required. No mandatory ACS check.",
       "sub_rules": [],
@@ -1877,7 +1881,7 @@
     },
     {
       "rule_id": "RPGBQ",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: overflow linkage event is permitted for monitor types without capture-on-overflow. No mandatory ACS check.",
       "sub_rules": [],
@@ -2131,7 +2135,7 @@
     },
     {
       "rule_id": "SJFMB",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: hAS_ESR may be zero when no reportable errors exist. No standalone ACS check is required.",
       "sub_rules": [],
@@ -2142,7 +2146,7 @@
     },
     {
       "rule_id": "VYLZC",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: defines selector types used by later error rules. No standalone ACS check is required.",
       "sub_rules": [],
@@ -2153,7 +2157,7 @@
     },
     {
       "rule_id": "QBQJG",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: selector truncation behavior is permitted. ACS only checks invalid selector reporting when required.",
       "sub_rules": [],
@@ -2190,7 +2194,7 @@
     },
     {
       "rule_id": "HVNKJ",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: lists possible MPAM interrupt sources. ACS checks only implemented interrupt behavior.",
       "sub_rules": [],
@@ -2201,7 +2205,7 @@
     },
     {
       "rule_id": "TMMMD",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: four-space MSC choice of Secure or Non-secure error interrupt is permitted. No mandatory ACS check.",
       "sub_rules": [],
@@ -2212,7 +2216,7 @@
     },
     {
       "rule_id": "QDSPY",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: applies when no reportable error can occur or detection is optional. No standalone ACS check is required.",
       "sub_rules": [],
@@ -2223,7 +2227,7 @@
     },
     {
       "rule_id": "PPJSM",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: error interrupt type may be level-sensitive or edge-triggered. ACS checks the implemented type.",
       "sub_rules": [],
@@ -2282,7 +2286,7 @@
     },
     {
       "rule_id": "ZRDMM",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: overflow interrupt support is optional. ACS checks overflow interrupts only if implemented.",
       "sub_rules": [],
@@ -2354,7 +2358,7 @@
     },
     {
       "rule_id": "LVCGQ",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: greater-than-32-bit MMR atomicity is not required. No ACS check is needed.",
       "sub_rules": [],
@@ -2376,7 +2380,7 @@
     },
     {
       "rule_id": "VTFQK",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: monitor locks may be separate or shared with partition locks. Both designs are permitted.",
       "sub_rules": [],
@@ -2398,7 +2402,7 @@
     },
     {
       "rule_id": "RDMVJ",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: implementation-defined MMRs are permitted above offset 0x3000. No mandatory ACS check.",
       "sub_rules": [],
@@ -2448,7 +2452,7 @@
     },
     {
       "rule_id": "HXLMF",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: different feature-page base addresses are permitted and overlap avoidance is a recommendation. No mandatory ACS check.",
       "sub_rules": [],
@@ -2470,7 +2474,7 @@
     },
     {
       "rule_id": "FLWNK",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: non-MPAM MMR placement in the feature page is permitted only for trapped MMRs. No mandatory ACS check.",
       "sub_rules": [],
@@ -2516,7 +2520,7 @@
     },
     {
       "rule_id": "KZBWG",
-      "status": "COVERED",
+      "status": "NOT_COVERED",
       "tests": [],
       "notes": "No ACS check required: rO MMR sharing across security states is permitted when contents match. ACS cannot and need not check sharing.",
       "sub_rules": [],

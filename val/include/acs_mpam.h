@@ -75,7 +75,30 @@ typedef enum {
 #define MBWU_SHORT_CHECK    0U
 
 #define MAX_CPBM_WIDTH      32768
+#define MAX_CPBM_WORDS      ((MAX_CPBM_WIDTH + 31U) / 32U)
 #define MAX_BWPBM_WIDTH     4096
+
+/* Register state for one cache-storage usage monitor instance. */
+typedef struct {
+  uint32_t selector;
+  uint32_t selected_monitor;
+  uint32_t filter;
+  uint32_t control;
+  uint32_t value;
+  bool value_writable;
+} MPAM_CSUMON_STATE;
+
+typedef struct {
+  uint32_t selector;
+  uint32_t control_selector;
+  uint32_t *cpbm;
+  uint32_t cpbm_words;
+  uint32_t cmax;
+  uint32_t cassoc;
+  bool cpbm_valid;
+  bool cmax_valid;
+  bool cassoc_valid;
+} MPAM_PARTITION_STATE;
 
 /* Resource-group hash configuration; the slot count is kept as a power of two. */
 #define MPAM_RSRC_HASH_WORD_SHIFT          32U
@@ -151,11 +174,26 @@ uint32_t val_mpam_mbwu_supports_long(uint32_t msc_index);
 uint32_t val_mpam_mbwu_supports_lwd(uint32_t msc_index);
 uint32_t val_mpam_get_max_partid(uint32_t msc_index);
 uint16_t val_mpam_get_max_intpartid(uint32_t msc_index);
+void val_mpam_select_partid(uint32_t msc_index, uint16_t partid, bool internal);
+uint16_t val_mpam_get_partid_mapping(uint32_t msc_index, uint16_t req_partid);
+void val_mpam_set_partid_mapping(uint32_t msc_index, uint16_t req_partid,
+                                 uint16_t int_partid);
+uint32_t val_mpam_prepare_partid(uint32_t msc_index, uint16_t req_partid,
+                                 uint16_t int_partid);
+bool val_mpam_msc_partid_is_enabled(uint32_t msc_index, uint16_t req_partid);
+void val_mpam_read_cpbm(uint32_t msc_index, uint16_t int_partid,
+                        uint32_t *cpbm, uint32_t words);
+void val_mpam_write_cpbm(uint32_t msc_index, uint16_t int_partid,
+                         const uint32_t *cpbm, uint32_t words);
 uint32_t val_mpam_msc_get_version(uint32_t msc_index);
 uint32_t val_mpam_get_max_pmg(uint32_t msc_index);
 void val_mpam_configure_cpor(uint32_t msc_index, uint16_t partid, uint32_t cpbm_percentage);
+void val_mpam_configure_intpartid_cpor(uint32_t msc_index, uint16_t int_partid,
+                                       uint32_t cpbm_percentage);
 void val_mpam_configure_ccap(uint32_t msc_index, uint16_t partid,
                                                      uint8_t softlim, uint32_t ccap_percentage);
+void val_mpam_configure_intpartid_ccap(uint32_t msc_index, uint16_t int_partid,
+                                       uint8_t softlim, uint32_t ccap_percentage);
 void val_mpam_configure_cassoc(uint32_t msc_index, uint16_t partid,
                                                  uint32_t cassoc_percentage);
 void val_mpam_configure_cmin(uint32_t msc_index, uint16_t partid, uint32_t cmin_percentage);
@@ -166,6 +204,13 @@ void val_mpam_msc_configure_mbwmax(uint32_t msc_index, uint16_t partid,
 uint32_t val_mpam_get_cpbm_width(uint32_t msc_index);
 uint32_t val_mpam_get_mbwpbm_width(uint32_t msc_index);
 void val_mpam_configure_csu_mon(uint32_t msc_index, uint16_t partid, uint8_t pmg, uint16_t mon_sel);
+void val_mpam_save_csumon_state(uint32_t msc_index, uint16_t mon_sel,
+                                MPAM_CSUMON_STATE *state);
+void val_mpam_restore_csumon_state(uint32_t msc_index, const MPAM_CSUMON_STATE *state);
+bool val_mpam_save_partition_state(uint32_t msc_index, uint16_t req_partid,
+                                   MPAM_PARTITION_STATE *state);
+void val_mpam_restore_partition_state(uint32_t msc_index,
+                                      MPAM_PARTITION_STATE *state);
 void val_mpam_csumon_enable(uint32_t msc_index);
 void val_mpam_csumon_disable(uint32_t msc_index);
 uint32_t val_mpam_read_csumon(uint32_t msc_index);
@@ -208,6 +253,8 @@ uint32_t partition002_entry(uint32_t num_pe);
 uint32_t partition004_entry(uint32_t num_pe);
 uint32_t partition005_entry(uint32_t num_pe);
 uint32_t partition006_entry(uint32_t num_pe);
+uint32_t partition007_entry(uint32_t num_pe);
+uint32_t partition008_entry(uint32_t num_pe);
 
 uint32_t mem001_entry(uint32_t num_pe);
 uint32_t mem002_entry(uint32_t num_pe);

@@ -8,8 +8,8 @@ can be downloaded, filtered, and reviewed without duplicating the full table her
 
 | Status | Count |
 | --- | ---: |
-| `COVERED` | 138 |
-| `NOT_COVERED` | 75 |
+| `COVERED` | 97 |
+| `NOT_COVERED` | 116 |
 | `TOTAL` | 213 |
 
 ## Platform Information
@@ -40,8 +40,8 @@ The CSV contains these columns:
 
 | Status | Meaning |
 | --- | --- |
-| `COVERED` | Rule is closed for ACS coverage: directly covered, indirectly covered, or no standalone ACS check is required. See Notes for the reason. |
-| `NOT_COVERED` | Rule is not closed by ACS coverage. It is either not testable by ACS or is a coverage gap. See Notes for the reason. |
+| `COVERED` | Rule has a direct or indirect ACS test mapped to it. |
+| `NOT_COVERED` | Rule has no standalone ACS test. See Notes to determine whether no ACS check is required, the rule is not testable by ACS, or coverage is pending. |
 
 ## Maintenance
 

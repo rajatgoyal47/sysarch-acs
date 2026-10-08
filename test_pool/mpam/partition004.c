@@ -76,6 +76,24 @@ payload(void)
     uint32_t num_mon     = 0;
     uint32_t page_size;
     uint32_t num_pages;
+    uint64_t num_pages64;
+    uint32_t saved_part_sel = 0;
+    uint32_t saved_mon_sel = 0;
+    uint16_t saved_map_x = 0;
+    uint16_t saved_map_y = 0;
+    uint16_t saved_map_z = 0;
+    uint32_t mappings_saved;
+    uint32_t restore_status;
+    bool saved_enable_x;
+    bool saved_enable_y;
+    bool saved_enable_z;
+    bool enable_state_saved;
+    MPAM_CSUMON_STATE saved_csumon;
+    bool csumon_state_saved;
+    MPAM_PARTITION_STATE saved_partition_x;
+    MPAM_PARTITION_STATE saved_partition_y;
+    MPAM_PARTITION_STATE saved_partition_z;
+    bool partition_state_saved;
 
     /* Check if LLC is valid */
     if (llc_idx == CACHE_TABLE_EMPTY) {
@@ -139,15 +157,21 @@ payload(void)
             num_mon     = 0;
             start_count = 0;
             end_count   = 0;
+            mappings_saved = 0;
 
-            /* Select resource instance if RIS feature implemented */
-            if (val_mpam_msc_supports_ris(msc_index))
+            /* Preserve both selectors before selecting a resource instance. */
+            saved_part_sel = val_mpam_mmr_read(msc_index, REG_MPAMCFG_PART_SEL);
+            saved_mon_sel = val_mpam_mmr_read(msc_index, REG_MSMON_CFG_MON_SEL);
+            if (val_mpam_msc_supports_ris(msc_index)) {
                 val_mpam_memory_configure_ris_sel(msc_index, rsrc_index);
+            }
 
             /* Check if MSC supports CASSOC */
             if (!val_mpam_supports_cassoc(msc_index)) {
                 val_print(DEBUG,
                     "\n       MSC %d does not support CASSOC partitioning, skipping", msc_index);
+                val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, saved_part_sel);
+                val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MON_SEL, saved_mon_sel);
                 continue;
             }
 
@@ -158,19 +182,34 @@ payload(void)
             if (num_mon == 0) {
                 val_print(DEBUG,
                     "\n       MSC %d does not have CSU monitors, skipping MSC", msc_index);
+                val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, saved_part_sel);
+                val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MON_SEL, saved_mon_sel);
                 continue;
             }
 
-            /* Disable CCAP and CPOR settings -> Set them to max */
-            if (val_mpam_supports_cpor(msc_index))
-                val_mpam_configure_cpor(msc_index, test_partid, 100);
-
-            if (val_mpam_supports_ccap(msc_index))
-                val_mpam_configure_ccap(msc_index, test_partid, 0, 100);
-
             /* Allocate memory for source and destination buffers */
             page_size = val_memory_page_size();
-            num_pages = (uint32_t)((BUFFER_SIZE + page_size - 1) / page_size);
+            if (page_size == 0U) {
+                val_print(ERROR, "\n       Invalid memory page size");
+                val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, saved_part_sel);
+                val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MON_SEL, saved_mon_sel);
+                val_set_status(index, RESULT_FAIL(01));
+                return;
+            }
+
+            num_pages64 = (BUFFER_SIZE / page_size) +
+                          ((BUFFER_SIZE % page_size) != 0U);
+            /* Validate the allocator page count before calculating its byte capacity. */
+            if ((num_pages64 == 0U) || (num_pages64 > ACS_UINT32_MAX) ||
+                (num_pages64 > (~(uint64_t)0 / page_size)) ||
+                ((num_pages64 * page_size) < BUFFER_SIZE)) {
+                val_print(ERROR, "\n       Invalid page count for workload buffers");
+                val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, saved_part_sel);
+                val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MON_SEL, saved_mon_sel);
+                val_set_status(index, RESULT_FAIL(01));
+                return;
+            }
+            num_pages = (uint32_t)num_pages64;
             src_buf  = (void *)val_memory_alloc_pages(num_pages);
             dest_buf = (void *)val_memory_alloc_pages(num_pages);
 
@@ -181,14 +220,112 @@ payload(void)
                     val_memory_free_pages(dest_buf, num_pages);
                 if (src_buf != NULL)
                     val_memory_free_pages(src_buf, num_pages);
+                val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, saved_part_sel);
+                val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MON_SEL, saved_mon_sel);
                 return;
             }
+
+            if (val_mpam_msc_supports_partid_nrw(msc_index)) {
+                if (val_mpam_get_max_intpartid(msc_index) < 2U) {
+                    val_memory_free_pages(src_buf, num_pages);
+                    val_memory_free_pages(dest_buf, num_pages);
+                    val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, saved_part_sel);
+                    val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MON_SEL, saved_mon_sel);
+                    continue;
+                }
+                saved_map_x = val_mpam_get_partid_mapping(msc_index, test_partid);
+                saved_map_y = val_mpam_get_partid_mapping(msc_index, test_partid - 1);
+                saved_map_z = val_mpam_get_partid_mapping(msc_index, test_partid - 2);
+                mappings_saved = 1;
+            }
+
+            /* Save all request PARTID enable states before preparation. */
+            enable_state_saved = val_mpam_msc_supports_partid_endis(msc_index);
+            saved_enable_x = enable_state_saved ?
+                             val_mpam_msc_partid_is_enabled(msc_index, test_partid) : true;
+            saved_enable_y = enable_state_saved ?
+                             val_mpam_msc_partid_is_enabled(msc_index, test_partid - 1) : true;
+            saved_enable_z = enable_state_saved ?
+                             val_mpam_msc_partid_is_enabled(msc_index, test_partid - 2) : true;
+
+            csumon_state_saved = false;
+            partition_state_saved = false;
+            saved_el2 = val_mpam_reg_read(MPAM2_EL2);
+
+            /* Give each request PARTID a distinct control PARTID when narrowing is supported. */
+            if ((val_mpam_prepare_partid(msc_index, test_partid, 0) != ACS_STATUS_PASS) ||
+                (val_mpam_prepare_partid(msc_index, test_partid - 1, 1) != ACS_STATUS_PASS) ||
+                (val_mpam_prepare_partid(msc_index, test_partid - 2, 2) != ACS_STATUS_PASS)) {
+                test_fail++;
+                if (mappings_saved) {
+                    val_mpam_set_partid_mapping(msc_index, test_partid, saved_map_x);
+                    val_mpam_set_partid_mapping(msc_index, test_partid - 1, saved_map_y);
+                    val_mpam_set_partid_mapping(msc_index, test_partid - 2, saved_map_z);
+                }
+                restore_status = 0;
+                if (enable_state_saved) {
+                    restore_status = val_mpam_msc_endis_partid(msc_index, saved_enable_x,
+                                                                 0, test_partid);
+                    restore_status |= val_mpam_msc_endis_partid(msc_index, saved_enable_y,
+                                                                  0, test_partid - 1);
+                    restore_status |= val_mpam_msc_endis_partid(msc_index, saved_enable_z,
+                                                                  0, test_partid - 2);
+                }
+                if (restore_status)
+                    val_print(ERROR, "\n       Failed to restore PARTID enable state");
+                if (csumon_state_saved)
+                    val_mpam_restore_csumon_state(msc_index, &saved_csumon);
+
+                val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, saved_part_sel);
+                val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MON_SEL, saved_mon_sel);
+                val_memory_free_pages(src_buf, num_pages);
+                val_memory_free_pages(dest_buf, num_pages);
+                continue;
+            }
+
+            /* Preserve all effective controls before applying CASSOC scenarios. */
+            if (!val_mpam_save_partition_state(msc_index, test_partid,
+                                                &saved_partition_x)) {
+                test_fail++;
+                goto cleanup;
+            }
+            if (!val_mpam_save_partition_state(msc_index, test_partid - 1,
+                                                &saved_partition_y)) {
+                test_fail++;
+                val_mpam_restore_partition_state(msc_index, &saved_partition_x);
+                goto cleanup;
+            }
+            if (!val_mpam_save_partition_state(msc_index, test_partid - 2,
+                                                &saved_partition_z)) {
+                test_fail++;
+                val_mpam_restore_partition_state(msc_index, &saved_partition_x);
+                val_mpam_restore_partition_state(msc_index, &saved_partition_y);
+                goto cleanup;
+            }
+            partition_state_saved = true;
+
+            /* Disable CCAP and CPOR settings -> Set them to max */
+            if (val_mpam_supports_cpor(msc_index))
+                val_mpam_configure_cpor(msc_index, test_partid, 100);
+
+            if (val_mpam_supports_ccap(msc_index))
+                val_mpam_configure_ccap(msc_index, test_partid, 0, 100);
+
+            /* Start the first scenario with the same cold-buffer state as later scenarios. */
+            val_memory_set(dest_buf, BUFFER_SIZE, 0xA5U);
+            val_pe_cache_invalidate_range((uint64_t)src_buf, BUFFER_SIZE);
+            val_pe_cache_invalidate_range((uint64_t)dest_buf, BUFFER_SIZE);
+            val_mem_issue_dsb();
 
             /* Test runs on atleast one MSC */
             test_skip = 0;
 
             /* Configure PARTID with 100% cassoc settings */
             val_mpam_configure_cassoc(msc_index, test_partid, CASSOC_PARTITION_100);
+
+            /* Preserve monitor 0 before changing its filter, control, or VALUE. */
+            val_mpam_save_csumon_state(msc_index, 0, &saved_csumon);
+            csumon_state_saved = true;
 
             /* Configure CSU Monitor */
             val_mpam_configure_csu_mon(msc_index, test_partid, DEFAULT_PMG, 0);
@@ -201,9 +338,6 @@ payload(void)
             while (nrdy_timeout) {
                 --nrdy_timeout;
             };
-
-            /* Save the current MPAM2_EL2 settings */
-            saved_el2 = val_mpam_reg_read(MPAM2_EL2);
 
             /***  Scenario 1: Buffer copy with 100% CASSOC settings  ***/
             val_print(DEBUG, "\n       Scenario 1: 100 percent CASSOC setting");
@@ -223,6 +357,32 @@ payload(void)
                     val_memory_free_pages(dest_buf, num_pages);
                 if (src_buf != NULL)
                     val_memory_free_pages(src_buf, num_pages);
+                if (mappings_saved) {
+                    val_mpam_set_partid_mapping(msc_index, test_partid, saved_map_x);
+                    val_mpam_set_partid_mapping(msc_index, test_partid - 1, saved_map_y);
+                    val_mpam_set_partid_mapping(msc_index, test_partid - 2, saved_map_z);
+                }
+                restore_status = 0;
+                if (enable_state_saved) {
+                    restore_status = val_mpam_msc_endis_partid(msc_index, saved_enable_x,
+                                                                 0, test_partid);
+                    restore_status |= val_mpam_msc_endis_partid(msc_index, saved_enable_y,
+                                                                  0, test_partid - 1);
+                    restore_status |= val_mpam_msc_endis_partid(msc_index, saved_enable_z,
+                                                                  0, test_partid - 2);
+                }
+                if (restore_status)
+                    val_print(ERROR, "\n       Failed to restore PARTID enable state");
+                if (csumon_state_saved)
+                    val_mpam_restore_csumon_state(msc_index, &saved_csumon);
+                if (partition_state_saved) {
+                    val_mpam_restore_partition_state(msc_index, &saved_partition_x);
+                    val_mpam_restore_partition_state(msc_index, &saved_partition_y);
+                    val_mpam_restore_partition_state(msc_index, &saved_partition_z);
+                }
+
+                val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, saved_part_sel);
+                val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MON_SEL, saved_mon_sel);
                 val_set_status(index, RESULT_FAIL(02));
                 return;
             }
@@ -288,6 +448,32 @@ payload(void)
                     val_memory_free_pages(dest_buf, num_pages);
                 if (src_buf != NULL)
                     val_memory_free_pages(src_buf, num_pages);
+                if (mappings_saved) {
+                    val_mpam_set_partid_mapping(msc_index, test_partid, saved_map_x);
+                    val_mpam_set_partid_mapping(msc_index, test_partid - 1, saved_map_y);
+                    val_mpam_set_partid_mapping(msc_index, test_partid - 2, saved_map_z);
+                }
+                restore_status = 0;
+                if (enable_state_saved) {
+                    restore_status = val_mpam_msc_endis_partid(msc_index, saved_enable_x,
+                                                                 0, test_partid);
+                    restore_status |= val_mpam_msc_endis_partid(msc_index, saved_enable_y,
+                                                                  0, test_partid - 1);
+                    restore_status |= val_mpam_msc_endis_partid(msc_index, saved_enable_z,
+                                                                  0, test_partid - 2);
+                }
+                if (restore_status)
+                    val_print(ERROR, "\n       Failed to restore PARTID enable state");
+                if (csumon_state_saved)
+                    val_mpam_restore_csumon_state(msc_index, &saved_csumon);
+                if (partition_state_saved) {
+                    val_mpam_restore_partition_state(msc_index, &saved_partition_x);
+                    val_mpam_restore_partition_state(msc_index, &saved_partition_y);
+                    val_mpam_restore_partition_state(msc_index, &saved_partition_z);
+                }
+
+                val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, saved_part_sel);
+                val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MON_SEL, saved_mon_sel);
                 val_set_status(index, RESULT_FAIL(03));
                 return;
             }
@@ -353,6 +539,32 @@ payload(void)
                     val_memory_free_pages(dest_buf, num_pages);
                 if (src_buf != NULL)
                     val_memory_free_pages(src_buf, num_pages);
+                if (mappings_saved) {
+                    val_mpam_set_partid_mapping(msc_index, test_partid, saved_map_x);
+                    val_mpam_set_partid_mapping(msc_index, test_partid - 1, saved_map_y);
+                    val_mpam_set_partid_mapping(msc_index, test_partid - 2, saved_map_z);
+                }
+                restore_status = 0;
+                if (enable_state_saved) {
+                    restore_status = val_mpam_msc_endis_partid(msc_index, saved_enable_x,
+                                                                 0, test_partid);
+                    restore_status |= val_mpam_msc_endis_partid(msc_index, saved_enable_y,
+                                                                  0, test_partid - 1);
+                    restore_status |= val_mpam_msc_endis_partid(msc_index, saved_enable_z,
+                                                                  0, test_partid - 2);
+                }
+                if (restore_status)
+                    val_print(ERROR, "\n       Failed to restore PARTID enable state");
+                if (csumon_state_saved)
+                    val_mpam_restore_csumon_state(msc_index, &saved_csumon);
+                if (partition_state_saved) {
+                    val_mpam_restore_partition_state(msc_index, &saved_partition_x);
+                    val_mpam_restore_partition_state(msc_index, &saved_partition_y);
+                    val_mpam_restore_partition_state(msc_index, &saved_partition_z);
+                }
+
+                val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, saved_part_sel);
+                val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MON_SEL, saved_mon_sel);
                 val_set_status(index, RESULT_FAIL(04));
                 return;
             }
@@ -387,8 +599,36 @@ payload(void)
                 test_fail++;
             }
 
-            /* Restore MPAM2_EL2 settings */
+cleanup:
+            /* Restore MPAM2_EL2 settings and all state modified by this resource. */
             val_mpam_reg_write(MPAM2_EL2, saved_el2);
+
+            if (mappings_saved) {
+                val_mpam_set_partid_mapping(msc_index, test_partid, saved_map_x);
+                val_mpam_set_partid_mapping(msc_index, test_partid - 1, saved_map_y);
+                val_mpam_set_partid_mapping(msc_index, test_partid - 2, saved_map_z);
+            }
+            restore_status = 0;
+            if (enable_state_saved) {
+                restore_status = val_mpam_msc_endis_partid(msc_index, saved_enable_x,
+                                                             0, test_partid);
+                restore_status |= val_mpam_msc_endis_partid(msc_index, saved_enable_y,
+                                                              0, test_partid - 1);
+                restore_status |= val_mpam_msc_endis_partid(msc_index, saved_enable_z,
+                                                              0, test_partid - 2);
+            }
+            if (restore_status)
+                test_fail++;
+            if (csumon_state_saved)
+                val_mpam_restore_csumon_state(msc_index, &saved_csumon);
+            if (partition_state_saved) {
+                val_mpam_restore_partition_state(msc_index, &saved_partition_x);
+                val_mpam_restore_partition_state(msc_index, &saved_partition_y);
+                val_mpam_restore_partition_state(msc_index, &saved_partition_z);
+            }
+
+            val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, saved_part_sel);
+            val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MON_SEL, saved_mon_sel);
 
             /* Free the buffers to the heap manager */
             if (dest_buf != NULL) {
@@ -404,10 +644,10 @@ payload(void)
         }
     }
 
-    if (test_skip)
-        val_set_status(index, RESULT_SKIP(3));
-    else if (test_fail)
+    if (test_fail)
         val_set_status(index, RESULT_FAIL(5));
+    else if (test_skip)
+        val_set_status(index, RESULT_SKIP(3));
     else
         val_set_status(index, RESULT_PASS);
 

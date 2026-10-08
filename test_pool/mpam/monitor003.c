@@ -40,16 +40,18 @@ static void payload(void)
     uint32_t rsrc_index;
     uint32_t llc_index;
     uint64_t cache_identifier;
-    uint32_t cache_maxsize;
+    uint32_t cache_maxsize = 0;
     uint32_t cpor_nodes = 0;
     uint32_t csumon_count = 0;
     uint8_t  partid1;
     uint8_t  partid2;
     void *src_buf = 0;
     void *dest_buf = 0;
-    uint64_t buf_size;
+    uint32_t buf_size;
+    uint64_t buf_size64;
     uint32_t page_size;
     uint32_t num_pages;
+    uint64_t num_pages64;
     uint64_t mpam2_el2 = 0;
     uint64_t nrdy_timeout;
     uint32_t storage_value1;
@@ -128,6 +130,10 @@ static void payload(void)
         if (val_mpam_msc_supports_ris(msc_index))
           val_mpam_memory_configure_ris_sel(msc_index, rsrc_index);
 
+        /* Prepare the request PARTID for narrowed or non-narrowed controls. */
+        if (val_mpam_prepare_partid(msc_index, test_partid, 0) != ACS_STATUS_PASS)
+          continue;
+
         if (val_mpam_supports_cpor(msc_index))
           val_mpam_configure_cpor(msc_index, test_partid, PARTITION_PERCENTAGE);
 
@@ -149,8 +155,6 @@ static void payload(void)
     mpam2_el2 |= (((uint64_t)DEFAULT_PMG << MPAMn_ELx_PMG_D_SHIFT) |
                   ((uint64_t)partid1 << MPAMn_ELx_PARTID_D_SHIFT));
 
-    val_mpam_reg_write(MPAM2_EL2, mpam2_el2);
-
      /* visit each MSC node and check for Cache resources */
     for (msc_index = 0; msc_index < msc_node_cnt; msc_index++) {
       rsrc_node_cnt = val_mpam_get_info(MPAM_MSC_RSRC_COUNT, msc_index, 0);
@@ -170,9 +174,31 @@ static void payload(void)
         if (val_mpam_get_info(MPAM_MSC_RSRC_DESC1, msc_index, rsrc_index) != cache_identifier)
           continue;
 
-        buf_size = cache_maxsize * CACHE_PERCENTAGE / 100 ;
+        /* Calculate and validate the workload size before allocating buffers. */
+        buf_size64 = ((uint64_t)cache_maxsize * CACHE_PERCENTAGE) / 100U;
+        if ((buf_size64 == 0U) || (buf_size64 > ACS_UINT32_MAX)) {
+            val_print(ERROR, "\n       Invalid workload buffer size");
+            val_set_status(index, RESULT_FAIL(01));
+            return;
+        }
+        buf_size = (uint32_t)buf_size64;
+
         page_size = val_memory_page_size();
-        num_pages = (uint32_t)((buf_size + page_size - 1) / page_size);
+        if (page_size == 0U) {
+            val_print(ERROR, "\n       Invalid memory page size");
+            val_set_status(index, RESULT_FAIL(01));
+            return;
+        }
+
+        num_pages64 = (buf_size / page_size) + ((buf_size % page_size) != 0U);
+        if ((num_pages64 == 0U) || (num_pages64 > ACS_UINT32_MAX) ||
+            (num_pages64 > (~(uint64_t)0 / page_size)) ||
+            ((num_pages64 * page_size) < buf_size)) {
+            val_print(ERROR, "\n       Invalid page count for workload buffers");
+            val_set_status(index, RESULT_FAIL(01));
+            return;
+        }
+        num_pages = (uint32_t)num_pages64;
 
         /*Allocate memory for source and destination buffers */
         src_buf = (void *)val_memory_alloc_pages(num_pages);
@@ -190,6 +216,9 @@ static void payload(void)
             return;
 
         }
+
+        /* Apply the test PARTID only while running this resource's workload. */
+        val_mpam_reg_write(MPAM2_EL2, mpam2_el2);
 
         /* Configure CSU monitors with partid1 */
         if (val_mpam_supports_csumon(msc_index))

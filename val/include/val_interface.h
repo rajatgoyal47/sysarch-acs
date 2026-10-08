@@ -803,7 +803,7 @@ uint32_t val_mpam_msc_generate_psr_error(uint32_t msc_index);
 void     val_mpam_msc_generate_msr_error(uint32_t msc_index, uint16_t mon_count);
 uint32_t val_mpam_msc_generate_por_error(uint32_t msc_index);
 uint32_t val_mpam_msc_generate_pmgor_error(uint32_t msc_index);
-void     val_mpam_msc_generate_msmon_config_error(uint32_t msc_index, uint16_t mon_count);
+uint32_t val_mpam_msc_generate_msmon_config_error(uint32_t msc_index, uint16_t mon_count);
 void     val_mpam_msc_generate_msmon_oflow_error(uint32_t msc_index, uint16_t mon_count);
 void     val_mpam_msc_trigger_intr(uint32_t msc_index);
 uint32_t val_mpam_msc_request_msi(uint32_t msc_index, uint32_t device_id, uint32_t its_id,
@@ -858,6 +858,8 @@ uint32_t partition003_entry(uint32_t num_pe);
 uint32_t partition004_entry(uint32_t num_pe);
 uint32_t partition005_entry(uint32_t num_pe);
 uint32_t partition006_entry(uint32_t num_pe);
+uint32_t partition007_entry(uint32_t num_pe);
+uint32_t partition008_entry(uint32_t num_pe);
 
 uint32_t feat001_entry(uint32_t num_pe);  // MPAM PARTID EN/DIS feature check test
 

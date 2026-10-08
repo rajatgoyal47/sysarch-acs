@@ -160,6 +160,10 @@ void payload(void)
             if (val_mpam_msc_supports_ris(msc_index))
                 val_mpam_memory_configure_ris_sel(msc_index, rsrc_index);
 
+            /* Prepare the request PARTID for narrowed or non-narrowed controls. */
+            if (val_mpam_prepare_partid(msc_index, minmax_partid, 0) != ACS_STATUS_PASS)
+                continue;
+
             if (val_mpam_supports_cpor(msc_index)) {
                 /* Disable CPOR partitioning for min(max(PARTID)) */
                 val_mpam_configure_cpor(msc_index, minmax_partid, 100);
@@ -214,6 +218,10 @@ void payload(void)
 
                 if (val_mpam_msc_supports_ris(msc_index))
                     val_mpam_memory_configure_ris_sel(msc_index, rsrc_index);
+
+                /* Prepare the request PARTID for narrowed or non-narrowed controls. */
+                if (val_mpam_prepare_partid(msc_index, minmax_partid, 0) != ACS_STATUS_PASS)
+                    continue;
 
                 if (!val_mpam_msc_supports_mbw_max(msc_index))
                     continue;

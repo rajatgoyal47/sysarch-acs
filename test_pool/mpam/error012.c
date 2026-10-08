@@ -21,6 +21,18 @@
 #include "acs_mpam_reg.h"
 #include "val_interface.h"
 
+/*
+ * Algorithm:
+ * 1. Iterate over MSCs that implement resource selection and error reporting.
+ * 2. Save the error-control and partition-selector registers, then clear ESR.
+ * 3. Program RIS_MAX + 1 as an undefined resource selector.
+ * 4. Read back the selector and continue only if the undefined RIS is retained.
+ * 5. Clear any error caused by programming the selector.
+ * 6. Read MPAMF_IDR and verify that all HAS_* fields are zero.
+ * 7. Verify that the ID-register access does not record an error.
+ * 8. Restore the selector, error status, and error-control register.
+ */
+
 #define TEST_NUM   ACS_MPAM_ERROR_TEST_NUM_BASE  +  15
 #define TEST_DESC  "Check MPAM IDR Zero for Undefined RIS "
 #define TEST_RULE  ""
@@ -39,6 +51,7 @@ void payload(void)
     uint32_t data;
     uint32_t data_original;
     uint32_t max_ris_index;
+    uint32_t undefined_ris;
     uint32_t test_fail = 0;
     uint32_t test_skip = 1;
     uint64_t idr_value = 0;
@@ -46,21 +59,24 @@ void payload(void)
     pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
     total_nodes = val_mpam_get_msc_count();
 
+    /* Validate ID-register behavior on every eligible MSC. */
     for (msc_index = 0; msc_index < total_nodes; msc_index++) {
 
       val_print(DEBUG, "\n       MSC index : %d", msc_index);
+
+      /* Resource selection is required to create an undefined RIS state. */
       if (!val_mpam_msc_supports_ris(msc_index)) {
         val_print(DEBUG, "\n       MSC index %d does not support RIS", msc_index);
         continue;
       }
 
-      /* Check if Error Status Register Supported */
+      /* Error reporting is required to verify that the ID-register access is error-free. */
       if (!val_mpam_msc_supports_esr(msc_index)) {
         val_print(DEBUG, "\n       MSC index %d does not support ESR/ECR", msc_index);
         continue;
       }
 
-      /* Read MPAMF_ECR before generating error. This will be used to restore to default later */
+      /* Preserve error control and clear stale errors. */
       mpamf_ecr = val_mpam_mmr_read(msc_index, REG_MPAMF_ECR);
 
       status    = val_mpam_msc_reset_errcode(msc_index);
@@ -70,44 +86,61 @@ void payload(void)
         return;
       }
 
-      test_skip = 0;
-
-      /* Program MPAMCFG_PART_SEL with out-of-range RIS index */
+      /* Determine the first undefined RIS value representable by the selector. */
       partid = val_mpam_get_max_partid(msc_index);
       max_ris_index = val_mpam_get_max_ris_count(msc_index);
+      if (max_ris_index == BITFIELD_READ(PART_SEL_RIS, ACS_UINT32_MAX)) {
+        val_print(DEBUG, "\n       MSC index %d has no undefined RIS value", msc_index);
+        val_mpam_mmr_write(msc_index, REG_MPAMF_ECR, mpamf_ecr);
+        continue;
+      }
+
+      undefined_ris = max_ris_index + 1U;
 
       data = BITFIELD_SET(PART_SEL_PARTID_SEL, partid) |
-             BITFIELD_SET(PART_SEL_RIS, (max_ris_index + 1));
+             BITFIELD_SET(PART_SEL_RIS, undefined_ris);
 
-      /* Save original value */
+      /* Save the selector before programming the undefined RIS. */
       data_original = val_mpam_mmr_read(msc_index, REG_MPAMCFG_PART_SEL);
 
+      /* Program and read back the undefined resource selector. */
       val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, data);
       data = val_mpam_mmr_read(msc_index, REG_MPAMCFG_PART_SEL);
       val_print(DEBUG, "\n       Value Read Back from MPAMCFG_PART_SEL is %llx", data);
 
-      /* Wait for some time for the error to be reflected in MPAMF_ESR */
+      /* Skip when the implementation does not retain the undefined RIS. */
+      if (BITFIELD_READ(PART_SEL_RIS, data) != undefined_ris) {
+        val_print(DEBUG, "\n       Undefined RIS was not retained for MSC index %d", msc_index);
+        val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, data_original);
+        val_mpam_msc_reset_errcode(msc_index);
+        val_mpam_mmr_write(msc_index, REG_MPAMF_ECR, mpamf_ecr);
+        continue;
+      }
+
+      /* Allow selector-write error reporting to complete. */
       val_time_delay_ms(100 * ONE_MILLISECOND);
 
-      /* Reset Errorcode which might have updated after setting out of range RIS */
+      /* Clear any error caused by writing the selector. */
       status    = val_mpam_msc_reset_errcode(msc_index);
       if (!status) {
         val_print(DEBUG, "\n       Error Code Reset Failed after RIS");
+        val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, data_original);
+        val_mpam_mmr_write(msc_index, REG_MPAMF_ECR, mpamf_ecr);
         val_set_status(pe_index, RESULT_FAIL(02));
         return;
       }
 
-      /* Access MPAMF ID register, all HAS_* fields read as 0 */
+      test_skip = 0;
+
+      /* Read the feature ID register under the retained undefined RIS. */
       idr_value = val_mpam_mmr_read64(msc_index, REG_MPAMF_IDR);
 
-      /* Check All HAS_* Fields read as 0 */
+      /* All feature-presence fields must read as zero. */
       if (idr_value & MPAMF_IDR_HAS_MASK) {
         val_print(ERROR, "\n       ID Register HAS_* Field Non Zero : %llx", idr_value);
         test_fail++;
       }
-      /* Restore */
-      val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, data_original);
-
+      /* The ID-register access must not record an error. */
       esr_errcode = val_mpam_msc_get_errcode(msc_index);
       val_print(DEBUG, "\n       Error code read is %llx", esr_errcode);
 
@@ -116,11 +149,17 @@ void payload(void)
         val_print(ERROR, "\n       Actual errcode: %d", esr_errcode);
         test_fail++;
       }
-      /* Restore Error Control Register original settings */
+
+      /* Restore selector and error state. */
+      val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, data_original);
+      val_mpam_msc_reset_errcode(msc_index);
+
+      /* Restore the original error-control configuration. */
       val_mpam_mmr_write(msc_index, REG_MPAMF_ECR, mpamf_ecr);
 
     }
 
+    /* Report the aggregate result from all eligible MSCs. */
     if (test_skip)
       val_set_status(pe_index, RESULT_SKIP(01));
     else if (test_fail)

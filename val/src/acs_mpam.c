@@ -62,6 +62,7 @@ mpam_reg_offset_name(uint32_t reg_offset)
   case REG_MPAMCFG_MBW_MAX:        return "MPAMCFG_MBW_MAX";
   case REG_MPAMCFG_EN:             return "MPAMCFG_EN";
   case REG_MPAMCFG_DIS:            return "MPAMCFG_DIS";
+  case REG_MPAMCFG_EN_FLAGS:       return "MPAMCFG_EN_FLAGS";
   case REG_MPAMCFG_INTPARTID:      return "MPAMCFG_INTPARTID";
   case REG_MPAMCFG_CPBM:           return "MPAMCFG_CPBM";
   case REG_MPAMCFG_MBW_PBM:        return "MPAMCFG_MBW_PBM";
@@ -1375,9 +1376,9 @@ val_mpam_create_info_table(uint64_t *mpam_info_table)
   mpam_create_rsrc_groups();
 
   val_print(INFO,
-                "\n    MPAM_INFO: Number of MSC nodes     :  %d", g_mpam_info_table->msc_count);
+                "\n    MPAM_INFO: Number of MSC nodes       : %4d", g_mpam_info_table->msc_count);
   val_print(INFO,
-                "\n    MPAM_INFO: Number of RSRC groups   :  %d", g_mpam_rsrc_group_count);
+                "\n    MPAM_INFO: Number of RSRC groups     : %4d", g_mpam_rsrc_group_count);
   val_print(DEBUG, "\n       Memory mapping MSC nodes");
 
   memory_map_msc();
@@ -1592,6 +1593,272 @@ val_mpam_get_max_intpartid(uint32_t msc_index)
 }
 
 /**
+  @brief   Selects a request or internal PARTID for subsequent configuration accesses.
+  @param   msc_index - index of the MSC node in the MPAM info table.
+  @param   partid - request or internal PARTID to select.
+  @param   internal - true to select an internal PARTID, false for a request PARTID.
+**/
+void
+val_mpam_select_partid(uint32_t msc_index, uint16_t partid, bool internal)
+{
+    uint32_t data = val_mpam_mmr_read(msc_index, REG_MPAMCFG_PART_SEL);
+
+    data = BITFIELD_WRITE(data, PART_SEL_PARTID_SEL, partid);
+    data = BITFIELD_WRITE(data, PART_SEL_INTERNAL, internal);
+    val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, data);
+}
+
+/**
+  @brief   Selects the control configuration for a request PARTID.
+  @param   msc_index - index of the MSC node in the MPAM info table.
+  @param   req_partid - request PARTID whose controls are configured.
+**/
+static void
+mpam_select_control_partid(uint32_t msc_index, uint16_t req_partid)
+{
+    uint16_t int_partid;
+
+    /* Controls use the mapped internal PARTID only when narrowing is implemented. */
+    if (val_mpam_msc_supports_partid_nrw(msc_index)) {
+        int_partid = val_mpam_get_partid_mapping(msc_index, req_partid);
+        val_mpam_select_partid(msc_index, int_partid, true);
+    } else {
+        val_mpam_select_partid(msc_index, req_partid, false);
+    }
+}
+
+/**
+  @brief   Gets the internal PARTID mapped to a request PARTID.
+  @param   msc_index - index of the MSC node in the MPAM info table.
+  @param   req_partid - request PARTID whose mapping is read.
+  @return  Mapped internal PARTID.
+**/
+uint16_t
+val_mpam_get_partid_mapping(uint32_t msc_index, uint16_t req_partid)
+{
+    uint32_t data;
+
+    val_mpam_select_partid(msc_index, req_partid, false);
+    data = val_mpam_mmr_read(msc_index, REG_MPAMCFG_INTPARTID);
+    return BITFIELD_READ(MPAMCFG_INTPARTID_INTPARTID, data);
+}
+
+/**
+  @brief   Maps a request PARTID to an internal PARTID.
+  @param   msc_index - index of the MSC node in the MPAM info table.
+  @param   req_partid - request PARTID to map.
+  @param   int_partid - target internal PARTID.
+**/
+void
+val_mpam_set_partid_mapping(uint32_t msc_index, uint16_t req_partid, uint16_t int_partid)
+{
+    uint32_t data = 0;
+
+    val_mpam_select_partid(msc_index, req_partid, false);
+    data = BITFIELD_WRITE(data, MPAMCFG_INTPARTID_INTPARTID, int_partid);
+    data = BITFIELD_WRITE(data, MPAMCFG_INTPARTID_INTERNAL, 1);
+    val_mpam_mmr_write(msc_index, REG_MPAMCFG_INTPARTID, data);
+    val_mem_issue_dsb();
+}
+
+/**
+  @brief   Gets the enable state for a request PARTID.
+  @param   msc_index - index of the MSC node in the MPAM info table.
+  @param   req_partid - request PARTID whose enable state is read.
+  @return  true when the request PARTID is enabled or enable/disable is unsupported.
+**/
+bool
+val_mpam_msc_partid_is_enabled(uint32_t msc_index, uint16_t req_partid)
+{
+    uint32_t enabled_flags;
+    uint32_t saved_part_sel;
+
+    if (!val_mpam_msc_supports_partid_endis(msc_index))
+        return true;
+
+    saved_part_sel = val_mpam_mmr_read(msc_index, REG_MPAMCFG_PART_SEL);
+    mpam_select_control_partid(msc_index, req_partid);
+    enabled_flags = val_mpam_mmr_read(msc_index, REG_MPAMCFG_EN_FLAGS);
+    val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, saved_part_sel);
+
+    return ((enabled_flags >> (req_partid & 0x1FU)) & 0x1U) != 0U;
+}
+
+/**
+  @brief   Prepares and enables a request PARTID for partition-control programming.
+  @param   msc_index - index of the MSC node in the MPAM info table.
+  @param   req_partid - request PARTID used to tag test traffic.
+  @param   int_partid - internal PARTID used when narrowing is implemented.
+  @return  ACS_STATUS_PASS on success, otherwise ACS_STATUS_ERR.
+**/
+uint32_t
+val_mpam_prepare_partid(uint32_t msc_index, uint16_t req_partid, uint16_t int_partid)
+{
+    /* Reject request PARTIDs outside the MSC request namespace. */
+    if (req_partid > val_mpam_get_max_partid(msc_index))
+        return ACS_STATUS_ERR;
+
+    /* Establish and verify the request-to-internal mapping when required. */
+    if (val_mpam_msc_supports_partid_nrw(msc_index)) {
+        if (int_partid > val_mpam_get_max_intpartid(msc_index))
+            return ACS_STATUS_ERR;
+
+        val_mpam_set_partid_mapping(msc_index, req_partid, int_partid);
+        if (val_mpam_get_partid_mapping(msc_index, req_partid) != int_partid)
+            return ACS_STATUS_ERR;
+    }
+
+    /* Enable each request PARTID independently when enable/disable is implemented. */
+    if (val_mpam_msc_supports_partid_endis(msc_index) &&
+        val_mpam_msc_endis_partid(msc_index, 1, 0, req_partid))
+        return ACS_STATUS_ERR;
+
+    return ACS_STATUS_PASS;
+}
+
+/**
+  @brief   Reads an internal PARTID's CPBM configuration.
+  @param   msc_index - index of the MSC node in the MPAM info table.
+  @param   int_partid - internal PARTID whose CPBM is read.
+  @param   cpbm - output buffer for CPBM words.
+  @param   words - number of CPBM words to read.
+**/
+void
+val_mpam_read_cpbm(uint32_t msc_index, uint16_t int_partid, uint32_t *cpbm, uint32_t words)
+{
+    uint32_t max_words;
+    uint32_t word;
+
+    max_words = (val_mpam_get_cpbm_width(msc_index) + 31U) / 32U;
+    if ((cpbm == NULL) || (words == 0U) ||
+        (words > max_words) || (words > MAX_CPBM_WORDS))
+        return;
+
+    val_mpam_select_partid(msc_index, int_partid, true);
+    for (word = 0; word < words; word++)
+        cpbm[word] = val_mpam_mmr_read(msc_index,
+                                      REG_MPAMCFG_CPBM + (word * sizeof(uint32_t)));
+}
+
+/**
+  @brief   Writes an internal PARTID's CPBM configuration.
+  @param   msc_index - index of the MSC node in the MPAM info table.
+  @param   int_partid - internal PARTID whose CPBM is written.
+  @param   cpbm - input buffer containing CPBM words.
+  @param   words - number of CPBM words to write.
+**/
+void
+val_mpam_write_cpbm(uint32_t msc_index, uint16_t int_partid,
+                    const uint32_t *cpbm, uint32_t words)
+{
+    uint32_t max_words;
+    uint32_t word;
+
+    max_words = (val_mpam_get_cpbm_width(msc_index) + 31U) / 32U;
+    if ((cpbm == NULL) || (words == 0U) ||
+        (words > max_words) || (words > MAX_CPBM_WORDS))
+        return;
+
+    val_mpam_select_partid(msc_index, int_partid, true);
+    for (word = 0; word < words; word++)
+        val_mpam_mmr_write(msc_index, REG_MPAMCFG_CPBM + (word * sizeof(uint32_t)),
+                           cpbm[word]);
+    val_mem_issue_dsb();
+}
+
+/**
+  @brief   Saves cache partition controls for a request PARTID.
+  @param   msc_index - index of the MSC node in the MPAM info table.
+  @param   req_partid - request PARTID whose effective controls are saved.
+  @param   state - destination for the saved partition-control state.
+  @return  true when all implemented controls were saved, otherwise false.
+**/
+bool
+val_mpam_save_partition_state(uint32_t msc_index, uint16_t req_partid,
+                              MPAM_PARTITION_STATE *state)
+{
+    uint32_t cpbm_width;
+    uint32_t word;
+
+    if (state == NULL)
+        return false;
+
+    val_memory_set(state, sizeof(*state), 0);
+    state->selector = val_mpam_mmr_read(msc_index, REG_MPAMCFG_PART_SEL);
+
+    /* Select and remember the effective request or internal control PARTID. */
+    mpam_select_control_partid(msc_index, req_partid);
+    state->control_selector = val_mpam_mmr_read(msc_index, REG_MPAMCFG_PART_SEL);
+
+    if (val_mpam_supports_cpor(msc_index)) {
+        cpbm_width = val_mpam_get_cpbm_width(msc_index);
+        state->cpbm_words = (cpbm_width + 31U) / 32U;
+        if ((cpbm_width == 0U) || (state->cpbm_words > MAX_CPBM_WORDS)) {
+            val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, state->selector);
+            return false;
+        }
+
+        state->cpbm = val_memory_alloc(state->cpbm_words * sizeof(uint32_t));
+        if (state->cpbm == NULL) {
+            val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, state->selector);
+            return false;
+        }
+        for (word = 0; word < state->cpbm_words; word++)
+            state->cpbm[word] = val_mpam_mmr_read(
+                msc_index, REG_MPAMCFG_CPBM + (word * sizeof(uint32_t)));
+        state->cpbm_valid = true;
+    }
+
+    if (val_mpam_supports_ccap(msc_index)) {
+        state->cmax = val_mpam_mmr_read(msc_index, REG_MPAMCFG_CMAX);
+        state->cmax_valid = true;
+    }
+
+    if (val_mpam_supports_cassoc(msc_index)) {
+        state->cassoc = val_mpam_mmr_read(msc_index, REG_MPAMCFG_CASSOC);
+        state->cassoc_valid = true;
+    }
+
+    val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, state->selector);
+    return true;
+}
+
+/**
+  @brief   Restores cache partition controls saved for a request PARTID.
+  @param   msc_index - index of the MSC node in the MPAM info table.
+  @param   state - previously saved state; its allocated CPBM storage is released.
+**/
+void
+val_mpam_restore_partition_state(uint32_t msc_index,
+                                 MPAM_PARTITION_STATE *state)
+{
+    uint32_t word;
+
+    if (state == NULL)
+        return;
+
+    /* Use the saved selector so restoration is independent of mapping changes. */
+    val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, state->control_selector);
+
+    if (state->cpbm_valid) {
+        for (word = 0; word < state->cpbm_words; word++)
+            val_mpam_mmr_write(msc_index,
+                               REG_MPAMCFG_CPBM + (word * sizeof(uint32_t)),
+                               state->cpbm[word]);
+        val_memory_free(state->cpbm);
+        state->cpbm = NULL;
+        state->cpbm_valid = false;
+    }
+    if (state->cmax_valid)
+        val_mpam_mmr_write(msc_index, REG_MPAMCFG_CMAX, state->cmax);
+    if (state->cassoc_valid)
+        val_mpam_mmr_write(msc_index, REG_MPAMCFG_CASSOC, state->cassoc);
+
+    val_mem_issue_dsb();
+    val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, state->selector);
+}
+
+/**
   @brief   This API gets number of fractional bits implemented in CCAP control.
            Prerequisite - If MSC supports RIS, Resource instance should be
                           selected using val_mpam_memory_configure_ris_sel
@@ -1710,17 +1977,12 @@ void
 val_mpam_configure_cpor(uint32_t msc_index, uint16_t partid, uint32_t cpbm_percentage)
 {
     uint32_t num_cpbm_bits;
-    uint32_t data;
 
     /* Get CPBM width */
     num_cpbm_bits = val_mpam_get_cpbm_width(msc_index);
 
-    /* retaining other configured fields e.g, RIS index if supported */
-    data = val_mpam_mmr_read(msc_index, REG_MPAMCFG_PART_SEL);
-
-    /* Select PARTID */
-    data = BITFIELD_WRITE(data, PART_SEL_PARTID_SEL, partid);
-    val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, data);
+    /* Select the request PARTID or its mapped internal control PARTID. */
+    mpam_select_control_partid(msc_index, partid);
 
     mpam_program_bitmap(msc_index, REG_MPAMCFG_CPBM, num_cpbm_bits,
                         MAX_CPBM_WIDTH, cpbm_percentage);
@@ -1729,6 +1991,26 @@ val_mpam_configure_cpor(uint32_t msc_index, uint16_t partid, uint32_t cpbm_perce
     val_mem_issue_dsb();
 
     return;
+}
+
+/**
+  @brief   Configures CPOR settings for an internal PARTID.
+           Prerequisite - The MSC implements PARTID narrowing and CPOR.
+                        - If the MSC supports RIS, select the resource instance first.
+  @param   msc_index - index of the MSC node in the MPAM info table.
+  @param   int_partid - internal PARTID to configure.
+  @param   cpbm_percentage - percentage of cache portions to assign.
+**/
+void
+val_mpam_configure_intpartid_cpor(uint32_t msc_index, uint16_t int_partid,
+                                  uint32_t cpbm_percentage)
+{
+    uint32_t num_cpbm_bits = val_mpam_get_cpbm_width(msc_index);
+
+    val_mpam_select_partid(msc_index, int_partid, true);
+    mpam_program_bitmap(msc_index, REG_MPAMCFG_CPBM, num_cpbm_bits,
+                        MAX_CPBM_WIDTH, cpbm_percentage);
+    val_mem_issue_dsb();
 }
 
 /**
@@ -1748,16 +2030,12 @@ void val_mpam_configure_ccap(uint32_t msc_index, uint16_t partid,
 
     uint8_t  num_fractional_bits;
     uint16_t fixed_point_fraction;
-    uint32_t data;
 
     num_fractional_bits = val_mpam_get_cmax_wd(msc_index);
     fixed_point_fraction = mpam_encode_fraction(num_fractional_bits, ccap_percentage, 1);
 
-    /* Select the PARTID to configure capacity partition parameters */
-    data = val_mpam_mmr_read(msc_index, REG_MPAMCFG_PART_SEL);
-
-    data = BITFIELD_WRITE(data, PART_SEL_PARTID_SEL, partid);
-    val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, data);
+    /* Select the request PARTID or its mapped internal control PARTID. */
+    mpam_select_control_partid(msc_index, partid);
 
     /*
      * Configure the CMAX register for the max capacity.
@@ -1769,6 +2047,32 @@ void val_mpam_configure_ccap(uint32_t msc_index, uint16_t partid,
 
     val_mem_issue_dsb();
     return;
+}
+
+/**
+  @brief   Configures CCAP settings for an internal PARTID.
+           Prerequisite - The MSC implements PARTID narrowing and CCAP.
+                        - If the MSC supports RIS, select the resource instance first.
+  @param   msc_index - index of the MSC node in the MPAM info table.
+  @param   int_partid - internal PARTID to configure.
+  @param   softlim - enable or disable soft limiting for CCAP.
+  @param   ccap_percentage - percentage of cache capacity to assign.
+**/
+void
+val_mpam_configure_intpartid_ccap(uint32_t msc_index, uint16_t int_partid,
+                                  uint8_t softlim, uint32_t ccap_percentage)
+{
+    uint8_t num_fractional_bits;
+    uint16_t fixed_point_fraction;
+
+    num_fractional_bits = val_mpam_get_cmax_wd(msc_index);
+    fixed_point_fraction = mpam_encode_fraction(num_fractional_bits, ccap_percentage, 1);
+
+    val_mpam_select_partid(msc_index, int_partid, true);
+    val_mpam_mmr_write(msc_index, REG_MPAMCFG_CMAX,
+                       ((uint32_t)softlim << MPAMCFG_CMAX_SOFTLIM_SHIFT) |
+                       fixed_point_fraction);
+    val_mem_issue_dsb();
 }
 
 /**
@@ -1787,15 +2091,12 @@ void val_mpam_configure_cassoc(uint32_t msc_index, uint16_t partid,
 
     uint8_t num_fractional_bits;
     uint16_t fixed_point_fraction;
-    uint32_t data;
 
     num_fractional_bits = val_mpam_get_cassoc_wd(msc_index);
     fixed_point_fraction = mpam_encode_fraction(num_fractional_bits, cassoc_percentage, 1);
 
-    /* Select the PARTID to configure CASSOC partition parameters */
-    data = val_mpam_mmr_read(msc_index, REG_MPAMCFG_PART_SEL);
-    data = BITFIELD_WRITE(data, PART_SEL_PARTID_SEL, partid);
-    val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, data);
+    /* Select the request PARTID or its mapped internal control PARTID. */
+    mpam_select_control_partid(msc_index, partid);
 
     /*
      * Configure the CASSOC register for the cache associativity control settings.
@@ -1823,15 +2124,12 @@ void val_mpam_configure_cmin(uint32_t msc_index, uint16_t partid, uint32_t cmin_
 
     uint8_t num_fractional_bits;
     uint16_t fixed_point_fraction;
-    uint32_t data;
 
     num_fractional_bits = val_mpam_get_cmax_wd(msc_index);
     fixed_point_fraction = mpam_encode_fraction(num_fractional_bits, cmin_percentage, 0);
 
-    /* Select the PARTID to configure capacity partition parameters */
-    data = val_mpam_mmr_read(msc_index, REG_MPAMCFG_PART_SEL);
-    data = BITFIELD_WRITE(data, PART_SEL_PARTID_SEL, partid);
-    val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, data);
+    /* Select the request PARTID or its mapped internal control PARTID. */
+    mpam_select_control_partid(msc_index, partid);
 
     /*
      * Configure the CMIN register -  min cache capacity to be allocated for the PARTID.
@@ -1859,14 +2157,11 @@ val_mpam_configure_mbwpbm(uint32_t msc_index, uint16_t partid, uint32_t mbwpbm_p
 {
 
     uint32_t num_mbwpbm_bits;
-    uint32_t data;
 
     num_mbwpbm_bits = val_mpam_get_mbwpbm_width(msc_index);
 
-    /* Select the PARTID to configure portion partition parameters */
-    data = val_mpam_mmr_read(msc_index, REG_MPAMCFG_PART_SEL);
-    data = BITFIELD_WRITE(data, PART_SEL_PARTID_SEL, partid);
-    val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, data);
+    /* Select the request PARTID or its mapped internal control PARTID. */
+    mpam_select_control_partid(msc_index, partid);
 
     mpam_program_bitmap(msc_index, REG_MPAMCFG_MBW_PBM, num_mbwpbm_bits,
                         MAX_BWPBM_WIDTH, mbwpbm_percentage);
@@ -1888,15 +2183,12 @@ void val_mpam_msc_configure_mbwmin(uint32_t msc_index, uint16_t partid, uint32_t
 {
     uint8_t num_fractional_bits;
     uint16_t fixed_point_fraction;
-    uint32_t data;
 
     num_fractional_bits = val_mpam_get_bwa_wd(msc_index);
     fixed_point_fraction = mpam_encode_fraction(num_fractional_bits, mbwmin_percentage, 0);
 
-    /* Select the PARTID to configure minimum bandwidth limit parameters */
-    data = val_mpam_mmr_read(msc_index, REG_MPAMCFG_PART_SEL);
-    data = BITFIELD_WRITE(data, PART_SEL_PARTID_SEL, partid);
-    val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, data);
+    /* Select the request PARTID or its mapped internal control PARTID. */
+    mpam_select_control_partid(msc_index, partid);
 
     /*
      * Configure the MBW_MIN register for minimum bandwidth limit.
@@ -1925,15 +2217,12 @@ void val_mpam_msc_configure_mbwmax(uint32_t msc_index, uint16_t partid,
 {
     uint8_t num_fractional_bits;
     uint16_t fixed_point_fraction;
-    uint32_t data;
 
     num_fractional_bits = val_mpam_get_bwa_wd(msc_index);
     fixed_point_fraction = mpam_encode_fraction(num_fractional_bits, mbwmax_percentage, 1);
 
-    /* Select the PARTID to configure maximum bandwidth partition parameters */
-    data = val_mpam_mmr_read(msc_index, REG_MPAMCFG_PART_SEL);
-    data = BITFIELD_WRITE(data, PART_SEL_PARTID_SEL, partid);
-    val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, data);
+    /* Select the request PARTID or its mapped internal control PARTID. */
+    mpam_select_control_partid(msc_index, partid);
 
     /*
      * Configure the MBW_MAX register for maximum bandwidth limit.
@@ -2022,6 +2311,66 @@ val_mpam_configure_csu_mon(uint32_t msc_index, uint16_t partid, uint8_t pmg, uin
     val_mem_issue_dsb();
 
     return;
+}
+
+/**
+  @brief   Save the complete programmable state of a CSU monitor instance.
+
+  @param   msc_index - index of the MSC node in the MPAM info table.
+  @param   mon_sel   - CSU monitor instance to preserve.
+  @param   state     - storage for the saved monitor state.
+  @return  None
+**/
+void
+val_mpam_save_csumon_state(uint32_t msc_index, uint16_t mon_sel,
+                           MPAM_CSUMON_STATE *state)
+{
+    uint32_t csumon_idr;
+
+    if (state == NULL)
+        return;
+
+    /* Preserve the resource selection while selecting the monitor instance. */
+    state->selector = val_mpam_mmr_read(msc_index, REG_MSMON_CFG_MON_SEL);
+    state->selected_monitor = BITFIELD_WRITE(state->selector, MON_SEL_MON_SEL, mon_sel);
+    val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MON_SEL, state->selected_monitor);
+
+    state->filter = val_mpam_mmr_read(msc_index, REG_MSMON_CFG_CSU_FLT);
+    state->control = val_mpam_mmr_read(msc_index, REG_MSMON_CFG_CSU_CTL);
+    state->value = BITFIELD_READ(MSMON_CSU_VALUE,
+                                 val_mpam_mmr_read(msc_index, REG_MSMON_CSU));
+    csumon_idr = val_mpam_mmr_read(msc_index, REG_MPAMF_CSUMON_IDR);
+    state->value_writable = !BITFIELD_READ(CSUMON_IDR_CSU_RO, csumon_idr);
+
+    /* Leave the caller's original monitor selection unchanged. */
+    val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MON_SEL, state->selector);
+}
+
+/**
+  @brief   Restore state saved by val_mpam_save_csumon_state().
+
+  @param   msc_index - index of the MSC node in the MPAM info table.
+  @param   state     - saved monitor state to restore.
+  @return  None
+**/
+void
+val_mpam_restore_csumon_state(uint32_t msc_index, const MPAM_CSUMON_STATE *state)
+{
+    uint32_t control;
+
+    if (state == NULL)
+        return;
+
+    /* Disable updates while restoring the monitor's filter and VALUE. */
+    val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MON_SEL, state->selected_monitor);
+    control = BITFIELD_WRITE(state->control, CSU_CTL_EN, 0);
+    val_mpam_mmr_write(msc_index, REG_MSMON_CFG_CSU_CTL, control);
+    val_mpam_mmr_write(msc_index, REG_MSMON_CFG_CSU_FLT, state->filter);
+    if (state->value_writable)
+        val_mpam_mmr_write(msc_index, REG_MSMON_CSU, state->value);
+    val_mpam_mmr_write(msc_index, REG_MSMON_CFG_CSU_CTL, state->control);
+    val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MON_SEL, state->selector);
+    val_mem_issue_dsb();
 }
 
 /**
@@ -2527,6 +2876,8 @@ uint32_t val_mpam_program_el2(uint16_t partid, uint8_t pmg)
 uint32_t
 val_mpam_msc_endis_partid(uint32_t msc_index, bool enable, bool nfu_flag, uint16_t partid)
 {
+    uint32_t saved_part_sel;
+    uint16_t int_partid;
 
     /* Check if the PARTID is valid */
     if (partid > val_mpam_get_max_partid(msc_index)) {
@@ -2536,12 +2887,26 @@ val_mpam_msc_endis_partid(uint32_t msc_index, bool enable, bool nfu_flag, uint16
         return 1;
     }
 
+    saved_part_sel = val_mpam_mmr_read(msc_index, REG_MPAMCFG_PART_SEL);
+    if (val_mpam_msc_supports_partid_nrw(msc_index)) {
+        int_partid = val_mpam_get_partid_mapping(msc_index, partid);
+        if (int_partid > val_mpam_get_max_intpartid(msc_index)) {
+            val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, saved_part_sel);
+            return 1;
+        }
+        val_mpam_select_partid(msc_index, int_partid, true);
+    } else {
+        val_mpam_select_partid(msc_index, partid, false);
+    }
+
     if (enable == 1)
         val_mpam_mmr_write(msc_index, REG_MPAMCFG_EN, BITFIELD_SET(MPAMCFG_EN_PARTID, partid));
     else
         val_mpam_mmr_write(msc_index, REG_MPAMCFG_DIS, BITFIELD_SET(MPAMCFG_DIS_NFU, nfu_flag) |
                                                        BITFIELD_SET(MPAMCFG_DIS_PARTID, partid));
 
+    val_mem_issue_dsb();
+    val_mpam_mmr_write(msc_index, REG_MPAMCFG_PART_SEL, saved_part_sel);
     val_mem_issue_dsb();
     return 0;
 }

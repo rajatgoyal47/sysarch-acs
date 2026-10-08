@@ -150,6 +150,12 @@ payload(void)
                 continue;
             }
 
+            /* Give each request PARTID a distinct control PARTID when narrowing is supported. */
+            if ((val_mpam_prepare_partid(msc_index, partid_x, 0) != ACS_STATUS_PASS) ||
+                (val_mpam_prepare_partid(msc_index, partid_y, 1) != ACS_STATUS_PASS) ||
+                (val_mpam_prepare_partid(msc_index, partid_z, 2) != ACS_STATUS_PASS))
+                continue;
+
             /* Step 2: Program PARTID_X with 100% CMAX settings */
             val_mpam_configure_ccap(msc_index, partid_x, SOFTLIMIT_DIS, 100);
 
@@ -193,6 +199,10 @@ payload(void)
             };
 
             val_memcpy(dest_buf, src_buf, BUFFER_SIZE);
+            val_mem_issue_dsb();
+
+            /* Keep ACS bookkeeping and monitor accesses on the original PARTID. */
+            val_mpam_reg_write(MPAM2_EL2, saved_el2);
 
             /* Wait for some time before the memcpy settles and counters update */
             val_time_delay_ms(TIMEOUT_MEDIUM);
@@ -231,6 +241,10 @@ payload(void)
             }
 
             val_memcpy(dest_buf, src_buf, BUFFER_SIZE);
+            val_mem_issue_dsb();
+
+            /* Keep ACS bookkeeping and monitor accesses on the original PARTID. */
+            val_mpam_reg_write(MPAM2_EL2, saved_el2);
 
             /* Wait for some time before the memcpy settles and counters update */
             val_time_delay_ms(TIMEOUT_MEDIUM);
@@ -241,6 +255,8 @@ payload(void)
 
             /* Read PARTID_X counter after the second buffer copy */
             val_mpam_configure_csu_mon(msc_index, partid_x, DEFAULT_PMG, 0);
+            /* Re-enable the newly selected monitor before reading its value. */
+            val_mpam_csumon_enable(msc_index);
             if (val_mpam_read_csumon(msc_index) > counter[0]) {
                 val_print(ERROR,
                     "\n       PARTID_X usage increased after PARTID_Y workload, failing test");
@@ -270,6 +286,9 @@ payload(void)
             /* Check PARTID_Z cache usage before performing the buffer copy */
             val_mpam_configure_csu_mon(msc_index, partid_z, DEFAULT_PMG, 0);
 
+            /* Enable the monitor before capturing the PARTID_Z baseline. */
+            val_mpam_csumon_enable(msc_index);
+
             counter[2] = val_mpam_read_csumon(msc_index);
             val_print(DEBUG,
                                     "\n       PARTID_Z Counter before workload: 0x%x", counter[2]);
@@ -283,6 +302,10 @@ payload(void)
 
             /* Perform buffer copy */
             val_memcpy(dest_buf, src_buf, BUFFER_SIZE);
+            val_mem_issue_dsb();
+
+            /* Keep ACS bookkeeping and monitor accesses on the original PARTID. */
+            val_mpam_reg_write(MPAM2_EL2, saved_el2);
 
             /* Wait for some time before the memcpy settles and counters update */
             val_time_delay_ms(TIMEOUT_MEDIUM);
@@ -299,6 +322,8 @@ payload(void)
 
             /* Read PARTID_X and PARTID_Y counters after PARTID_Z workload */
             val_mpam_configure_csu_mon(msc_index, partid_x, DEFAULT_PMG, 0);
+            /* Re-enable each newly selected monitor before reading its value. */
+            val_mpam_csumon_enable(msc_index);
             if (val_mpam_read_csumon(msc_index) > counter[0]) {
                 val_print(ERROR,
                     "\n       PARTID_X usage increased after PARTID_Z workload, failing test");
@@ -310,6 +335,8 @@ payload(void)
                             "\n       PARTID_X Counter after PARTID_Z workload: 0x%x", counter[0]);
 
             val_mpam_configure_csu_mon(msc_index, partid_y, DEFAULT_PMG, 0);
+            /* Enable the PARTID_Y monitor selected by the preceding configuration. */
+            val_mpam_csumon_enable(msc_index);
             if (val_mpam_read_csumon(msc_index) > counter[1]) {
                 val_print(ERROR,
                     "\n       PARTID_Y usage increased after PARTID_Z workload, failing test");
@@ -332,6 +359,13 @@ payload(void)
             /* Restore MPAM2_EL2 settings */
             val_mpam_reg_write(MPAM2_EL2, saved_el2);
 
+            /* Re-enable PARTID_Y before accessing or freeing its workload buffers. */
+            val_mpam_msc_endis_partid(msc_index,
+                                      1, // enable PARTID
+                                      0, // NFU not set
+                                      partid_y);
+            is_partid_en = 1;
+
             /* Free the buffers to the heap manager */
             if (dest_buf != NULL) {
                 val_pe_cache_invalidate_range((uint64_t)dest_buf, BUFFER_SIZE);
@@ -344,12 +378,6 @@ payload(void)
                 val_memory_free_pages(src_buf, num_pages);
             }
 
-            /* Re-enable PARTID-Y for the next tests to behave properly */
-            val_mpam_msc_endis_partid(msc_index,
-                                      1, // enable PARTID
-                                      0, // NFU not set
-                                      partid_y);
-            is_partid_en = 1;
         }
     }
 
@@ -363,6 +391,10 @@ payload(void)
     return;
 
 cleanup:
+    /* Stop monitoring and restore the PE's original MPAM context first. */
+    val_mpam_csumon_disable(msc_index);
+    val_mpam_reg_write(MPAM2_EL2, saved_el2);
+
     if (!is_partid_en) {
         /* Re-enable PARTID-Y for the next tests to behave properly */
         val_mpam_msc_endis_partid(msc_index,
@@ -382,12 +414,6 @@ cleanup:
         val_mem_issue_dsb();
         val_memory_free_pages(src_buf, num_pages);
     }
-
-    /* Disable CSU Mon */
-    val_mpam_csumon_disable(msc_index);
-
-    /* Restore MPAM2_EL2 settings */
-    val_mpam_reg_write(MPAM2_EL2, saved_el2);
 
     val_set_status(index, RESULT_FAIL(03));
     return;

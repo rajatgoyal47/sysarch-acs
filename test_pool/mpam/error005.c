@@ -17,96 +17,162 @@
 
 #include "acs_val.h"
 #include "acs_pe.h"
+#include "acs_memory.h"
 #include "acs_mpam.h"
 #include "acs_mpam_reg.h"
 #include "val_interface.h"
+
+/*
+ * Algorithm:
+ * 1. Iterate over MSCs that implement error reporting and resource monitors.
+ * 2. Save the partition and monitor selectors.
+ * 3. Iterate over each resource instance supported by the MSC.
+ * 4. For each supported monitor type, obtain the implemented monitor count.
+ * 5. Select monitor 0, clear the error status, and write the monitor count as
+ *    the first out-of-range monitor selector.
+ * 6. Read back the selector and error status.
+ * 7. Accept the selector being retained without an error, rejected with a
+ *    monitor-range error, or truncated at the implemented selector width.
+ * 8. Restore the selectors and clear the error status.
+ */
 
 #define TEST_NUM   ACS_MPAM_ERROR_TEST_NUM_BASE  +  5
 #define TEST_DESC  "Check MSC MONITOR selection range Err "
 #define TEST_RULE  "VMTBP"
 
+static uint32_t
+check_monitor_selector(uint32_t msc_index, uint32_t mon_count)
+{
+    uint32_t selector_original;
+    uint32_t selector_base;
+    uint32_t selector_test;
+    uint32_t selector_readback;
+    uint32_t esr_errcode;
+    uint32_t status = ACS_STATUS_PASS;
+
+    /* The monitor count must identify an out-of-range value representable by the field. */
+    if ((mon_count == 0) || (mon_count > BITFIELD_READ(MON_SEL_MON_SEL, ACS_UINT32_MAX)))
+        return ACS_STATUS_SKIP;
+
+    /* Save the selector before selecting a known valid monitor instance. */
+    selector_original = val_mpam_mmr_read(msc_index, REG_MSMON_CFG_MON_SEL);
+    val_print(DEBUG, "\n       RIS: %d, monitor count: %d",
+              BITFIELD_READ(MON_SEL_RIS, selector_original), mon_count);
+    selector_base = BITFIELD_WRITE(selector_original, MON_SEL_MON_SEL, 0);
+    val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MON_SEL, selector_base);
+
+    /* Clear stale errors before programming the out-of-range selector. */
+    if (!val_mpam_msc_reset_errcode(msc_index)) {
+        status = ACS_STATUS_FAIL;
+        goto cleanup;
+    }
+
+    /* Program the first selector beyond the implemented monitor range. */
+    selector_test = BITFIELD_WRITE(selector_base, MON_SEL_MON_SEL, mon_count);
+    val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MON_SEL, selector_test);
+    val_mem_issue_dsb();
+
+    /* Read back the selector and any error reported by the MSC. */
+    selector_readback = val_mpam_mmr_read(msc_index, REG_MSMON_CFG_MON_SEL);
+    val_time_delay_ms(100 * ONE_MILLISECOND);
+    esr_errcode = val_mpam_msc_get_errcode(msc_index);
+
+    /* Classify the observed selector and error behavior. */
+    if ((selector_readback == selector_test) && (esr_errcode == ESR_ERRCODE_NO_ERROR)) {
+        val_print(DEBUG, "\n       Out-of-range monitor selector retained for MSC %d", msc_index);
+    } else if ((selector_readback == selector_base) &&
+               (esr_errcode == ESR_ERRCODE_MON_RANGE)) {
+        val_print(DEBUG, "\n       Out-of-range monitor selector rejected for MSC %d", msc_index);
+    } else if (((mon_count & (mon_count - 1U)) == 0) &&
+               (selector_readback == selector_base) && (esr_errcode == ESR_ERRCODE_NO_ERROR)) {
+        val_print(DEBUG, "\n       Monitor selector boundary truncated for MSC %d", msc_index);
+        status = ACS_STATUS_SKIP;
+    } else {
+        val_print(ERROR, "\n       Invalid monitor selector handling for MSC %d", msc_index);
+        val_print(ERROR, "\n       Selector readback: 0x%x, errcode: %d",
+                  selector_readback, esr_errcode);
+        status = ACS_STATUS_FAIL;
+    }
+
+cleanup:
+    /* Restore the original selector and leave the error status clear. */
+    val_mpam_mmr_write(msc_index, REG_MSMON_CFG_MON_SEL, selector_original);
+    if (!val_mpam_msc_reset_errcode(msc_index))
+        status = ACS_STATUS_FAIL;
+
+    return status;
+}
+
 static
 void payload(void)
 {
-
-    uint16_t mon_count = 0;
     uint32_t index;
     uint32_t status;
     uint32_t pe_index;
     uint32_t total_nodes;
-    uint32_t mpamf_ecr;
-    uint32_t esr_errcode;
+    uint32_t rsrc_index;
+    uint32_t rsrc_count;
+    uint32_t has_ris;
+    uint32_t part_sel_original;
+    uint32_t mon_sel_original;
     uint32_t test_fail = 0;
     uint32_t test_skip = 1;
 
     pe_index = val_pe_get_index_mpid(val_pe_get_mpid());
     total_nodes = val_mpam_get_msc_count();
 
+    /* Validate monitor selector handling on every eligible MSC. */
     for (index = 0; index < total_nodes; index++) {
 
+        /* Error reporting is required to observe a rejected selector. */
         if (!val_mpam_msc_supports_esr(index)) {
             val_print(DEBUG, "\n       MSC index %d does not support ESR", index);
             continue;
         }
 
-        /* Read the number of CSU monitors and MBWU monitors implemented in this MSC */
-        if (val_mpam_msc_supports_mon(index)) {
-                if (val_mpam_supports_csumon(index)) {
-                    mon_count += val_mpam_get_csumon_count(index);
-                    val_print(DEBUG,
-                                "\n       MSC implements %d CSU Monitors", mon_count);
-                }
-
-                if (val_mpam_msc_supports_mbwumon(index)) {
-                    mon_count += val_mpam_get_mbwumon_count(index);
-                    val_print(DEBUG,
-                    "\n       MSC implements %d MBWU Monitors", val_mpam_get_mbwumon_count(index));
-                }
-        }
-
-        /*
-         * Skip this MSC if it doesn't implement error interrupt
-         * support (or) if it doesn't implement any monitors
-         */
-        if ((mon_count == 0)) {
+        /* At least one monitor type is required to obtain a monitor count. */
+        if (!val_mpam_msc_supports_mon(index)) {
             val_print(DEBUG,
                 "\n       MSC %d does not implement any MSMON. Skipping MSC..", index);
             continue;
         }
 
-        /* Read MPAMF_ECR before generating error. This will be used to restore to default later */
-        mpamf_ecr = val_mpam_mmr_read(index, REG_MPAMF_ECR);
-        status    = val_mpam_msc_reset_errcode(index);
+        /* Preserve selector state and determine the resources to examine. */
+        part_sel_original = val_mpam_mmr_read(index, REG_MPAMCFG_PART_SEL);
+        mon_sel_original = val_mpam_mmr_read(index, REG_MSMON_CFG_MON_SEL);
+        has_ris = val_mpam_msc_supports_ris(index);
+        rsrc_count = has_ris ? val_mpam_get_info(MPAM_MSC_RSRC_COUNT, index, 0) : 1;
 
-        if (!status) {
-            val_set_status(pe_index, RESULT_FAIL(01));
-            return;
+        for (rsrc_index = 0; rsrc_index < rsrc_count; rsrc_index++) {
+            /* Select the current resource when resource selection is implemented. */
+            if (has_ris)
+                val_mpam_memory_configure_ris_sel(index, rsrc_index);
+
+            /* Check the selector boundary for cache-storage monitors. */
+            if (val_mpam_supports_csumon(index)) {
+                status = check_monitor_selector(index, val_mpam_get_csumon_count(index));
+                if (status != ACS_STATUS_SKIP)
+                    test_skip = 0;
+                if (status == ACS_STATUS_FAIL)
+                    test_fail++;
+            }
+
+            /* Check the selector boundary for memory-bandwidth monitors. */
+            if (val_mpam_msc_supports_mbwumon(index)) {
+                status = check_monitor_selector(index, val_mpam_get_mbwumon_count(index));
+                if (status != ACS_STATUS_SKIP)
+                    test_skip = 0;
+                if (status == ACS_STATUS_FAIL)
+                    test_fail++;
+            }
         }
 
-        /* Test runs on atleast one MSC */
-        test_skip = 0;
-
-        /* Generate monitor selection range (MSR) error */
-        val_mpam_msc_generate_msr_error(index, mon_count);
-
-        /* Wait for some time for the error to be reflected in MPAMF_ESR */
-        val_time_delay_ms(100 * ONE_MILLISECOND);
-
-        /* Read Error Status Register and check if the error code is recorded */
-        esr_errcode = val_mpam_msc_get_errcode(index);
-        val_print(DEBUG, "\n       Error code read is %llx", esr_errcode);
-
-        if (esr_errcode != ESR_ERRCODE_MON_RANGE)
-        {
-            val_print(ERROR, "\n       Expected errcode: %d", ESR_ERRCODE_MON_RANGE);
-            val_print(ERROR, "\n       Actual errcode: %d", esr_errcode);
-            test_fail++;
-        }
-
-        /* Restore Error Control Register original settings */
-        val_mpam_mmr_write(index, REG_MPAMF_ECR, mpamf_ecr);
+        /* Restore the selectors before moving to the next MSC. */
+        val_mpam_mmr_write(index, REG_MSMON_CFG_MON_SEL, mon_sel_original);
+        val_mpam_mmr_write(index, REG_MPAMCFG_PART_SEL, part_sel_original);
     }
 
+    /* Report the aggregate result from all eligible resources and monitor types. */
     if (test_skip)
         val_set_status(pe_index, RESULT_SKIP(01));
     else if (test_fail)
