@@ -30,17 +30,19 @@
 
 static volatile uint64_t int_id;
 static volatile uint32_t intr_pending = 1;
-static volatile uint32_t intr_node_index;
-static volatile uint8_t intr_is_pfg_check;
+static volatile uint32_t intr_clear_status;
+static RAS_ERR_IN_t intr_err_in_params;
+static RAS_ERR_OUT_t intr_err_out_params;
 
 static
 void
 intr_handler(void)
 {
+  /* Deassert the platform source, then clear the architected record before EOI. */
+  intr_clear_status = val_ras_clear_error_source(intr_err_in_params,
+                                                  &intr_err_out_params);
+  val_ras_clear_error_status(intr_err_in_params.node_index);
   intr_pending = 0;
-
-  /* Clear the RAS source before the common IRQ wrapper EOIs the interrupt. */
-  val_ras_clear_error_status(intr_node_index, intr_is_pfg_check);
 
   val_print(TRACE, "\n       Received interrupt 0x%lx", int_id);
   val_gic_end_of_interrupt(int_id);
@@ -60,7 +62,6 @@ payload()
   uint64_t eri_id = 0, fhi_id = 0;
   uint64_t rec_index;
   RAS_ERR_IN_t err_in_params;
-  RAS_ERR_OUT_t err_out_params;
 
   /* Get Number of nodes with RAS Functionality */
   status = val_ras_get_info(RAS_INFO_NUM_NODES, 0, &num_node);
@@ -110,6 +111,7 @@ payload()
 
       int_id = (fhi_id) ? fhi_id : eri_id;
       intr_pending = 1;
+      intr_clear_status = ACS_STATUS_PASS;
 
       /* Get Error Record number for this Node */
       status = val_ras_get_info(RAS_INFO_START_INDEX, node_index, &rec_index);
@@ -124,13 +126,13 @@ payload()
       err_in_params.ras_error_type = (fhi_id) ? ERR_CE : ERR_UC;
       /* Pass the selected interrupt type so common RAS setup can enable FHI or ERI. */
       err_in_params.intr_type = (fhi_id) ? RAS_INTR_TYPE_FHI : RAS_INTR_TYPE_ERI;
-      intr_node_index = node_index;
+      intr_err_in_params = err_in_params;
 
       /* Install handler for interrupt */
       val_gic_install_isr(int_id, intr_handler);
 
       /* Setup an error in an implementation defined way */
-      status = val_ras_setup_error(err_in_params, &err_out_params);
+      status = val_ras_setup_error(intr_err_in_params, &intr_err_out_params);
       if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
         warn_cnt++;
         break;
@@ -139,11 +141,8 @@ payload()
         fail_cnt++;
         break;
       }
-      /* Preserve PAL/VAL-selected PFG mode for interrupt-source cleanup. */
-      intr_is_pfg_check = err_out_params.is_pfg_check;
-
       /* Inject error in an implementation defined way */
-      status = val_ras_inject_error(err_in_params, &err_out_params);
+      status = val_ras_inject_error(intr_err_in_params, &intr_err_out_params);
       if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
         warn_cnt++;
         break;
@@ -158,8 +157,21 @@ payload()
 
       if (intr_pending) {
         val_print(ERROR, "\n       Not Connected to GIC for node %d", node_index);
+        intr_clear_status = val_ras_clear_error_source(intr_err_in_params,
+                                                        &intr_err_out_params);
+        val_ras_clear_error_status(node_index);
         fail_cnt++;
         continue;
+      }
+
+      if (intr_clear_status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
+        val_print(WARN, "\n       Error source cleanup not implemented for node %d", node_index);
+        warn_cnt++;
+        break;
+      } else if (intr_clear_status) {
+        val_print(ERROR, "\n       Error source cleanup failed for node %d", node_index);
+        fail_cnt++;
+        break;
       }
     }
   }

@@ -195,3 +195,22 @@ pal_ras_inject_error(RAS_ERR_IN_t in_param, RAS_ERR_OUT_t *out_param)
   pal_warn_not_implemented(__func__);
   return PAL_STATUS_NOT_IMPLEMENTED;
 }
+
+/**
+  @brief  Platform Defined way of clearing the Error source
+
+  @param  in_param  - Error Input Parameters.
+  @param  *out_param  - Parameters returned from platform during error setup.
+
+  @return  0 - Success, PAL_STATUS_NOT_IMPLEMENTED - API not implemented,
+           Other values - Failure
+**/
+uint32_t
+pal_ras_clear_error_source(RAS_ERR_IN_t in_param, RAS_ERR_OUT_t *out_param)
+{
+  (void) in_param;
+  (void) out_param;
+
+  pal_warn_not_implemented(__func__);
+  return PAL_STATUS_NOT_IMPLEMENTED;
+}
