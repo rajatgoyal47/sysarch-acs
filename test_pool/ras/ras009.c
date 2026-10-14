@@ -204,7 +204,21 @@ exception_return:
     if (esr_pending) {
       val_print(DEBUG, "\n       Data abort Check Fail, for node %d", node_index);
       fail_cnt++;
+      (void)val_ras_clear_error_source(err_in_params, &err_out_params);
+      val_ras_clear_error_status(node_index);
       continue;
+    }
+
+    status = val_ras_clear_error_source(err_in_params, &err_out_params);
+    val_ras_clear_error_status(node_index);
+    if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
+      val_print(WARN, "\n       Error source cleanup not implemented for node %d", node_index);
+      warn_cnt++;
+      break;
+    } else if (status) {
+      val_print(ERROR, "\n       Error source cleanup failed for node %d", node_index);
+      fail_cnt++;
+      break;
     }
   }
 

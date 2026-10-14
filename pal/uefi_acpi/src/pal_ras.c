@@ -90,6 +90,28 @@ pal_ras_inject_error(RAS_ERR_IN_t in_param, RAS_ERR_OUT_t *out_param)
 }
 
 /**
+  @brief  Platform Defined way of clearing the Error source
+
+  @param  in_param  - Error Input Parameters.
+  @param  *out_param  - Parameters returned from platform during error setup.
+
+  @return  PAL_STATUS_SUCCESS if the source is cleared,
+           PAL_STATUS_INVALID_PARAM for bad pointers,
+           PAL_STATUS_NOT_IMPLEMENTED while platform support is pending.
+**/
+UINT32
+pal_ras_clear_error_source(RAS_ERR_IN_t in_param, RAS_ERR_OUT_t *out_param)
+{
+  (void) in_param;
+
+  if (out_param == NULL)
+    return PAL_STATUS_INVALID_PARAM;
+
+  pal_warn_not_implemented(__func__);
+  return PAL_STATUS_NOT_IMPLEMENTED;
+}
+
+/**
   @brief  Platform Defined way of Timeout/Wait loop
 
   @param  count  - Timeout/Wait Multiplier.
