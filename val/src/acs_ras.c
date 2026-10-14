@@ -574,23 +574,42 @@ val_ras_reg_write(uint32_t node_index, uint32_t reg, uint64_t write_data)
 }
 
 /**
-  @brief  Function to clear the RAS error status after an error interrupt.
+  @brief  Function to clear the RAS error source.
 
-  @param  node_index     RAS Node index in the info table.
-  @param  is_pfg_check  Pseudo fault check indicator.
+  @param  in_param    Error input parameters.
+  @param  *out_param  Parameters returned by the platform during error setup.
+
+  @return Status returned by the source cleanup.
+**/
+uint32_t
+val_ras_clear_error_source(RAS_ERR_IN_t in_param, RAS_ERR_OUT_t *out_param)
+{
+  if (out_param == NULL)
+    return ACS_STATUS_FAIL;
+
+  if (out_param->is_pfg_check) {
+    val_ras_reg_write(in_param.node_index, RAS_ERR_PFGCTL, 0);
+    return ACS_STATUS_PASS;
+  }
+
+  return pal_ras_clear_error_source(in_param, out_param);
+}
+
+/**
+  @brief  Function to clear the architected RAS error status.
+
+  @param  node_index  RAS Node index in the info table.
 
   @return None
 **/
 void
-val_ras_clear_error_status(uint32_t node_index, uint8_t is_pfg_check)
+val_ras_clear_error_status(uint32_t node_index)
 {
-  if (is_pfg_check)
-    val_ras_reg_write(node_index, RAS_ERR_PFGCTL, 0);
-
   val_ras_reg_write(node_index, RAS_ERR_STATUS, ERR_STATUS_CLEAR);
 
   /* Read back to make sure the clear write has completed before EOI. */
-  (void)val_ras_reg_read(node_index, RAS_ERR_STATUS, 0);
+  (void)val_ras_reg_read(node_index, RAS_ERR_STATUS,
+                         g_ras_info_table->node[node_index].intf_info.start_rec_index);
 }
 
 /**

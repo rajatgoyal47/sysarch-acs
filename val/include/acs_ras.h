@@ -115,7 +115,8 @@ uint32_t val_ras_check_plat_poison_support(void);
 
 uint64_t val_ras_reg_read(uint32_t node_index, uint32_t reg, uint32_t err_rec_idx);
 void val_ras_reg_write(uint32_t node_index, uint32_t reg, uint64_t write_data);
-void val_ras_clear_error_status(uint32_t node_index, uint8_t is_pfg_check);
+uint32_t val_ras_clear_error_source(RAS_ERR_IN_t in_param, RAS_ERR_OUT_t *out_param);
+void val_ras_clear_error_status(uint32_t node_index);
 
 uint32_t ras001_entry(uint32_t num_pe);
 uint32_t ras002_entry(uint32_t num_pe);

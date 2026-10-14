@@ -920,6 +920,7 @@ typedef struct {
 void pal_ras_create_info_table(RAS_INFO_TABLE *ras_info_table);
 UINT32 pal_ras_setup_error(RAS_ERR_IN_t in_param, RAS_ERR_OUT_t *out_param);
 UINT32 pal_ras_inject_error(RAS_ERR_IN_t in_param, RAS_ERR_OUT_t *out_param);
+UINT32 pal_ras_clear_error_source(RAS_ERR_IN_t in_param, RAS_ERR_OUT_t *out_param);
 void pal_ras_wait_timeout(UINT32 count);
 UINT32 pal_ras_check_plat_poison_support(void);
 

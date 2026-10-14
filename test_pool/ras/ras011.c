@@ -32,16 +32,42 @@
 
 static uint32_t esr_pending = 1;
 static uint64_t int_id;
+static volatile uint32_t intr_clear_status;
+static volatile uint32_t intr_source_cleared;
+static RAS_ERR_IN_t intr_err_in_params;
+static RAS_ERR_OUT_t intr_err_out_params;
 
 static
 void
 intr_handler(void)
 {
-  /* Clear the interrupt pending state */
+  /* Deassert the error source before EOI, preserving the record for validation. */
+  if (!intr_source_cleared) {
+    intr_clear_status = val_ras_clear_error_source(intr_err_in_params,
+                                                    &intr_err_out_params);
+    intr_source_cleared = 1;
+  }
 
   val_print(TRACE, "\n       Received interrupt %x       ");
   val_gic_end_of_interrupt(int_id);
   return;
+}
+
+static
+uint32_t
+clear_test_error(uint32_t node_index, uint32_t pe_node_index)
+{
+  if (!intr_source_cleared) {
+    intr_clear_status = val_ras_clear_error_source(intr_err_in_params,
+                                                    &intr_err_out_params);
+    intr_source_cleared = 1;
+  }
+
+  val_ras_clear_error_status(node_index);
+  if (pe_node_index != node_index)
+    val_ras_clear_error_status(pe_node_index);
+
+  return intr_clear_status;
 }
 
 static void *branch_to_test;
@@ -84,7 +110,6 @@ payload_poison_supported()
   uint32_t mpidr = val_pe_get_mpid();
   uint64_t rec_index;
   RAS_ERR_IN_t err_in_params;
-  RAS_ERR_OUT_t err_out_params;
   uint64_t pe_node_index;
 
   /* Get Number of nodes with RAS Functionality */
@@ -171,12 +196,15 @@ payload_poison_supported()
     branch_to_test = &&exception_return;
     branch_stack_pointer = val_pe_save_exception_return_context();
     esr_pending = 1;
+    intr_err_in_params = err_in_params;
+    intr_clear_status = ACS_STATUS_PASS;
+    intr_source_cleared = 0;
 
     /* Install handler for interrupt */
     val_gic_install_isr(int_id, intr_handler);
 
     /* Setup an error in an implementation defined way */
-    status = val_ras_setup_error(err_in_params, &err_out_params);
+    status = val_ras_setup_error(intr_err_in_params, &intr_err_out_params);
     if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
       val_print(DEBUG, "\n       ras_setup_error unimplemented, node %d", node_index);
       warn_cnt++;
@@ -188,7 +216,7 @@ payload_poison_supported()
     }
 
     /* Inject error in an implementation defined way */
-    status = val_ras_inject_error(err_in_params, &err_out_params);
+    status = val_ras_inject_error(intr_err_in_params, &intr_err_out_params);
     if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
       warn_cnt++;
       break;
@@ -202,6 +230,7 @@ exception_return:
     if (!esr_pending) {
       val_print(ERROR, "\n       Unexpected exception for node %d", node_index);
       fail_cnt++;
+      (void)clear_test_error(node_index, pe_node_index);
       continue;
     }
 
@@ -210,6 +239,7 @@ exception_return:
     if (status) {
       val_print(ERROR, "\n       MC Err Status Check Failed, for node %d", node_index);
       fail_cnt++;
+      (void)clear_test_error(node_index, pe_node_index);
       continue;
     }
 
@@ -218,6 +248,7 @@ exception_return:
     if (status) {
       val_print(ERROR, "\n       PE Err Status Check Failed, for node %d", node_index);
       fail_cnt++;
+      (void)clear_test_error(node_index, pe_node_index);
       continue;
     }
 
@@ -231,13 +262,26 @@ exception_return:
                   "RAS node index: 0x%lx",
                   pe_node_index);
         fail_cnt++;
+        (void)clear_test_error(node_index, pe_node_index);
         continue;
     }
 
     if (!(pe_status & ERR_STATUS_PN_MASK)) {
       val_print(DEBUG, "\n       Poison Frwding Fail, for node %d", pe_node_index);
       fail_cnt++;
+      (void)clear_test_error(node_index, pe_node_index);
       continue;
+    }
+
+    status = clear_test_error(node_index, pe_node_index);
+    if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
+      val_print(WARN, "\n       Error source cleanup not implemented for node %d", node_index);
+      warn_cnt++;
+      break;
+    } else if (status) {
+      val_print(ERROR, "\n       Error source cleanup failed for node %d", node_index);
+      fail_cnt++;
+      break;
     }
   }
 
@@ -274,7 +318,6 @@ payload_poison_unsupported()
   uint32_t mpidr = val_pe_get_mpid();
   uint64_t rec_index;
   RAS_ERR_IN_t err_in_params;
-  RAS_ERR_OUT_t err_out_params;
   uint64_t pe_node_index;
 
   /* Get Number of nodes with RAS Functionality */
@@ -361,6 +404,9 @@ payload_poison_unsupported()
     }
     branch_to_test = &&exception_return;
     branch_stack_pointer = val_pe_save_exception_return_context();
+    intr_err_in_params = err_in_params;
+    intr_clear_status = ACS_STATUS_PASS;
+    intr_source_cleared = 0;
 
     /* Install handler for interrupt */
     val_gic_install_isr(int_id, intr_handler);
@@ -368,7 +414,7 @@ payload_poison_unsupported()
     esr_pending = 1;
 
     /* Setup an error in an implementation defined way */
-    status = val_ras_setup_error(err_in_params, &err_out_params);
+    status = val_ras_setup_error(intr_err_in_params, &intr_err_out_params);
     if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
       val_print(DEBUG, "\n       ras_setup_error unimplemented, node %d", node_index);
       warn_cnt++;
@@ -380,7 +426,7 @@ payload_poison_unsupported()
     }
 
     /* Inject error in an implementation defined way */
-    status = val_ras_inject_error(err_in_params, &err_out_params);
+    status = val_ras_inject_error(intr_err_in_params, &intr_err_out_params);
     if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
       warn_cnt++;
       break;
@@ -396,6 +442,7 @@ exception_return:
     if (status) {
       val_print(ERROR, "\n       MC Err Status Check Failed, for node %d", node_index);
       fail_cnt++;
+      (void)clear_test_error(node_index, pe_node_index);
       continue;
     }
 
@@ -404,6 +451,7 @@ exception_return:
     if (status) {
       val_print(ERROR, "\n       PE Err Status Check Failed, for node %d", node_index);
       fail_cnt++;
+      (void)clear_test_error(node_index, pe_node_index);
       continue;
     }
 
@@ -411,7 +459,19 @@ exception_return:
     if (esr_pending) {
       val_print(DEBUG, "\n       EA Check Fail, for node %d", pe_node_index);
       fail_cnt++;
+      (void)clear_test_error(node_index, pe_node_index);
       continue;
+    }
+
+    status = clear_test_error(node_index, pe_node_index);
+    if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
+      val_print(WARN, "\n       Error source cleanup not implemented for node %d", node_index);
+      warn_cnt++;
+      break;
+    } else if (status) {
+      val_print(ERROR, "\n       Error source cleanup failed for node %d", node_index);
+      fail_cnt++;
+      break;
     }
   }
 

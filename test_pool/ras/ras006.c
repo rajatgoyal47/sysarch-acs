@@ -195,6 +195,8 @@ payload()
                         "\n       Couldn't get implemented rec bitmap for RAS node index: 0x%lx",
                         node_index);
               fail_cnt++;
+              (void)val_ras_clear_error_source(err_in_params, &err_out_params);
+              val_ras_clear_error_status(node_index);
               continue;
           }
 
@@ -206,6 +208,8 @@ payload()
                     "\n       Couldn't get implemented addr mode bitmap for RAS node index: 0x%lx",
                     node_index);
               fail_cnt++;
+              (void)val_ras_clear_error_source(err_in_params, &err_out_params);
+              val_ras_clear_error_status(node_index);
               continue;
           }
 
@@ -272,6 +276,20 @@ payload()
                   fail_cnt++;
                   break;
               }
+          }
+
+          /* Deassert the platform source, then clear the architected error record. */
+          status = val_ras_clear_error_source(err_in_params, &err_out_params);
+          val_ras_clear_error_status(node_index);
+          if (status == ACS_STATUS_PAL_NOT_IMPLEMENTED) {
+              val_print(WARN,
+                        "\n       Error source cleanup not implemented for node %d", node_index);
+              warn_cnt++;
+              break;
+          } else if (status) {
+              val_print(ERROR, "\n       Error source cleanup failed for node %d", node_index);
+              fail_cnt++;
+              break;
           }
 
           /* check if system RAS recorded the error in memory with address syndrome
