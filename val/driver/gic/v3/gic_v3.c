@@ -56,55 +56,14 @@ v3_read_gicdTyper(void)
 uint64_t
 v3_read_gicr_typer(void)
 {
-  return val_mmio_read64(v3_get_pe_gicr_base() + GICR_TYPER);
-}
+  uint64_t cpuRd_base = v3_get_pe_gicr_base();
 
-
-/**
-  @brief  derives current pe rd base
-  @param  rd base
-  @param  rd base length
-  @return pe rd base
-**/
-static uint64_t
-CurrentCpuRDBase(uint64_t mGicRedistributorBase, uint32_t length)
-{
-  uint64_t     Affinity, CpuAffinity;
-  uint64_t     GicRedistributorGranularity;
-  uint64_t     GicCpuRedistributorBase;
-  uint64_t     Mpidr;
-
-  Mpidr = read_mpidr_el1();
-
-  CpuAffinity = (Mpidr & (PE_AFF0 | PE_AFF1 | PE_AFF2)) | ((Mpidr & PE_AFF3) >> 8);
-
-  GicRedistributorGranularity = GICR_CTLR_FRAME_SIZE + GICR_SGI_PPI_FRAME_SIZE;
-
-  GicCpuRedistributorBase = mGicRedistributorBase;
-
-  /* If information is present in GICC Structure */
-  if (length == 0)
-  {
-      Affinity = (val_mmio_read64(GicCpuRedistributorBase + GICR_TYPER) & GICR_TYPER_AFF) >> 32;
-      if (Affinity == CpuAffinity) {
-        return GicCpuRedistributorBase;
-      }
-      return 0;
+  if (cpuRd_base == 0) {
+    val_print(ERROR, "\n       Redistributor not found for current PE", 0);
+    return 0;
   }
 
-  /* If information is present in GICR Structure */
-  while (GicCpuRedistributorBase < (mGicRedistributorBase + length))
-  {
-    Affinity = (val_mmio_read64(GicCpuRedistributorBase + GICR_TYPER) & GICR_TYPER_AFF) >> 32;
-    if (Affinity == CpuAffinity) {
-      return GicCpuRedistributorBase;
-    }
-
-    /* Move to the next GIC Redistributor frame */
-    GicCpuRedistributorBase += GicRedistributorGranularity;
-  }
-
-  return 0;
+  return val_mmio_read64(cpuRd_base + GICR_TYPER);
 }
 
 /**
@@ -115,13 +74,10 @@ CurrentCpuRDBase(uint64_t mGicRedistributorBase, uint32_t length)
 static void
 WakeUpRD(void)
 {
-  uint32_t                rdbase_len;
-  uint64_t                rd_base;
   uint64_t                cpuRd_base;
   uint32_t                tmp;
 
-  rd_base = val_get_gicr_base(&rdbase_len, 0);
-  cpuRd_base = CurrentCpuRDBase(rd_base, rdbase_len);
+  cpuRd_base = v3_get_pe_gicr_base();
   if (cpuRd_base == 0) {
     return;
   }
@@ -158,12 +114,7 @@ WakeUpRD(void)
 **/
 uint64_t v3_get_pe_gicr_base(void)
 {
-  uint32_t                rdbase_len;
-  uint64_t                rd_base;
-
-  rd_base = val_get_gicr_base(&rdbase_len, 0);
-
-  return CurrentCpuRDBase(rd_base, rdbase_len);
+  return val_gic_get_pe_rdbase(read_mpidr_el1());
 }
 
 /**
@@ -198,8 +149,6 @@ v3_DisableInterruptSource(uint32_t int_id)
 {
   uint32_t                regOffset;
   uint32_t                regShift;
-  uint32_t                rdbase_len;
-  uint64_t                rd_base;
   uint64_t                cpuRd_base;
 
   if (v3_is_extended_spi(int_id) || v3_is_extended_ppi(int_id)) {
@@ -214,8 +163,7 @@ v3_DisableInterruptSource(uint32_t int_id)
   if (IsSpi(int_id)) {
       val_mmio_write(val_get_gicd_base() + GICD_ICENABLER + (4 * regOffset), 1 << regShift);
   } else {
-    rd_base = val_get_gicr_base(&rdbase_len, 0);
-    cpuRd_base = CurrentCpuRDBase(rd_base, rdbase_len);
+    cpuRd_base = v3_get_pe_gicr_base();
     if (cpuRd_base == 0) {
       return;
     }
@@ -234,8 +182,6 @@ v3_EnableInterruptSource(uint32_t int_id)
 {
   uint32_t                regOffset;
   uint32_t                regShift;
-  uint32_t                rdbase_len;
-  uint64_t                rd_base;
   uint64_t                cpuRd_base;
 
   if (v3_is_extended_spi(int_id) || v3_is_extended_ppi(int_id)) {
@@ -249,8 +195,7 @@ v3_EnableInterruptSource(uint32_t int_id)
   if (IsSpi(int_id)) {
       val_mmio_write(val_get_gicd_base() + GICD_ISENABLER + (4 * regOffset), 1 << regShift);
   } else {
-    rd_base = val_get_gicr_base(&rdbase_len, 0);
-    cpuRd_base = CurrentCpuRDBase(rd_base, rdbase_len);
+    cpuRd_base = v3_get_pe_gicr_base();
     if (cpuRd_base == 0) {
       return;
     }
@@ -320,8 +265,6 @@ v3_SetInterruptPriority(uint32_t int_id, uint32_t priority)
 {
   uint32_t                regOffset;
   uint32_t                regShift;
-  uint32_t                rdbase_len;
-  uint64_t                rd_base;
   uint64_t                cpuRd_base;
 
   if (v3_is_extended_spi(int_id) || v3_is_extended_ppi(int_id)) {
@@ -338,8 +281,7 @@ v3_SetInterruptPriority(uint32_t int_id, uint32_t priority)
                     (val_mmio_read(val_get_gicd_base() + GICD_IPRIORITYR + (4 * regOffset)) &
                      ~(0xff << regShift)) | priority << regShift);
   } else {
-    rd_base = val_get_gicr_base(&rdbase_len, 0);
-    cpuRd_base = CurrentCpuRDBase(rd_base, rdbase_len);
+    cpuRd_base = v3_get_pe_gicr_base();
     if (cpuRd_base == 0) {
       return;
     }

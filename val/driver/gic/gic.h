@@ -40,6 +40,8 @@
 #define GICR_VLPI_FRAME_SIZE     0x00010000
 #define GICR_RES_FRAME_SIZE      0x00010000
 #define GICR_TYPER_AFF           (0xFFFFFFFFULL << 32)
+#define GICR_TYPER_VLPIS         (1ULL << 1)
+#define GICR_TYPER_LAST          (1ULL << 4)
 
 #define GIC_ICDIPTR         0x800
 #define GIC_ICCICR          0x00

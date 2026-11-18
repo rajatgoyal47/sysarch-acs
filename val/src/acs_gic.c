@@ -153,19 +153,11 @@ val_gic_get_pe_rdbase(uint64_t mpidr)
 {
   uint32_t     gicrd_baselen;
   uint32_t     gicr_rdindex = 0;
-  uint32_t     gic_version;
-  uint64_t     affinity, pe_affinity;
+  uint64_t     affinity, pe_affinity, typer;
   uint64_t     gicrd_granularity;
   uint64_t     gicrd_base, pe_gicrd_base;
 
   pe_affinity = (mpidr & (PE_AFF0 | PE_AFF1 | PE_AFF2)) | ((mpidr & PE_AFF3) >> 8);
-  gic_version = val_gic_get_info(GIC_INFO_VERSION);
-
-  gicrd_granularity = GICR_CTLR_FRAME_SIZE + GICR_SGI_PPI_FRAME_SIZE;
-
-  /* Redistributors in GICv4 define 2 additional 64KB frames - One each for VLPI and Reserved */
-  if (gic_version > 3)
-    gicrd_granularity += GICR_VLPI_FRAME_SIZE + GICR_RES_FRAME_SIZE;
 
   gicr_rdindex = 0;
 
@@ -173,6 +165,9 @@ val_gic_get_pe_rdbase(uint64_t mpidr)
   if (g_gic_info_table->header.num_gicr_rd == 0) {
       gicrd_base = val_get_gicr_base(&gicrd_baselen, 0);
       val_print(DEBUG, "\n       gicrd_base 0x%lx", gicrd_base);
+
+      if (gicrd_base == 0)
+          return 0;
 
       /* If information is present in GICC Structure */
       if (gicrd_baselen == 0)
@@ -191,15 +186,28 @@ val_gic_get_pe_rdbase(uint64_t mpidr)
       val_print(TRACE, "\n       gicr_rdindex %d", gicr_rdindex);
       val_print(TRACE, "       gicrd_base 0x%lx", gicrd_base);
 
-      pe_gicrd_base = gicrd_base;
-      while (pe_gicrd_base < (gicrd_base + gicrd_baselen))
-      {
-          val_print(TRACE, "\n       GICR_TYPER 0x%lx",
-                    val_mmio_read64(pe_gicrd_base + GICR_TYPER));
+      if (gicrd_base == 0 || gicrd_baselen < (GICR_TYPER + sizeof(uint64_t))) {
+          gicr_rdindex++;
+          continue;
+      }
 
-          affinity = (val_mmio_read64(pe_gicrd_base + GICR_TYPER) & GICR_TYPER_AFF) >> 32;
+      pe_gicrd_base = gicrd_base;
+      while ((pe_gicrd_base - gicrd_base) <=
+             (gicrd_baselen - (GICR_TYPER + sizeof(uint64_t))))
+      {
+          typer = val_mmio_read64(pe_gicrd_base + GICR_TYPER);
+          val_print(TRACE, "\n       GICR_TYPER 0x%lx", typer);
+
+          affinity = (typer & GICR_TYPER_AFF) >> 32;
           if (affinity == pe_affinity)
               return pe_gicrd_base;
+
+          if (typer & GICR_TYPER_LAST)
+              break;
+
+          gicrd_granularity = GICR_CTLR_FRAME_SIZE + GICR_SGI_PPI_FRAME_SIZE;
+          if (typer & GICR_TYPER_VLPIS)
+              gicrd_granularity += GICR_VLPI_FRAME_SIZE + GICR_RES_FRAME_SIZE;
 
           /* Move to the next GIC Redistributor frame */
           pe_gicrd_base += gicrd_granularity;
